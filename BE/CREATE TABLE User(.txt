@@ -1,0 +1,130 @@
+CREATE TABLE "User"(
+    "user_id" BIGINT NOT NULL,
+    "username" VARCHAR(255) NOT NULL,
+    "password" VARCHAR(255) NOT NULL,
+    "full_name" NVARCHAR(255) NOT NULL,
+    "role" VARCHAR(255) NOT NULL,
+    "email" VARCHAR(255) NOT NULL,
+    "phone" VARCHAR(255) NOT NULL,
+    "id_card" VARCHAR(255) NULL,
+    "drive_license" VARCHAR(255) NULL,
+    "status" VARCHAR(255) NOT NULL,
+    "station_id" BIGINT NULL,
+    "created_date" DATETIME2 NOT NULL,
+    "updated_date" DATETIME2 NULL
+);
+ALTER TABLE
+    "User" ADD CONSTRAINT "user_user_id_primary" PRIMARY KEY("user_id");
+CREATE UNIQUE INDEX "user_username_unique" ON
+    "User"("username");
+CREATE TABLE "Booking"(
+    "booking_id" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "vehicle_id" BIGINT NOT NULL,
+    "start_time" DATETIME2 NOT NULL,
+    "end_time" DATETIME2 NOT NULL,
+    "actual_start_time" DATETIME2 NULL,
+    "actual_end_time" DATETIME2 NULL,
+    "total_amount" DECIMAL(8, 2) NOT NULL,
+    "start_odo" BIGINT NULL,
+    "end_odo" BIGINT NULL,
+    "created_date" DATETIME2 NOT NULL,
+    "status" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "Booking" ADD CONSTRAINT "booking_booking_id_primary" PRIMARY KEY("booking_id");
+CREATE TABLE "Vehicle"(
+    "vehicle_id" BIGINT NOT NULL,
+    "model_id" BIGINT NOT NULL,
+    "station_id" BIGINT NOT NULL,
+    "color" VARCHAR(255) NOT NULL,
+    "status" VARCHAR(255) NOT NULL,
+    "plate_number" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "Vehicle" ADD CONSTRAINT "vehicle_vehicle_id_primary" PRIMARY KEY("vehicle_id");
+CREATE TABLE "VehicleModel"(
+    "model_id" BIGINT NOT NULL,
+    "name" NVARCHAR(255) NOT NULL,
+    "brand" NVARCHAR(255) NOT NULL,
+    "battery_capacity" BIGINT NOT NULL,
+    "range" BIGINT NOT NULL,
+    "seat" INT NOT NULL,
+    "description" NVARCHAR(255) NULL
+);
+ALTER TABLE
+    "VehicleModel" ADD CONSTRAINT "vehiclemodel_model_id_primary" PRIMARY KEY("model_id");
+CREATE TABLE "Tariff"(
+    "tariff_id" BIGINT NOT NULL,
+    "model_id" BIGINT NOT NULL,
+    "type" NVARCHAR(255) NOT NULL,
+    "price" DECIMAL(8, 2) NOT NULL,
+    "number_of_contract_appling" BIGINT NOT NULL,
+    "deposit_amount" DECIMAL(8, 2) NOT NULL,
+    "status" NVARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "Tariff" ADD CONSTRAINT "tariff_tariff_id_primary" PRIMARY KEY("tariff_id");
+CREATE TABLE "Station"(
+    "station_id" BIGINT NOT NULL,
+    "station_name" NVARCHAR(255) NOT NULL,
+    "address" NVARCHAR(255) NOT NULL,
+    "opening_hours" VARCHAR(255) NOT NULL,
+    "status" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "Station" ADD CONSTRAINT "station_station_id_primary" PRIMARY KEY("station_id");
+CREATE TABLE "Contract"(
+    "contract_ id" BIGINT NOT NULL,
+    "booking_id" BIGINT NOT NULL,
+    "type" VARCHAR(255) NOT NULL,
+    "contract_photo" VARCHAR(255) NOT NULL,
+    "digital_signature" VARCHAR(255) NOT NULL,
+    "staff_id" BIGINT NOT NULL,
+    "status" VARCHAR(255) NOT NULL
+);
+ALTER TABLE
+    "Contract" ADD CONSTRAINT "contract_contract_ id_primary" PRIMARY KEY("contract_ id");
+CREATE TABLE "Payment"(
+    "payment_id" BIGINT NOT NULL,
+    "booking_id" BIGINT NOT NULL,
+    "payment_type" VARCHAR(255) NOT NULL,
+    "method" VARCHAR(255) NOT NULL,
+    "amount" DECIMAL(8, 2) NOT NULL,
+    "reference_code" VARCHAR(255) NOT NULL,
+    "transaction_date" DATETIME2 NOT NULL
+);
+ALTER TABLE
+    "Payment" ADD CONSTRAINT "payment_payment_id_primary" PRIMARY KEY("payment_id");
+CREATE TABLE "IncidentReport"(
+    "report_id" BIGINT NOT NULL,
+    "booking_id" BIGINT NOT NULL,
+    "incident_date" DATETIME2 NOT NULL,
+    "description" VARCHAR(255) NOT NULL,
+    "severity" VARCHAR(255) NOT NULL,
+    "status" VARCHAR(255) NOT NULL,
+    "resolution_note" VARCHAR(255) NOT NULL,
+    "cost" DECIMAL(8, 2) NOT NULL
+);
+ALTER TABLE
+    "IncidentReport" ADD CONSTRAINT "incidentreport_report_id_primary" PRIMARY KEY("report_id");
+ALTER TABLE
+    "Tariff" ADD CONSTRAINT "tariff_model_id_foreign" FOREIGN KEY("model_id") REFERENCES "VehicleModel"("model_id");
+ALTER TABLE
+    "Vehicle" ADD CONSTRAINT "vehicle_station_id_foreign" FOREIGN KEY("station_id") REFERENCES "Station"("station_id");
+ALTER TABLE
+    "Booking" ADD CONSTRAINT "booking_user_id_foreign" FOREIGN KEY("user_id") REFERENCES "User"("user_id");
+ALTER TABLE
+    "IncidentReport" ADD CONSTRAINT "incidentreport_booking_id_foreign" FOREIGN KEY("booking_id") REFERENCES "Booking"("booking_id");
+ALTER TABLE
+    "Contract" ADD CONSTRAINT "contract_staff_id_foreign" FOREIGN KEY("staff_id") REFERENCES "User"("user_id");
+ALTER TABLE
+    "Booking" ADD CONSTRAINT "booking_vehicle_id_foreign" FOREIGN KEY("vehicle_id") REFERENCES "Vehicle"("vehicle_id");
+ALTER TABLE
+    "Contract" ADD CONSTRAINT "contract_booking_id_foreign" FOREIGN KEY("booking_id") REFERENCES "Booking"("booking_id");
+ALTER TABLE
+    "User" ADD CONSTRAINT "user_station_id_foreign" FOREIGN KEY("station_id") REFERENCES "Station"("station_id");
+ALTER TABLE
+    "Vehicle" ADD CONSTRAINT "vehicle_model_id_foreign" FOREIGN KEY("model_id") REFERENCES "VehicleModel"("model_id");
+ALTER TABLE
+    "Payment" ADD CONSTRAINT "payment_booking_id_foreign" FOREIGN KEY("booking_id") REFERENCES "Booking"("booking_id");
