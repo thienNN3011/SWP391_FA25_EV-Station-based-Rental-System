@@ -1,7 +1,6 @@
-package com.daiduong.basic.evrental.service;
+package vn.swp391.fa2025.evrental.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,9 +37,26 @@ public class JwtService {
     }
 
     /**
-     * Extract all claims from JWT token
-     * @param token JWT token
-     * @return all claims
+     * Validate JWT token
+     * @param token the JWT token to validate
+     * @return true if token is valid, false otherwise
+     */
+    public boolean isValidToken(String token) {
+        try {
+            Jwts.parser()
+                .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
+                .build()
+                .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Extract claims from JWT token
+     * @param token the JWT token
+     * @return Claims object containing token data
      */
     public Claims extractClaims(String token) {
         return Jwts.parser()
@@ -48,19 +64,5 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    /**
-     * Validate JWT token - simplified single method
-     * @param token JWT token
-     * @return true if token is valid and not expired
-     */
-    public boolean isValidToken(String token) {
-        try {
-            Claims claims = extractClaims(token);
-            return !claims.getExpiration().before(new Date());
-        } catch (Exception e) {
-            return false;
-        }
     }
 }

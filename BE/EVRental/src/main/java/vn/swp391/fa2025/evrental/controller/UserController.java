@@ -1,4 +1,4 @@
-package com.daiduong.basic.evrental.controller;
+package vn.swp391.fa2025.evrental.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -9,24 +9,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Controller for user-related endpoints (protected)
+ * Controller for user-related operations
  */
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 public class UserController {
 
     /**
-     * Get user profile - Protected endpoint for testing JWT
-     * @return ResponseEntity with user profile information
+     * Get user profile information
+     * @return ResponseEntity with user profile data
      */
     @GetMapping("/profile")
     public ResponseEntity<?> getUserProfile() {
-        // Get authentication from SecurityContext (set by JWT filter)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
 
         // Extract user info from authentication
         String username = authentication.getName();

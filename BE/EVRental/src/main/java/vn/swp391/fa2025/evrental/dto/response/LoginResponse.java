@@ -1,4 +1,4 @@
-package com.daiduong.basic.evrental.dto.reponse;
+package vn.swp391.fa2025.evrental.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
