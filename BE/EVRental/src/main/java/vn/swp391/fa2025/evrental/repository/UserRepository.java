@@ -1,6 +1,6 @@
-package com.daiduong.basic.evrental.repository;
+package vn.swp391.fa2025.evrental.repository;
 
-import com.daiduong.basic.evrental.entity.User;
+import vn.swp391.fa2025.evrental.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,5 +10,3 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 }
-
-

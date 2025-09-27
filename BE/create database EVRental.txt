@@ -1,0 +1,137 @@
+create database EVRental
+use EVRental
+-- B?ng User
+CREATE TABLE "User"(
+    "user_id" BIGINT NOT NULL,
+    "username" VARCHAR(255) NOT NULL,
+    "password" VARCHAR(255) NOT NULL,
+    "full_name" NVARCHAR(255) NOT NULL,
+    "role" VARCHAR(50) NOT NULL, -- USER / STAFF
+    "email" VARCHAR(255) NOT NULL,
+    "phone" VARCHAR(50) NOT NULL,
+    "id_card" VARCHAR(50) NULL,
+    "drive_license" VARCHAR(50) NULL,
+    "status" VARCHAR(50) NOT NULL,
+    "station_id" BIGINT NULL,
+    "created_date" DATETIME2 NOT NULL,
+    "updated_date" DATETIME2 NULL,
+    CONSTRAINT "pk_user" PRIMARY KEY("user_id"),
+    CONSTRAINT "uq_user_username" UNIQUE("username"),
+    CONSTRAINT "uq_user_email" UNIQUE("email"),
+    CONSTRAINT "uq_user_id_card" UNIQUE("id_card"),
+    CONSTRAINT "uq_user_drive_license" UNIQUE("drive_license")
+);
+
+-- B?ng Station
+CREATE TABLE "Station"(
+    "station_id" BIGINT NOT NULL,
+    "station_name" NVARCHAR(255) NOT NULL,
+    "address" NVARCHAR(255) NOT NULL,
+    "opening_hours" VARCHAR(255) NOT NULL,
+    "status" VARCHAR(50) NOT NULL,
+    CONSTRAINT "pk_station" PRIMARY KEY("station_id")
+);
+
+ALTER TABLE "User"
+    ADD CONSTRAINT "fk_user_station" FOREIGN KEY("station_id") REFERENCES "Station"("station_id");
+
+-- B?ng VehicleModel
+CREATE TABLE "VehicleModel"(
+    "model_id" BIGINT NOT NULL,
+    "name" NVARCHAR(255) NOT NULL,
+    "brand" NVARCHAR(255) NOT NULL,
+    "battery_capacity" BIGINT NOT NULL,
+    "range" BIGINT NOT NULL,
+    "seat" INT NOT NULL,
+    "description" NVARCHAR(255) NULL,
+    CONSTRAINT "pk_vehiclemodel" PRIMARY KEY("model_id")
+);
+
+-- B?ng Vehicle
+CREATE TABLE "Vehicle"(
+    "vehicle_id" BIGINT NOT NULL,
+    "model_id" BIGINT NOT NULL,
+    "station_id" BIGINT NOT NULL,
+    "color" VARCHAR(100) NOT NULL,
+    "status" VARCHAR(50) NOT NULL,
+    "plate_number" VARCHAR(50) NOT NULL,
+    CONSTRAINT "pk_vehicle" PRIMARY KEY("vehicle_id"),
+    CONSTRAINT "uq_vehicle_plate_number" UNIQUE("plate_number"),
+    CONSTRAINT "fk_vehicle_model" FOREIGN KEY("model_id") REFERENCES "VehicleModel"("model_id"),
+    CONSTRAINT "fk_vehicle_station" FOREIGN KEY("station_id") REFERENCES "Station"("station_id")
+);
+
+-- B?ng Tariff
+CREATE TABLE "Tariff"(
+    "tariff_id" BIGINT NOT NULL,
+    "model_id" BIGINT NOT NULL,
+    "type" NVARCHAR(100) NOT NULL,
+    "price" DECIMAL(12, 2) NOT NULL,
+    "number_of_contract_appling" BIGINT NOT NULL,
+    "deposit_amount" DECIMAL(12, 2) NOT NULL,
+    "status" NVARCHAR(50) NOT NULL,
+    CONSTRAINT "pk_tariff" PRIMARY KEY("tariff_id"),
+    CONSTRAINT "fk_tariff_model" FOREIGN KEY("model_id") REFERENCES "VehicleModel"("model_id")
+);
+
+-- B?ng Booking
+CREATE TABLE "Booking"(
+    "booking_id" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "vehicle_id" BIGINT NOT NULL,
+    "start_time" DATETIME2 NOT NULL,
+    "end_time" DATETIME2 NOT NULL,
+    "actual_start_time" DATETIME2 NULL,
+    "actual_end_time" DATETIME2 NULL,
+    "total_amount" DECIMAL(12, 2) NOT NULL,
+    "start_odo" BIGINT NULL,
+    "end_odo" BIGINT NULL,
+    "created_date" DATETIME2 NOT NULL,
+    "status" VARCHAR(50) NOT NULL,
+    CONSTRAINT "pk_booking" PRIMARY KEY("booking_id"),
+    CONSTRAINT "fk_booking_user" FOREIGN KEY("user_id") REFERENCES "User"("user_id"),
+    CONSTRAINT "fk_booking_vehicle" FOREIGN KEY("vehicle_id") REFERENCES "Vehicle"("vehicle_id")
+);
+
+-- B?ng Contract (chu?n ch?nh)
+CREATE TABLE "Contract"(
+    "contract_id" BIGINT NOT NULL,
+    "booking_id" BIGINT NOT NULL,
+    "user_id" BIGINT NOT NULL,   -- khách hàng
+    "staff_id" BIGINT NOT NULL,  -- nhân viên qu?n lư
+    "type" VARCHAR(100) NOT NULL,
+    "contract_photo" VARCHAR(255) NOT NULL,
+    "digital_signature" VARCHAR(255) NOT NULL,
+    "status" VARCHAR(50) NOT NULL,
+    CONSTRAINT "pk_contract" PRIMARY KEY("contract_id"),
+    CONSTRAINT "fk_contract_booking" FOREIGN KEY("booking_id") REFERENCES "Booking"("booking_id"),
+    CONSTRAINT "fk_contract_user" FOREIGN KEY("user_id") REFERENCES "User"("user_id"),
+    CONSTRAINT "fk_contract_staff" FOREIGN KEY("staff_id") REFERENCES "User"("user_id")
+);
+
+-- B?ng Payment
+CREATE TABLE "Payment"(
+    "payment_id" BIGINT NOT NULL,
+    "booking_id" BIGINT NOT NULL,
+    "payment_type" VARCHAR(50) NOT NULL,
+    "method" VARCHAR(50) NOT NULL,
+    "amount" DECIMAL(12, 2) NOT NULL,
+    "reference_code" VARCHAR(255) NOT NULL,
+    "transaction_date" DATETIME2 NOT NULL,
+    CONSTRAINT "pk_payment" PRIMARY KEY("payment_id"),
+    CONSTRAINT "fk_payment_booking" FOREIGN KEY("booking_id") REFERENCES "Booking"("booking_id")
+);
+
+-- B?ng IncidentReport
+CREATE TABLE "IncidentReport"(
+    "report_id" BIGINT NOT NULL,
+    "booking_id" BIGINT NOT NULL,
+    "incident_date" DATETIME2 NOT NULL,
+    "description" NVARCHAR(255) NOT NULL,
+    "severity" VARCHAR(50) NOT NULL,
+    "status" VARCHAR(50) NOT NULL,
+    "resolution_note" NVARCHAR(255) NULL,
+    "cost" DECIMAL(12, 2) NOT NULL,
+    CONSTRAINT "pk_incidentreport" PRIMARY KEY("report_id"),
+    CONSTRAINT "fk_incidentreport_booking" FOREIGN KEY("booking_id") REFERENCES "Booking"("booking_id")
+);

@@ -9,7 +9,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name = "Station")
+@Table(name = "[Station]")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

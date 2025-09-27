@@ -1,6 +1,6 @@
-package com.daiduong.basic.evrental.config;
+package vn.swp391.fa2025.evrental.config;
 
-import com.daiduong.basic.evrental.service.JwtService;
+import vn.swp391.fa2025.evrental.service.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,17 +17,18 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Simplified JWT Authentication Filter - KISS principle
- * Simple logic to validate JWT tokens and set authentication
+ * JWT Authentication Filter to process JWT tokens in requests
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
+    
     @Autowired
     private JwtService jwtService;
-
+    
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, 
+                                  HttpServletResponse response, 
+                                  FilterChain filterChain) throws ServletException, IOException {
         
         String authHeader = request.getHeader("Authorization");
         
@@ -54,11 +55,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         
         filterChain.doFilter(request, response);
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return path.startsWith("/auth/") || path.equals("/") || path.startsWith("/hello");
     }
 }
