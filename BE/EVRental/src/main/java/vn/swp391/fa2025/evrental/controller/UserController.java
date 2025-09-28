@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Controller for user-related operations
- */
+
 @RestController
 @RequestMapping("/user")
 public class UserController {

@@ -17,46 +17,50 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(nullable = false)
+    @Column(name = "role", nullable = false)
     private String role; // USER / STAFF / ADMIN
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "phone", nullable = false)
     private String phone;
 
-    @Column(unique = true)
+    @Column(name = "id_card", unique = true)
     private String idCard;
 
-    @Column(unique = true)
+    @Column(name = "drive_license", unique = true)
     private String driveLicense;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
+    @Column(name = "id_card_photo")
     private String idCardPhoto;
 
+    @Column(name = "drive_license_photo")
     private String driveLicensePhoto;
 
     @ManyToOne
     @JoinColumn(name = "station_id")
     private Station station;
 
-    @Column(nullable = false)
+    @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
 
+    @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "user")

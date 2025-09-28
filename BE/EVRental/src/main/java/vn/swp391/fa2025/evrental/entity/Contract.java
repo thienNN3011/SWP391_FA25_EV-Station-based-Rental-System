@@ -15,6 +15,7 @@ import lombok.Setter;
 public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "contract_id")
     private Long contractId;
 
     @OneToOne
@@ -29,16 +30,16 @@ public class Contract {
     @JoinColumn(name = "staff_id", nullable = false)
     private User staff; // nhân viên quản lý
 
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false)
     private String type;
 
-    @Column(nullable = false)
+    @Column(name = "contract_photo", nullable = false)
     private String contractPhoto;
 
-    @Column(nullable = false)
+    @Column(name = "digital_signature", nullable = false)
     private String digitalSignature;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 }
 

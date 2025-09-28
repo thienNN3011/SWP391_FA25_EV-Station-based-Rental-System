@@ -18,6 +18,7 @@ import java.util.List;
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "booking_id")
     private Long bookingId;
 
     @ManyToOne
@@ -28,25 +29,31 @@ public class Booking {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
-    @Column(nullable = false)
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Column(nullable = false)
+    @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @Column(name = "actual_start_time")
     private LocalDateTime actualStartTime;
+
+    @Column(name = "actual_end_time")
     private LocalDateTime actualEndTime;
 
-    @Column(nullable = false)
-    private Double totalAmount;
+    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal totalAmount;
 
+    @Column(name = "start_odo")
     private Long startOdo;
+
+    @Column(name = "end_odo")
     private Long endOdo;
 
-    @Column(nullable = false)
+    @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)

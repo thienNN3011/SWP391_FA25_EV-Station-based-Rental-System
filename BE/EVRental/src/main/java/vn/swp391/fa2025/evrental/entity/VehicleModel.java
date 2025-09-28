@@ -17,23 +17,25 @@ import java.util.List;
 public class VehicleModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "model_id")
     private Long modelId;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "brand", nullable = false)
     private String brand;
 
-    @Column(nullable = false)
+    @Column(name = "battery_capacity", nullable = false)
     private Long batteryCapacity;
 
-    @Column(nullable = false)
+    @Column(name = "range", nullable = false)
     private Long range;
 
-    @Column(nullable = false)
+    @Column(name = "seat", nullable = false)
     private Integer seat;
 
+    @Column(name = "description")
     private String description;
 
     @OneToMany(mappedBy = "model")

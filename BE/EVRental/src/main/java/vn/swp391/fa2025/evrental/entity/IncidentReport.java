@@ -17,29 +17,32 @@ import java.time.LocalDateTime;
 public class IncidentReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "report_id")
     private Long reportId;
 
     @ManyToOne
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    @Column(nullable = false)
+    @Column(name = "incident_date", nullable = false)
     private LocalDateTime incidentDate;
 
-    @Column(nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "severity", nullable = false)
     private String severity;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
+    @Column(name = "resolution_note")
     private String resolutionNote;
 
-    @Column(nullable = false)
-    private Double cost;
+    @Column(name = "cost", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal cost;
 
+    @Column(name = "incident_photo")
     private String incidentPhoto;
 }
 

@@ -4,16 +4,12 @@ import vn.swp391.fa2025.evrental.dto.request.LoginRequest;
 import vn.swp391.fa2025.evrental.dto.response.LoginResponse;
 import vn.swp391.fa2025.evrental.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.validation.Valid;
 
-/**
- * Controller for handling authentication endpoints
- */
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -23,25 +19,16 @@ public class AuthController {
     
     /**
      * Login endpoint for user authentication
-     * @param loginRequest the login credentials
-     * @return ResponseEntity with login response or error message
+     * @param loginRequest the login credentials (validated automatically)
+     * @return ResponseEntity with login response
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-
-        try {
-            // Authenticate user
-            LoginResponse response = authService.authenticateUser(
-                loginRequest.getUsername(),
-                loginRequest.getPassword()
-            );
-            return ResponseEntity.ok(response);
-
-        } catch (RuntimeException e) {
-            // Handle authentication failures
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        }
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        // Authenticate user - exceptions will be handled by GlobalExceptionHandler
+        LoginResponse response = authService.authenticateUser(
+            loginRequest.getUsername(),
+            loginRequest.getPassword()
+        );
+        return ResponseEntity.ok(response);
     }
 }

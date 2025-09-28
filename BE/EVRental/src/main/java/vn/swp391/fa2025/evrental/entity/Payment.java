@@ -17,24 +17,25 @@ import java.time.LocalDateTime;
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id")
     private Long paymentId;
 
     @ManyToOne
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    @Column(nullable = false)
+    @Column(name = "payment_type", nullable = false)
     private String paymentType;
 
-    @Column(nullable = false)
+    @Column(name = "method", nullable = false)
     private String method;
 
-    @Column(nullable = false)
-    private Double amount;
+    @Column(name = "amount", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal amount;
 
-    @Column(nullable = false)
+    @Column(name = "reference_code", nullable = false)
     private String referenceCode;
 
-    @Column(nullable = false)
+    @Column(name = "transaction_date", nullable = false)
     private LocalDateTime transactionDate;
 }

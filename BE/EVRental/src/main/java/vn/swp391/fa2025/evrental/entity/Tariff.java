@@ -15,24 +15,25 @@ import lombok.Setter;
 public class Tariff {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "tariff_id")
     private Long tariffId;
 
     @ManyToOne
     @JoinColumn(name = "model_id", nullable = false)
     private VehicleModel model;
 
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false)
     private String type;
 
-    @Column(nullable = false)
-    private Double price;
+    @Column(name = "price", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal price;
 
-    @Column(nullable = false)
+    @Column(name = "number_of_contract_appling", nullable = false)
     private Long numberOfContractAppling;
 
-    @Column(nullable = false)
-    private Double depositAmount;
+    @Column(name = "deposit_amount", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal depositAmount;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 }

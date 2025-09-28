@@ -15,6 +15,7 @@ import lombok.Setter;
 public class Vehicle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "vehicle_id")
     private Long vehicleId;
 
     @ManyToOne
@@ -25,12 +26,12 @@ public class Vehicle {
     @JoinColumn(name = "station_id", nullable = false)
     private Station station;
 
-    @Column(nullable = false)
+    @Column(name = "color", nullable = false)
     private String color;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "plate_number", nullable = false, unique = true)
     private String plateNumber;
 }

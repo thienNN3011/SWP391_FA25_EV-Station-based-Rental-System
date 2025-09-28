@@ -17,18 +17,19 @@ import java.util.List;
 public class Station {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "station_id")
     private Long stationId;
 
-    @Column(nullable = false)
+    @Column(name = "station_name", nullable = false)
     private String stationName;
 
-    @Column(nullable = false)
+    @Column(name = "address", nullable = false)
     private String address;
 
-    @Column(nullable = false)
+    @Column(name = "opening_hours", nullable = false)
     private String openingHours;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private String status;
 
     @OneToMany(mappedBy = "station")

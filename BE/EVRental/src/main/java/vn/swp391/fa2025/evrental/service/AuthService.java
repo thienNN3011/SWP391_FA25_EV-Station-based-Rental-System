@@ -26,19 +26,19 @@ public class AuthService {
      * @throws RuntimeException if authentication fails
      */
     public LoginResponse authenticateUser(String username, String password) {
-        // Find user by username
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new RuntimeException("Invalid username or password");
+            throw new RuntimeException("username is not exits");
         }
-        
-        // Verify password (simple comparison for learning purposes)
-        // In production, use BCrypt or similar password hashing
+
         if (!password.equals(user.getPassword())) {
             throw new RuntimeException("Invalid username or password");
         }
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            throw new RuntimeException("User account is not active");
+        }
         
-        // Generate JWT token
+
         String token = jwtService.generateToken(username, user.getRole());
         return new LoginResponse(token);
     }
