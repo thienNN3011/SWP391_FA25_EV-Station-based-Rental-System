@@ -1,8 +1,7 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,120 +11,196 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, AlertCircle, User } from "lucide-react"
 
-export function AuthModal() {
-  const [isOpen, setIsOpen] = useState(false)
+interface AuthModalProps {
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+  initialTab: "signin" | "signup"
+}
+
+export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthModalProps) {
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">(initialTab)
   const [isSignedUp, setIsSignedUp] = useState(false)
   const [userStatus, setUserStatus] = useState<"unverified" | "verified">("unverified")
+  const [error, setError] = useState("")
 
-  const handleSignUp = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSignedUp(true)
-    setUserStatus("unverified")
+  // Reset tab khi modal mở lại
+  useEffect(() => {
+    if (isOpen) setActiveTab(initialTab)
+  }, [isOpen, initialTab])
+
+  // ==== API Call ====
+  async function loginApi(username: string, password: string) {
+    const res = await fetch("http://localhost:8080/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    })
+    if (!res.ok) throw new Error()
+    return res.json()
   }
 
-  const handleSignIn = (e: React.FormEvent) => {
+  async function registerApi(formData: FormData) {
+    const res = await fetch("http://localhost:8080/users", {
+      method: "POST",
+      body: formData, // multipart/form-data
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.message || "Đăng ký thất bại")
+    }
+    return res.json()
+  }
+
+  // ==== Handlers ====
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Simulate sign in - in real app this would call API
-    setUserStatus("verified")
-    setIsOpen(false)
+    setError("")
+    const username = (document.getElementById("signin-username") as HTMLInputElement).value
+    const password = (document.getElementById("signin-password") as HTMLInputElement).value
+
+    try {
+      const result = await loginApi(username, password)
+      if (!result.token) throw new Error()
+      localStorage.setItem("authToken", result.token)
+      setUserStatus("verified")
+      onOpenChange(false)
+      router.push("/")
+    } catch {
+      setError("Sai tài khoản hoặc mật khẩu")
+    }
+  }
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+
+    const form = e.target as HTMLFormElement
+    const formData = new FormData(form)
+
+    try {
+      await registerApi(formData)
+      setIsSignedUp(true)
+      setUserStatus("unverified")
+    } catch (err: any) {
+      setError(err.message || "Đăng ký thất bại")
+    }
   }
 
   return (
-    <>
-      <Button onClick={() => setIsOpen(true)} className="fixed bottom-6 right-6 z-50 shadow-lg">
-        <User className="mr-2 h-4 w-4" />
-        Account
-      </Button>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Account Access
+          </DialogTitle>
+        </DialogHeader>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Account Access
-            </DialogTitle>
-          </DialogHeader>
+        {!isSignedUp ? (
+          <Tabs
+                  value={activeTab as string}        
+                  onValueChange={(val) => setActiveTab(val as "signin" | "signup")}
+                    className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
 
-          {!isSignedUp ? (
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input id="signin-email" type="email" placeholder="your@email.com" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <Input id="signin-password" type="password" placeholder="••••••••" required />
-                  </div>
-                  <Button type="submit" className="w-full">
-                    Sign In
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup" className="space-y-4">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" required />
-                  </div>
-                  <Button type="submit" className="w-full">
-                    Create Account
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  Account Created
-                </CardTitle>
-                <CardDescription>Welcome to EcoRide! Your account has been created successfully.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-amber-500" />
-                    <span className="text-sm font-medium">Verification Status</span>
-                  </div>
-                  <Badge variant={userStatus === "verified" ? "default" : "secondary"}>
-                    {userStatus === "verified" ? "Verified" : "Unverified"}
-                  </Badge>
+            <TabsContent value="signin" className="space-y-4">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-username">Username</Label>
+                  <Input id="signin-username" type="text" placeholder="Your username" required />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Password</Label>
+                  <Input id="signin-password" type="password" placeholder="••••••••" required />
+                </div>
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                <Button type="submit" className="w-full">Sign In</Button>
+              </form>
+            </TabsContent>
 
-                {userStatus === "unverified" && (
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                    <p className="text-sm text-amber-800">
-                      <strong>Next Step:</strong> Visit any EcoRide location to complete your verification. Bring a
-                      valid driver's license and complete the in-person verification process.
-                    </p>
-                  </div>
-                )}
+            <TabsContent value="signup" className="space-y-4">
+              <form onSubmit={handleSignUp} className="space-y-4" encType="multipart/form-data">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input id="fullName" name="fullName" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input id="username" name="username" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" name="password" type="password" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input id="phone" name="phone" type="tel" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" name="email" type="email" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="idCard">ID Card</Label>
+                  <Input id="idCard" name="idCard" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="driveLicense">Driver License</Label>
+                  <Input id="driveLicense" name="driveLicense" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="idCardPhoto">ID Card Photo</Label>
+                  <Input id="idCardPhoto" name="idCardPhoto" type="file" accept="image/*" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="driveLicensePhoto">Driver License Photo</Label>
+                  <Input id="driveLicensePhoto" name="driveLicensePhoto" type="file" accept="image/*" required />
+                </div>
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+                <Button type="submit" className="w-full">Create Account</Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                Account Created
+              </CardTitle>
+              <CardDescription>Welcome! Your account has been created successfully.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-medium">Verification Status</span>
+                </div>
+                <Badge variant={userStatus === "verified" ? "default" : "secondary"}>
+                  {userStatus === "verified" ? "Verified" : "Unverified"}
+                </Badge>
+              </div>
 
-                <Button onClick={() => setIsOpen(false)} className="w-full">
-                  Continue
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+              {userStatus === "unverified" && (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800">
+                    <strong>Next Step:</strong> Visit a location to complete verification.
+                  </p>
+                </div>
+              )}
+
+              <Button onClick={() => onOpenChange(false)} className="w-full">Continue</Button>
+            </CardContent>
+          </Card>
+          
+        )}
+      </DialogContent>
+      
+    </Dialog>
+    
   )
 }
