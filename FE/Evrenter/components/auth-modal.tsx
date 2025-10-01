@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, AlertCircle, User } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean
@@ -31,7 +32,7 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
 
   // ==== API Call ====
   async function loginApi(username: string, password: string) {
-    const res = await fetch("http://localhost:8080/auth/login", {
+    const res = await fetch("http://localhost:8080/EVRental/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -41,7 +42,7 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
   }
 
   async function registerApi(formData: FormData) {
-    const res = await fetch("http://localhost:8080/users", {
+    const res = await fetch("http://localhost:8080/EVRental/users", {
       method: "POST",
       body: formData, // multipart/form-data
     })
@@ -51,6 +52,8 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
     }
     return res.json()
   }
+
+    const [showPassword, setShowPassword] = useState(false)
 
   // ==== Handlers ====
   const handleSignIn = async (e: React.FormEvent) => {
@@ -91,9 +94,9 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-blue-500" >
             <User className="h-5 w-5" />
-            Account Access
+            Thuê xe ngay nào!
           </DialogTitle>
         </DialogHeader>
 
@@ -103,41 +106,71 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
                   onValueChange={(val) => setActiveTab(val as "signin" | "signup")}
                     className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">Đăng nhập</TabsTrigger>
+              <TabsTrigger value="signup">Đăng Ký</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin" className="space-y-4">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-username">Username</Label>
-                  <Input id="signin-username" type="text" placeholder="Your username" required />
+                  <Label htmlFor="signin-username">Tên đăng nhập</Label>
+                  <Input id="signin-username" type="text" placeholder="Tên đăng nhập" required />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <Input id="signin-password" type="password" placeholder="••••••••" required />
-                </div>
+                            <div className="relative space-y-2">
+  <Label htmlFor="signin-password">Mật Khẩu</Label>
+  <Input
+    id="signin-password"
+    type={showPassword ? "text" : "password"}
+    placeholder="••••••••"
+    required
+    className="pr-10 h-10" 
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+  >
+    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+  </button>
+</div>
+
+
+
                 {error && <p className="text-red-500 text-sm">{error}</p>}
-                <Button type="submit" className="w-full">Sign In</Button>
+                <Button type="submit" className="w-full">Đăng Nhập</Button>
               </form>
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignUp} className="space-y-4" encType="multipart/form-data">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName">Họ và tên</Label>
                   <Input id="fullName" name="fullName" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username">Tên đăng nhập</Label>
                   <Input id="username" name="username" required />
                 </div>
+                    <div className="relative space-y-2">
+  <Label htmlFor="password">Mật Khẩu</Label>
+  <Input
+    id="password"
+    name="password"
+    type={showPassword ? "text" : "password"} 
+    required
+    className="pr-10 h-10" 
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+  >
+    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+  </button>
+</div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">Số điện thoại</Label>
                   <Input id="phone" name="phone" type="tel" required />
                 </div>
                 <div className="space-y-2">
@@ -145,23 +178,23 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
                   <Input id="email" name="email" type="email" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="idCard">ID Card</Label>
+                  <Label htmlFor="idCard">Số căn cước công dân</Label>
                   <Input id="idCard" name="idCard" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="driveLicense">Driver License</Label>
+                  <Label htmlFor="driveLicense">Số giấy phép lái xe</Label>
                   <Input id="driveLicense" name="driveLicense" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="idCardPhoto">ID Card Photo</Label>
+                  <Label htmlFor="idCardPhoto">Ảnh căn cước mặt trước</Label>
                   <Input id="idCardPhoto" name="idCardPhoto" type="file" accept="image/*" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="driveLicensePhoto">Driver License Photo</Label>
+                  <Label htmlFor="driveLicensePhoto">Ảnh bằng lái</Label>
                   <Input id="driveLicensePhoto" name="driveLicensePhoto" type="file" accept="image/*" required />
                 </div>
                 {error && <p className="text-red-500 text-sm">{error}</p>}
-                <Button type="submit" className="w-full">Create Account</Button>
+                <Button type="submit" className="w-full">Tạo tài khoản</Button>
               </form>
             </TabsContent>
           </Tabs>

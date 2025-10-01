@@ -17,7 +17,8 @@ import java.util.Arrays;
 /**
  * Spring Security Configuration for JWT-based authentication
  */
-@Configuration
+
+ @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
@@ -31,7 +32,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no authentication required
-                        .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel").permitAll()
+                        .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/users").permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )
