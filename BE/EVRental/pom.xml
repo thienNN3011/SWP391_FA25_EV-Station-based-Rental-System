@@ -32,6 +32,12 @@
         <lombok.mapstruct.binding.version>0.2.0</lombok.mapstruct.binding.version>
     </properties>
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -48,10 +54,11 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+    <groupId>com.microsoft.sqlserver</groupId>
+    <artifactId>mssql-jdbc</artifactId>
+    <version>12.6.0.jre11</version>
+</dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -108,6 +115,14 @@
             <version>${mapstruct.version}</version>
         </dependency>
     </dependencies>
+    <repositories>
+    <repository>
+        <id>microsoft</id>
+        <name>Microsoft JDBC Repository</name>
+        <url>https://maven.microsoft.com/repo/maven/public</url>
+    </repository>
+</repositories>
+
 
     <build>
         <plugins>
