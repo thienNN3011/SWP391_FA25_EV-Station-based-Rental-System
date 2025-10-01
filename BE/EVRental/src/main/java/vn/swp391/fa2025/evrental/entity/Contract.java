@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "[Contract]")
+@Table(name = "contracts")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -15,7 +15,6 @@ import lombok.Setter;
 public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "contract_id")
     private Long contractId;
 
     @OneToOne
@@ -30,16 +29,16 @@ public class Contract {
     @JoinColumn(name = "staff_id", nullable = false)
     private User staff; // nhân viên quản lý
 
-    @Column(name = "type", nullable = false)
+    @Column(nullable = false)
     private String type;
 
-    @Column(name = "contract_photo", nullable = false)
+    @Column(nullable = false)
     private String contractPhoto;
 
-    @Column(name = "digital_signature", nullable = false)
+    @Column(nullable = false)
     private String digitalSignature;
 
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private String status;
 }
 

@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no authentication required
-                        .requestMatchers("/auth/**", "/", "/hello", "/error").permitAll()
+                        .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel").permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

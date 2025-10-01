@@ -9,7 +9,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name = "[Station]")
+@Table(name = "stations")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -17,19 +17,18 @@ import java.util.List;
 public class Station {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "station_id")
     private Long stationId;
 
-    @Column(name = "station_name", nullable = false)
+    @Column(nullable = false)
     private String stationName;
 
-    @Column(name = "address", nullable = false)
+    @Column(nullable = false)
     private String address;
 
-    @Column(name = "opening_hours", nullable = false)
+    @Column(nullable = false)
     private String openingHours;
 
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private String status;
 
     @OneToMany(mappedBy = "station")

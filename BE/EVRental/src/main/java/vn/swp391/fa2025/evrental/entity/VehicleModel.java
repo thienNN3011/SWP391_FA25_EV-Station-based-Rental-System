@@ -9,7 +9,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name = "[VehicleModel]")
+@Table(name = "vehicle_models")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -17,26 +17,27 @@ import java.util.List;
 public class VehicleModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "model_id")
     private Long modelId;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "brand", nullable = false)
+    @Column(nullable = false)
     private String brand;
 
-    @Column(name = "battery_capacity", nullable = false)
+    @Column(nullable = false)
     private Long batteryCapacity;
 
-    @Column(name = "range", nullable = false)
+    @Column(nullable = false)
     private Long range;
 
-    @Column(name = "seat", nullable = false)
+    @Column(nullable = false)
     private Integer seat;
 
-    @Column(name = "description")
     private String description;
+
+    @Column
+    private String imageUrl;
 
     @OneToMany(mappedBy = "model")
     private List<Vehicle> vehicles;

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "[User]")
+@Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -17,50 +17,46 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "full_name", nullable = false)
+    @Column(nullable = false)
     private String fullName;
 
-    @Column(name = "role", nullable = false)
+    @Column(nullable = false)
     private String role; // USER / STAFF / ADMIN
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "phone", nullable = false)
+    @Column(nullable = false)
     private String phone;
 
-    @Column(name = "id_card", unique = true)
+    @Column(unique = true)
     private String idCard;
 
-    @Column(name = "drive_license", unique = true)
+    @Column(unique = true)
     private String driveLicense;
 
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private String status;
 
-    @Column(name = "id_card_photo")
     private String idCardPhoto;
 
-    @Column(name = "drive_license_photo")
     private String driveLicensePhoto;
 
     @ManyToOne
     @JoinColumn(name = "station_id")
     private Station station;
 
-    @Column(name = "created_date", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime createdDate;
 
-    @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "user")

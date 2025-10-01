@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "[Booking]")
+@Table(name = "bookings")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -18,7 +18,6 @@ import java.util.List;
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_id")
     private Long bookingId;
 
     @ManyToOne
@@ -29,31 +28,28 @@ public class Booking {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
-    @Column(name = "start_time", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime startTime;
 
-    @Column(name = "end_time", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime endTime;
 
-    @Column(name = "actual_start_time")
     private LocalDateTime actualStartTime;
-
-    @Column(name = "actual_end_time")
     private LocalDateTime actualEndTime;
 
-    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
-    private java.math.BigDecimal totalAmount;
+    @Column(nullable = false)
+    private Long tariffId;
 
-    @Column(name = "start_odo")
+    @Column(nullable = false)
+    private Double totalAmount;
+
     private Long startOdo;
-
-    @Column(name = "end_odo")
     private Long endOdo;
 
-    @Column(name = "created_date", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime createdDate;
 
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private String status;
 
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)

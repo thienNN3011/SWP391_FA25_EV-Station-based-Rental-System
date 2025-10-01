@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "[Vehicle]")
+@Table(name = "vehicles")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -15,7 +15,6 @@ import lombok.Setter;
 public class Vehicle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "vehicle_id")
     private Long vehicleId;
 
     @ManyToOne
@@ -26,12 +25,12 @@ public class Vehicle {
     @JoinColumn(name = "station_id", nullable = false)
     private Station station;
 
-    @Column(name = "color", nullable = false)
+    @Column(nullable = false)
     private String color;
 
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private String status;
 
-    @Column(name = "plate_number", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String plateNumber;
 }
