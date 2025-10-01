@@ -5,11 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-<<<<<<< HEAD
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
-=======
 import org.springframework.web.server.ResponseStatusException;
->>>>>>> main
 
 import java.util.HashMap;
 import java.util.Map;
