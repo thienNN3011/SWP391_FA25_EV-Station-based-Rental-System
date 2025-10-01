@@ -5,7 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+<<<<<<< HEAD
+import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
+=======
 import org.springframework.web.server.ResponseStatusException;
+>>>>>>> main
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,35 +35,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    /**
-     * Handle authentication failures (customize this based on your specific exception types)
-     * @param ex RuntimeException
-     * @return ResponseEntity with error message
-     */
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-        
-
-        if (ex.getMessage() != null && 
-            (ex.getMessage().contains("exits") ||
-             ex.getMessage().contains("Invalid") || 
-             ex.getMessage().contains("active"))) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        }
-        
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-    }
-
-    /**
-     * Handle ResponseStatusException across the application for consistent JSON responses
-     */
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatusException(ResponseStatusException ex) {
-        Map<String, String> error = new HashMap<>();
-        String message = ex.getReason() != null ? ex.getReason() : ex.getMessage();
-        error.put("error", message);
-        return ResponseEntity.status(ex.getStatusCode()).body(error);
+    @ExceptionHandler(value = RuntimeException.class)
+    ResponseEntity<ApiResponse> handleException(RuntimeException ex){
+        ApiResponse apiResponse = new ApiResponse();
+        apiResponse.setSuccess(Boolean.FALSE);
+        apiResponse.setMessage(ex.getMessage());
+        return ResponseEntity.badRequest().body(apiResponse);
     }
 }
