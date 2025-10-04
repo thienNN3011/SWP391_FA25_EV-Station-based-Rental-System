@@ -24,12 +24,14 @@ public class JwtService {
      * Generate JWT token for user
      * @param username the username to include in token
      * @param role the user role to include in token
+     * @param fullname the fullname to include in token
      * @return JWT token string
      */
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, String role, String fullName) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("role", role)
+                .claim("fullName", fullName)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
