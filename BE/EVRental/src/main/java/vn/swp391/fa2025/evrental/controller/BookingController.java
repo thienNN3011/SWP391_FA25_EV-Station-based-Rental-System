@@ -15,8 +15,7 @@ import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 public class BookingController {
     @Autowired
     private BookingServiceImpl bookingService;
-
-    @PostMapping
+    @PostMapping("/createbooking")
     ApiResponse<BookingResponse> createBooking(@RequestBody BookingRequest bookingRequest){
         ApiResponse<BookingResponse> response = new ApiResponse<>();
         response.setSuccess(true);

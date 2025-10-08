@@ -26,7 +26,7 @@ public class IncidentReport {
     @Column(nullable = false)
     private LocalDateTime incidentDate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String description;
 
     @Column(nullable = false)
@@ -35,6 +35,7 @@ public class IncidentReport {
     @Column(nullable = false)
     private String status;
 
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String resolutionNote;
 
     @Column(nullable = false)

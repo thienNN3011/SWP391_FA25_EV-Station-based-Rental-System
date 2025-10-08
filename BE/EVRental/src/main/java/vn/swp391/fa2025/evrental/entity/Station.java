@@ -19,10 +19,10 @@ public class Station {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long stationId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String stationName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String address;
 
     @Column(nullable = false)

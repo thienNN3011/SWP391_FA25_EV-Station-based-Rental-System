@@ -12,6 +12,7 @@ import java.util.Date;
 @Builder
 public class BookingRequest {
     private String username;
+    private String stationName;
     private Long modelId;
     private String color;
     private Long tariffId;

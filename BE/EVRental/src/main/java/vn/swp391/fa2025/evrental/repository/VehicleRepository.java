@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
     List<Vehicle> findByModel_ModelId(Long modelId);
+    List<Vehicle> findByStation_StationIdAndModel_ModelIdAndColor(Long stationId, Long modelId, String color);
 }
