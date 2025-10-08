@@ -9,22 +9,19 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude (JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
 @Builder
-public class CustomerResponse {
-    private Long userId;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class RenterDetailResponse {
     private String username;
+    private String password;
     private String fullName;
     private String email;
     private String phone;
     private String idCard;
-    private String driveLicense;
-    private String role;
-    private String status;
     private String idCardPhoto;
+    private String driveLicense;
     private String driveLicensePhoto;
     private LocalDateTime createdDate;
 }
-

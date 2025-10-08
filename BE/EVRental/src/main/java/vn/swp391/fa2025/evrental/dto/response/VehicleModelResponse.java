@@ -14,13 +14,14 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VehicleModelResponse {
     private Long modelId;
+    private String stationName;
     private String name;
     private String brand;
     private Long batteryCapacity;
     private Long range;
     private Integer seat;
     private String description;
-    private String imageUrl;
+    private List<ModelImageUrlResponse> imageUrl;
     private List<TariffResponse> tariffs;
     private Set<String> colors;
 }

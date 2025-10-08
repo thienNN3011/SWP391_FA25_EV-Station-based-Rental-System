@@ -10,12 +10,10 @@ import vn.swp391.fa2025.evrental.dto.response.StationResponse;
 import vn.swp391.fa2025.evrental.dto.response.TariffResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
+import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.Tariff;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
-import vn.swp391.fa2025.evrental.repository.BookingRepository;
-import vn.swp391.fa2025.evrental.repository.TariffRepository;
-import vn.swp391.fa2025.evrental.repository.UserRepository;
-import vn.swp391.fa2025.evrental.repository.VehicleRepository;
+import vn.swp391.fa2025.evrental.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -31,22 +29,25 @@ public class BookingServiceImpl implements  BookingService{
     private VehicleRepository vehicleRepository;
     @Autowired
     private TariffRepository tariffRepository;
-
+    @Autowired
+    private StationRepository stationRepository;
     @Override
     public BookingResponse bookVehicle(BookingRequest bookingRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        String username = authentication.getName();
-        String role = authentication.getAuthorities()
-                .stream()
-                .findFirst()
-                .map(a -> a.getAuthority())
-                .orElse(null);
-        if (!role.equals("RENTER")) throw new RuntimeException("Chỉ người dùng mới có thể đặt xe");
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//        String username = authentication.getName();
+//        String role = authentication.getAuthorities()
+//                .stream()
+//                .findFirst()
+//                .map(a -> a.getAuthority())
+//                .orElse(null);
+//        if (!role.equals("RENTER")) throw new RuntimeException("Chỉ người dùng mới có thể đặt xe");
 
         Booking booking = new Booking();
         booking.setUser(userRepository.findByUsername(bookingRequest.getUsername()));
-        List<Vehicle> vehicles = vehicleRepository.findByModel_ModelId(bookingRequest.getModelId());
+        Station station= stationRepository.findByStationName(bookingRequest.getStationName());
+        if (station==null || !station.getStatus().equals("OPEN")) throw new RuntimeException("Trạm không tồn tại hoặc hiện tại không khả dụng");
+        List<Vehicle> vehicles = vehicleRepository.findByStation_StationIdAndModel_ModelIdAndColor(station.getStationId(),bookingRequest.getModelId(), bookingRequest.getColor());
         for (Vehicle vehicle : vehicles) {
             if (vehicle.getStatus().equals("AVAILABLE")) {
                 vehicle.setStatus("BOOKED");
@@ -62,6 +63,7 @@ public class BookingServiceImpl implements  BookingService{
         if (bookingRequest.getEndTime().isBefore(booking.getStartTime())) throw new RuntimeException("Thời gian kết thúc phải sau thời gian bắt đầu");
         booking.setEndTime(bookingRequest.getEndTime());
         if (tariffRepository.findById(bookingRequest.getTariffId()).isEmpty()) throw new RuntimeException("TariffId không hợp lệ");
+        if (tariffRepository.findByTariffIdAndModel_ModelId(bookingRequest.getTariffId(), bookingRequest.getModelId())==null) throw new RuntimeException("Tariff không phù hợp với Model hiện tại");
         if (tariffRepository.findById(bookingRequest.getTariffId()).get().getStatus().equals("INACTIVE")) throw new RuntimeException("Tariff hiện tại không khả dụng");
         booking.setTariffId(bookingRequest.getTariffId());
         booking.setCreatedDate(LocalDateTime.now());
@@ -82,9 +84,9 @@ public class BookingServiceImpl implements  BookingService{
                 booking.getVehicle().getModel().getBrand()
         );
         StationResponse stationResponse= new StationResponse(
-                booking.getVehicle().getStation().getStationName(),
-                booking.getVehicle().getStation().getAddress(),
-                booking.getVehicle().getStation().getOpeningHours()
+                station.getStationName(),
+                station.getAddress(),
+                station.getOpeningHours()
         );
 
         Tariff tariff= tariffRepository.findById(bookingRequest.getTariffId()).get();

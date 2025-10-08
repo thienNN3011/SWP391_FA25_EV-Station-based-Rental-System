@@ -1,54 +1,64 @@
 package vn.swp391.fa2025.evrental.controller;
 
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import vn.swp391.fa2025.evrental.dto.request.ChangeUserStatusRequest;
+import vn.swp391.fa2025.evrental.dto.request.RegisterCustomerRequest;
+import vn.swp391.fa2025.evrental.dto.request.ShowUserDetailRequest;
+import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
+import vn.swp391.fa2025.evrental.dto.response.CustomerResponse;
+import vn.swp391.fa2025.evrental.service.RegistrationService;
+import vn.swp391.fa2025.evrental.service.UserServiceImpl;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import java.net.URI;
+import java.util.List;
 
 @RestController
-@RequestMapping("/user")
 public class UserController {
 
-    /**
-     * Get user profile information
-     * @return ResponseEntity with user profile data
-     */
-    @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    @Autowired
+    private RegistrationService registrationService;
 
-        // Extract user info from authentication
-        String username = authentication.getName();
-        String role = authentication.getAuthorities().iterator().next().getAuthority();
+    @Autowired
+    private UserServiceImpl userService;
 
-        // Create response
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("username", username);
-        profile.put("role", role); // Clean role without prefix
-        profile.put("message", "Profile retrieved successfully");
-        profile.put("timestamp", System.currentTimeMillis());
-
-        return ResponseEntity.ok(profile);
+    @PostMapping(value = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CustomerResponse> createUser(@Valid @ModelAttribute RegisterCustomerRequest req) {
+        CustomerResponse res = registrationService.registerCustomer(req);
+        return ResponseEntity.created(URI.create("/users/" + res.getUserId())).body(res);
     }
 
-    /**
-     * Test authentication endpoint - Simple protected endpoint
-     * @return ResponseEntity with test message
-     */
-    @GetMapping("/test")
-    public ResponseEntity<?> testAuthentication() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "JWT Authentication working!");
-        response.put("user", authentication.getName());
-        response.put("authenticated", authentication.isAuthenticated());
-        response.put("timestamp", System.currentTimeMillis());
+    @GetMapping("/showpendingaccount")
+    public ApiResponse<List<CustomerResponse>> showPendingAccount() {
+        ApiResponse<List<CustomerResponse>> response = new ApiResponse<>();
+        response.setData(userService.showPendingAccount());
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin tài khoản đang chờ phê duyệt thành công");
+        response.setCode(200);
+        return response;
+    }
 
-        return ResponseEntity.ok(response);
+    @PostMapping("/showdetailofpendingaccount")
+    public ApiResponse<CustomerResponse> showDetailOfPendingAccount(@RequestBody ShowUserDetailRequest request) {
+        ApiResponse<CustomerResponse> response = new ApiResponse<>();
+        response.setData(userService.showDetailOfPendingAccount(request.getUsername()));
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin chi tiết tài khoản đang chờ phê duyệt thành công");
+        response.setCode(200);
+        return response;
+    }
+
+    @PatchMapping("/changeaccountstatus")
+    public ApiResponse<Boolean> changeAccountStatus(@RequestBody ChangeUserStatusRequest request) {
+        ApiResponse<Boolean> response = new ApiResponse<>();
+        response.setData(userService.changeAccountStatus(request.getUsername(), request.getStatus()));
+        response.setSuccess(true);
+        response.setMessage("Thay đổi trạng thái tài khoản thành công");
+        response.setCode(200);
+        return response;
     }
 }
+

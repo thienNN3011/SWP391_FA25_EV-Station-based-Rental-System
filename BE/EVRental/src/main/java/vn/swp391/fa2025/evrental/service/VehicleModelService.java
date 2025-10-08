@@ -8,5 +8,5 @@ import java.util.List;
 
 @Service
 public interface VehicleModelService {
-    public List<VehicleModelResponse> getVihecleModelsWithActiveTariffs();
+    public List<VehicleModelResponse> getVihecleModelsByStationWithActiveTariffs(String stationName);
 }

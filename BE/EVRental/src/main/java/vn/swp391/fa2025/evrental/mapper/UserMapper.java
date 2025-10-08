@@ -1,10 +1,12 @@
 package vn.swp391.fa2025.evrental.mapper;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import vn.swp391.fa2025.evrental.dto.request.RegisterCustomerRequest;
 import vn.swp391.fa2025.evrental.dto.response.CustomerResponse;
+import vn.swp391.fa2025.evrental.dto.response.RenterDetailResponse;
 import vn.swp391.fa2025.evrental.entity.User;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
@@ -15,5 +17,12 @@ public interface UserMapper {
     User toEntity(RegisterCustomerRequest req, String idCardPhotoPath, String driveLicensePhotoPath);
 
     CustomerResponse toDto(User user);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "username", source = "username")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "createdDate", source = "createdDate")
+    CustomerResponse toShortResponse(User user);
+
 }
 

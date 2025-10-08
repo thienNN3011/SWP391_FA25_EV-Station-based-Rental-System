@@ -23,11 +23,11 @@ public class Contract {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user; // khách hàng
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "staff_id", nullable = false)
-    private User staff; // nhân viên quản lý
+    private User staff;
 
     @Column(nullable = false)
     private String type;

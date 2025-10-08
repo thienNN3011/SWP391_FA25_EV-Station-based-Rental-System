@@ -34,10 +34,11 @@ public class VehicleModel {
     @Column(nullable = false)
     private Integer seat;
 
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String description;
 
-    @Column
-    private String imageUrl;
+    @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ModelImageUrl> imageUrls;
 
     @OneToMany(mappedBy = "model")
     private List<Vehicle> vehicles;

@@ -2,10 +2,13 @@ package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import vn.swp391.fa2025.evrental.dto.response.ModelImageUrlResponse;
 import vn.swp391.fa2025.evrental.dto.response.TariffResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleModelResponse;
+import vn.swp391.fa2025.evrental.entity.ModelImageUrl;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
 import vn.swp391.fa2025.evrental.entity.VehicleModel;
+import vn.swp391.fa2025.evrental.repository.StationRepository;
 import vn.swp391.fa2025.evrental.repository.VehicleModelRepository;
 
 import java.util.List;
@@ -17,9 +20,13 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Autowired
     private VehicleModelRepository vehicleModelRepository;
 
+    @Autowired
+    private StationRepository stationRepository;
+
     @Override
-    public List<VehicleModelResponse> getVihecleModelsWithActiveTariffs() {
-        List<VehicleModel> models= vehicleModelRepository.findAll();
+    public List<VehicleModelResponse> getVihecleModelsByStationWithActiveTariffs(String stationName) {
+        if (stationRepository.findByStationName(stationName) == null || !stationRepository.findByStationName(stationName).getStatus().equals("OPEN")) throw new IllegalArgumentException("Station is inactive or does not exist");
+        List<VehicleModel> models= vehicleModelRepository.findDistinctByVehiclesStationStationName(stationName);
 
         return models.stream().map(model -> {
             List<TariffResponse> activeTariffs = model.getTariffs().stream()
@@ -36,16 +43,21 @@ public class VehicleModelServiceImpl implements VehicleModelService {
                     .filter(vehicle -> "available".equalsIgnoreCase(vehicle.getStatus()))
                     .map(Vehicle::getColor)
                     .collect(Collectors.toSet());
-
+            List<ModelImageUrlResponse> imageUrls = model.getImageUrls().stream()
+                    .map(img -> new ModelImageUrlResponse(
+                            img.getImageUrl(),
+                            img.getColor()
+                    )).toList();
             return new VehicleModelResponse(
                     model.getModelId(),
+                    stationName,
                     model.getName(),
                     model.getBrand(),
                     model.getBatteryCapacity(),
                     model.getRange(),
                     model.getSeat(),
                     model.getDescription(),
-                    model.getImageUrl(),
+                    imageUrls,
                     activeTariffs,
                     availableColors
             );
