@@ -8,7 +8,7 @@ import { MapPin } from "lucide-react"
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       <Hero />
 
       <section className="py-12 bg-primary/5">
@@ -24,7 +24,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <AuthModal />
     </div>
   )
 }

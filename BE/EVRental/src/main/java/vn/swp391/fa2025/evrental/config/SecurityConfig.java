@@ -18,7 +18,8 @@ import java.util.Arrays;
 /**
  * Spring Security Configuration for JWT-based authentication
  */
-@Configuration
+
+ @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 

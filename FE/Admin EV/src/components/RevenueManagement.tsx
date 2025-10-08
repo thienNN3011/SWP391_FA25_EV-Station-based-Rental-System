@@ -8,18 +8,18 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 // Mock data cho doanh thu
 const monthlyRevenueData = [
-  { month: 'T1', revenue: 145, profit: 45, orders: 89 },
-  { month: 'T2', revenue: 189, profit: 62, orders: 125 },
-  { month: 'T3', revenue: 180, profit: 58, orders: 118 },
-  { month: 'T4', revenue: 201, profit: 68, orders: 135 },
-  { month: 'T5', revenue: 156, profit: 51, orders: 102 },
-  { month: 'T6', revenue: 215, profit: 72, orders: 142 },
-  { month: 'T7', revenue: 230, profit: 78, orders: 156 },
-  { month: 'T8', revenue: 245, profit: 85, orders: 168 },
-  { month: 'T9', revenue: 240, profit: 82, orders: 162 },
-  { month: 'T10', revenue: 255, profit: 89, orders: 175 },
-  { month: 'T11', revenue: 265, profit: 92, orders: 182 },
-  { month: 'T12', revenue: 280, profit: 98, orders: 195 }
+  { month: 'T1', revenue: 145, orders: 89 },
+  { month: 'T2', revenue: 189, orders: 125 },
+  { month: 'T3', revenue: 180, orders: 118 },
+  { month: 'T4', revenue: 201, orders: 135 },
+  { month: 'T5', revenue: 156, orders: 102 },
+  { month: 'T6', revenue: 215, orders: 142 },
+  { month: 'T7', revenue: 230, orders: 156 },
+  { month: 'T8', revenue: 245, orders: 168 },
+  { month: 'T9', revenue: 240, orders: 162 },
+  { month: 'T10', revenue: 255, orders: 175 },
+  { month: 'T11', revenue: 265, orders: 182 },
+  { month: 'T12', revenue: 280, orders: 195 }
 ]
 
 const branchRevenueData = [
@@ -100,7 +100,7 @@ export function RevenueManagement() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Tổng doanh thu</CardTitle>
@@ -118,19 +118,7 @@ export function RevenueManagement() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Lợi nhuận</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl text-blue-600">795 triệu VNĐ</div>
-              <p className="text-xs text-blue-600 flex items-center mt-1">
-                <TrendingUp className="size-3 mr-1" />
-                +15% so với năm trước
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Tổng đơn hàng</CardTitle>
+              <CardTitle className="text-sm">Tổng số đơn hàng</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl">{totalOrders.toLocaleString()}</div>
@@ -142,7 +130,7 @@ export function RevenueManagement() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Giá trị đơn TB</CardTitle>
+              <CardTitle className="text-sm">Doanh thu/đơn</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl">1.69 triệu VNĐ</div>
@@ -170,7 +158,6 @@ export function RevenueManagement() {
                   <YAxis />
                   <Tooltip />
                   <Area type="monotone" dataKey="revenue" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                  <Area type="monotone" dataKey="profit" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>

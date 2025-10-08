@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { Inter } from "next/font/google"
+import { Header } from "@/components/header"
+import { AuthProvider } from "@/components/auth-context" 
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -21,16 +23,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="vi">
-      <body
-        className={inter.className}
-      >
-        <Suspense fallback={null}>{children}</Suspense>
-        <Analytics />
+      <body className={inter.className}>
+        <AuthProvider>
+          <Header />
+          <Suspense fallback={null}>{children}</Suspense>
+          <Analytics />
+        </AuthProvider>
       </body>
     </html>
   )

@@ -20,7 +20,6 @@ const customersData = [
     address: "123 Nguyễn Huệ, Q1, TP.HCM",
     totalOrders: 5,
     totalSpent: "12.500.000 VNĐ",
-    status: "active",
     joinDate: "2024-01-15",
     lastOrder: "2024-09-10"
   },
@@ -31,8 +30,7 @@ const customersData = [
     phone: "0976543210",
     address: "456 Lê Lợi, Q3, TP.HCM",
     totalOrders: 3,
-    totalSpent: "8.200.000 VNĐ",
-    status: "active",
+    totalSpent: "8.200.000 VN��",
     joinDate: "2024-02-20",
     lastOrder: "2024-09-15"
   },
@@ -44,7 +42,6 @@ const customersData = [
     address: "789 Trần Hưng Đạo, Q5, TP.HCM",
     totalOrders: 8,
     totalSpent: "20.100.000 VNĐ",
-    status: "vip",
     joinDate: "2023-12-05",
     lastOrder: "2024-09-12"
   },
@@ -56,7 +53,6 @@ const customersData = [
     address: "101 Võ Thị Sáu, Q3, TP.HCM",
     totalOrders: 1,
     totalSpent: "2.800.000 VNĐ",
-    status: "inactive",
     joinDate: "2024-08-01",
     lastOrder: "2024-08-15"
   },
@@ -68,7 +64,6 @@ const customersData = [
     address: "202 Hai Bà Trưng, Q1, TP.HCM",
     totalOrders: 12,
     totalSpent: "35.600.000 VNĐ", 
-    status: "vip",
     joinDate: "2023-10-10",
     lastOrder: "2024-09-18"
   }
@@ -101,19 +96,6 @@ function CustomerDialog({ customer, isOpen, onClose }: { customer?: any, isOpen:
             <Label htmlFor="address">Địa chỉ</Label>
             <Input id="address" defaultValue={customer?.address || ''} />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="status">Trạng thái</Label>
-            <Select defaultValue={customer?.status || 'active'}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Hoạt động</SelectItem>
-                <SelectItem value="inactive">Không hoạt động</SelectItem>
-                <SelectItem value="vip">VIP</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Hủy</Button>
@@ -128,7 +110,6 @@ function CustomerDialog({ customer, isOpen, onClose }: { customer?: any, isOpen:
 
 export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -136,22 +117,8 @@ export function UserManagement() {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          customer.phone.includes(searchTerm)
-    const matchesStatus = statusFilter === 'all' || customer.status === statusFilter
-    return matchesSearch && matchesStatus
+    return matchesSearch
   })
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Hoạt động</Badge>
-      case 'inactive':
-        return <Badge variant="secondary">Không hoạt động</Badge>
-      case 'vip':
-        return <Badge className="bg-purple-100 text-purple-800">VIP</Badge>
-      default:
-        return <Badge variant="secondary">{status}</Badge>
-    }
-  }
 
   const handleViewCustomer = (customer: any) => {
     setSelectedCustomer(customer)
@@ -179,7 +146,7 @@ export function UserManagement() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Tổng khách hàng</CardTitle>
@@ -190,18 +157,10 @@ export function UserManagement() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Khách hàng VIP</CardTitle>
+              <CardTitle className="text-sm">Tổng đơn hàng</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl">{customersData.filter(c => c.status === 'vip').length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Khách hàng hoạt động</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl">{customersData.filter(c => c.status === 'active').length}</div>
+              <div className="text-2xl">{customersData.reduce((sum, c) => sum + c.totalOrders, 0)}</div>
             </CardContent>
           </Card>
           <Card>
@@ -231,18 +190,6 @@ export function UserManagement() {
                   className="pl-9"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <Filter className="size-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                  <SelectItem value="active">Hoạt động</SelectItem>
-                  <SelectItem value="inactive">Không hoạt động</SelectItem>
-                  <SelectItem value="vip">VIP</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Table */}
@@ -254,7 +201,6 @@ export function UserManagement() {
                     <TableHead>Họ tên</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Số điện thoại</TableHead>
-                    <TableHead>Trạng thái</TableHead>
                     <TableHead>Tổng đơn</TableHead>
                     <TableHead>Tổng chi tiêu</TableHead>
                     <TableHead>Đơn gần nhất</TableHead>
@@ -268,7 +214,6 @@ export function UserManagement() {
                       <TableCell>{customer.name}</TableCell>
                       <TableCell>{customer.email}</TableCell>
                       <TableCell>{customer.phone}</TableCell>
-                      <TableCell>{getStatusBadge(customer.status)}</TableCell>
                       <TableCell>{customer.totalOrders}</TableCell>
                       <TableCell>{customer.totalSpent}</TableCell>
                       <TableCell>{customer.lastOrder}</TableCell>
