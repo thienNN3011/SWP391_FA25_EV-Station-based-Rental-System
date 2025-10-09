@@ -2,6 +2,9 @@
 
 # dependencies
 /node_modules
+FE/Admin/node_modules
+
+**/node_modules/
 
 # next.js
 /.next/
