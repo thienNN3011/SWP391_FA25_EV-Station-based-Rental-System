@@ -11,7 +11,6 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class BookingRequest {
-    private String username;
     private String stationName;
     private Long modelId;
     private String color;
@@ -20,5 +19,4 @@ public class BookingRequest {
     private LocalDateTime startTime;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
-
 }

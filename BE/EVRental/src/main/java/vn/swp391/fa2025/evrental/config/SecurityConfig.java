@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no authentication required
-                        .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation").permitAll()
+                        .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation", "/vehiclemodel/getvehicelmodeldetail").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/users").permitAll()
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers("/bookings/createbooking").hasAuthority("RENTER")
