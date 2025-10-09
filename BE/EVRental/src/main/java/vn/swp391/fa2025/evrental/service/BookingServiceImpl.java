@@ -33,18 +33,12 @@ public class BookingServiceImpl implements  BookingService{
     private StationRepository stationRepository;
     @Override
     public BookingResponse bookVehicle(BookingRequest bookingRequest) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//
-//        String username = authentication.getName();
-//        String role = authentication.getAuthorities()
-//                .stream()
-//                .findFirst()
-//                .map(a -> a.getAuthority())
-//                .orElse(null);
-//        if (!role.equals("RENTER")) throw new RuntimeException("Chỉ người dùng mới có thể đặt xe");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String username = authentication.getName();
 
         Booking booking = new Booking();
-        booking.setUser(userRepository.findByUsername(bookingRequest.getUsername()));
+        booking.setUser(userRepository.findByUsername(username));
         Station station= stationRepository.findByStationName(bookingRequest.getStationName());
         if (station==null || !station.getStatus().equals("OPEN")) throw new RuntimeException("Trạm không tồn tại hoặc hiện tại không khả dụng");
         List<Vehicle> vehicles = vehicleRepository.findByStation_StationIdAndModel_ModelIdAndColor(station.getStationId(),bookingRequest.getModelId(), bookingRequest.getColor());
@@ -99,7 +93,7 @@ public class BookingServiceImpl implements  BookingService{
 
         BookingResponse bookingResponse= BookingResponse.builder()
                 .bookingId(booking.getBookingId())
-                .username(bookingRequest.getUsername())
+                .username(username)
                 .vehicle(vehicleResponse)
                 .station(stationResponse)
                 .tariff(tariffResponse)

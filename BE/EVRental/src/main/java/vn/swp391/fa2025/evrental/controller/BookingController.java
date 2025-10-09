@@ -12,7 +12,7 @@ import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 
 @RestController
 @RequestMapping("/bookings")
-public class BookingController {
+public class    BookingController {
     @Autowired
     private BookingServiceImpl bookingService;
     @PostMapping("/createbooking")
