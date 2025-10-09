@@ -1,9 +1,15 @@
+"use client"
+
+import { useState } from "react"
 import { Header } from "@/components/header"
 import { MapView } from "@/components/map-view"
 import { VehicleList } from "@/components/vehicle-list"
 import { BookingModal } from "@/components/booking-modal"
 
 export default function BookingPage() {
+  // Biến lưu trạm được chọn
+  const [selectedStation, setSelectedStation] = useState<string | null>(null)
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -14,11 +20,14 @@ export default function BookingPage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
+          {/* Bên trái: danh sách trạm */}
           <div className="space-y-6">
-            <MapView />
+            <MapView onSelectStation={(name) => setSelectedStation(name)} />
           </div>
+
+          {/* Bên phải: danh sách xe tại trạm */}
           <div className="space-y-6">
-            <VehicleList />
+            <VehicleList stationName={selectedStation ?? ""} />
           </div>
         </div>
       </div>
