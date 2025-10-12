@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation", "/vehiclemodel/getvehicelmodeldetail").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/users").permitAll()
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount").hasAnyAuthority("STAFF", "ADMIN")
-                        .requestMatchers("/bookings/createbooking").hasAuthority("RENTER")
+                        .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

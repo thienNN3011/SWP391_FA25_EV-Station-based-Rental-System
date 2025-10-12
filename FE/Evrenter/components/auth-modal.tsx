@@ -89,10 +89,10 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
 
     onOpenChange(false)
 
-    if (decoded.role === "RENTER") {
-      router.push("/")
-    } else if (decoded.role === "ADMIN") {
+    if (decoded.role === "ADMIN") {
       router.push("/admin")
+    } else if (decoded.role === "RENTER" || decoded.role === "USER") {
+      router.push("/")
     }
   } catch {
     setError("Sai tài khoản hoặc mật khẩu")

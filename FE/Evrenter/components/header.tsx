@@ -5,10 +5,15 @@ import { User } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { AuthModal } from "./auth-modal"
+import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { useAuth } from "./auth-context"
 
 export function Header() {
+  const pathname = usePathname()
+  if (pathname.startsWith("/admin")) {
+    return null
+  }
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin")
   const { user, logout } = useAuth()
@@ -37,6 +42,11 @@ export function Header() {
           <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Tổng Quan
           </Link>
+          {user?.role === "ADMIN" && (
+            <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-3">
