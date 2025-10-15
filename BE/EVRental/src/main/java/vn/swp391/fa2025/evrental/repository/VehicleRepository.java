@@ -5,10 +5,15 @@ import org.springframework.stereotype.Repository;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
+public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByModel_ModelId(Long modelId);
+
     List<Vehicle> findByStation_StationIdAndModel_ModelIdAndColor(Long stationId, Long modelId, String color);
+
     Vehicle findFirstByModel_ModelIdAndStation_StationName(Long modelId, String stationName);
+
+    Optional<Vehicle> findByPlateNumber(String plateNumber);
 }

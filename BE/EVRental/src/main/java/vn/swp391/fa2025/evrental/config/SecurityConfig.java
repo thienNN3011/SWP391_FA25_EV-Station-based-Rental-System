@@ -19,7 +19,7 @@ import java.util.Arrays;
  * Spring Security Configuration for JWT-based authentication
  */
 
- @Configuration
+@Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
@@ -32,11 +32,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - no authentication required
+
                         .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation", "/vehiclemodel/getvehicelmodeldetail").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/users").permitAll()
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
+                        .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
+
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -51,7 +57,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
