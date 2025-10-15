@@ -10,7 +10,7 @@ import vn.swp391.fa2025.evrental.dto.response.RenterDetailResponse;
 import vn.swp391.fa2025.evrental.entity.User;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface UserMapper {
+public interface  UserMapper {
 
     @Mapping(target = "idCardPhoto", source = "idCardPhotoPath")
     @Mapping(target = "driveLicensePhoto", source = "driveLicensePhotoPath")

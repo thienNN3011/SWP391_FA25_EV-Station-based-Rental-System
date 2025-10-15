@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import vn.swp391.fa2025.evrental.dto.request.RegisterCustomerRequest;
@@ -23,6 +24,8 @@ public class RegistrationService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public CustomerResponse registerCustomer(RegisterCustomerRequest req) {
         // Validate duplicates (409 Conflict)
@@ -48,6 +51,7 @@ public class RegistrationService {
         user.setRole("USER");
         user.setStatus("PENDING");
         user.setCreatedDate(LocalDateTime.now());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         user = userRepository.save(user);
 

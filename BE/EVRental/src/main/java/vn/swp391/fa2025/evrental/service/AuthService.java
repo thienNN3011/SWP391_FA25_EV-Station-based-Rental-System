@@ -1,5 +1,6 @@
 package vn.swp391.fa2025.evrental.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import vn.swp391.fa2025.evrental.dto.response.LoginResponse;
 import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.repository.UserRepository;
@@ -17,6 +18,8 @@ public class AuthService {
     
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     /**
      * Authenticates a user with username and password
@@ -31,7 +34,7 @@ public class AuthService {
             throw new RuntimeException("username is not exits");
         }
 
-        if (!password.equals(user.getPassword())) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid username or password");
         }
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
