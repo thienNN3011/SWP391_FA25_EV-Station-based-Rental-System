@@ -34,27 +34,29 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - no authentication required
-                        .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
-                                "/vehiclemodel/getvehicelmodeldetail")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+    // public endpoit, ko can authen
+    .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
+            "/vehiclemodel/getvehicelmodeldetail")
+    .permitAll()
 
+    // cho phep truy cap thu muc
+    .requestMatchers("/EVRental/**", "/**.jpg", "/**.jpeg", "/**.png").permitAll()
 
-                        .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
-                        .hasAnyAuthority("STAFF", "ADMIN")
+    .requestMatchers(HttpMethod.POST, "/users").permitAll()
 
+    .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
+    .hasAnyAuthority("STAFF", "ADMIN")
 
-                        .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
+    .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
 
+    .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
+    .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
+    .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
+    .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
+    .anyRequest().authenticated()
+)
 
-
-                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
         return http.build();
