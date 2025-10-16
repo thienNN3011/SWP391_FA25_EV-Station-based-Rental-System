@@ -80,10 +80,12 @@ export function VehicleList({ stationName }: VehicleListProps) {
                 className="border rounded-lg p-3 hover:bg-muted/50 transition-all shadow-sm"
               >
                 <img
-                  src={`http://localhost:8080/EVRental/${v.imageUrl?.[0]?.imageUrl.split('/').pop()}`}
-                  alt={v.name}
-                  className="w-full h-32 object-cover rounded-md mb-2"
-                  />
+  src={`http://localhost:8080/EVRental/${v.imageUrl?.[0]?.imageUrl.split("\\").pop()}`}
+  alt={v.name}
+  className="w-full h-40 object-cover rounded-md mb-2"
+/>
+
+
                 <p className="font-medium text-base">{v.name}</p>
                 <p className="text-xs text-muted-foreground">{v.brand}</p>
                 <p className="text-xs text-muted-foreground mt-1">
