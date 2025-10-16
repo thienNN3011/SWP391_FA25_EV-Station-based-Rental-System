@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -37,10 +38,22 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
                                 "/vehiclemodel/getvehicelmodeldetail")
                         .permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+
+
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
                         .hasAnyAuthority("STAFF", "ADMIN")
+
+
                         .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
+
+
+                        .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
+
+
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
@@ -59,9 +72,9 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-   @Bean
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-   }
-
+    }
 }
