@@ -112,7 +112,7 @@ export function MapView({ onSelectStation }: MapViewProps) {
               </div>
               <Button
                 size="sm"
-                onClick={handleViewDetails} // ✅ gọi hàm mới
+                onClick={handleViewDetails} //goi ham
                 className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
               >
                 <Zap className="h-4 w-4 mr-1" />

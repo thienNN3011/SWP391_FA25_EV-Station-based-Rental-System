@@ -7,7 +7,7 @@ import { VehicleList } from "@/components/vehicle-list"
 import { BookingModal } from "@/components/booking-modal"
 
 export default function BookingPage() {
-  // Biến lưu trạm được chọn
+ // luu lai tram dc chon
   const [selectedStation, setSelectedStation] = useState<string | null>(null)
 
   return (
@@ -20,12 +20,12 @@ export default function BookingPage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Bên trái: danh sách trạm */}
+          {/* danh sach tram */}
           <div className="space-y-6">
             <MapView onSelectStation={(name) => setSelectedStation(name)} />
           </div>
 
-          {/* Bên phải: danh sách xe tại trạm */}
+          {/* danh sach xe tai tram */}
           <div className="space-y-6">
             <VehicleList stationName={selectedStation ?? ""} />
           </div>
