@@ -6,8 +6,6 @@ import "./globals.css"
 import { Inter } from "next/font/google"
 
 import { AuthProvider } from "@/components/auth-context" 
-import { ThemeProvider } from "@/components/theme-provider"
-import { TooltipProvider } from "@/components/ui/tooltip"
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700"],
