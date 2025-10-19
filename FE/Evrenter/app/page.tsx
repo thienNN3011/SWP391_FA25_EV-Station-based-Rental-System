@@ -7,10 +7,10 @@ import { MapPin } from "lucide-react"
 
 export default function HomePage() {
   return (
+    
     <div className="min-h-screen bg-background">
-      
+      <Header />
       <Hero />
-
       <section className="py-12 bg-primary/5">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold mb-4">Bạn đã sẵn sàng cho xe điện chưa</h2>

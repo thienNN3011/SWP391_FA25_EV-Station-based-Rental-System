@@ -4,9 +4,10 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { Inter } from "next/font/google"
-import { Header } from "@/components/header"
-import { AuthProvider } from "@/components/auth-context" 
 
+import { AuthProvider } from "@/components/auth-context" 
+import { ThemeProvider } from "@/components/theme-provider"
+import { TooltipProvider } from "@/components/ui/tooltip"
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700"],
@@ -29,11 +30,13 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={inter.className}>
+
         <AuthProvider>
-          <Header />
+    
           <Suspense fallback={null}>{children}</Suspense>
           <Analytics />
         </AuthProvider>
+        
       </body>
     </html>
   )
