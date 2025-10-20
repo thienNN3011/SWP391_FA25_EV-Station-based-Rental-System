@@ -1,10 +1,9 @@
 package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "tariffs")
@@ -12,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Tariff {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,4 +35,7 @@ public class Tariff {
 
     @Column(nullable = false)
     private String status;
+
+    @OneToMany(mappedBy = "tariff")
+    private List<Booking> bookings;
 }

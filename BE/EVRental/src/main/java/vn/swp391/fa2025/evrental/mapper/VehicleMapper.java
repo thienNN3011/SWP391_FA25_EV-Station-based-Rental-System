@@ -1,8 +1,7 @@
 package vn.swp391.fa2025.evrental.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
+import org.springframework.context.annotation.Bean;
 import vn.swp391.fa2025.evrental.dto.request.VehicleRequest;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
@@ -28,4 +27,13 @@ public interface VehicleMapper {
     @Mapping(target = "color", source = "color")
     @Mapping(target = "plateNumber", source = "plateNumber")
     Vehicle toVehicleFromCreateRequest(VehicleRequest.VehicleCreateRequest request);
+
+    @Named("toShortVehicleResponse")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "plateNumber", source = "plateNumber")
+    @Mapping(target = "color", source = "color")
+    @Mapping(target = "modelName", source = "model.name")
+    @Mapping(target = "brand", source = "model.brand")
+    VehicleResponse toShortVehicleResponse(Vehicle vehicle);
+
 }
