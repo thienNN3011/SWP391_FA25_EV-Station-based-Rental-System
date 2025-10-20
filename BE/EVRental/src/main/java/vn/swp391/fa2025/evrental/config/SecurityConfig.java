@@ -46,14 +46,14 @@ public class SecurityConfig {
 
     .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
     .hasAnyAuthority("STAFF", "ADMIN")
-
+                        .requestMatchers("/bookings/confirm", "/bookings/reject").hasAuthority("RENTER")
+                        .requestMatchers("/bookings/startrental").hasAuthority("STAFF")
     .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
-
+                        .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking").hasAnyAuthority("RENTER", "STAFF", "ADMIN")
     .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
     .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
     .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
     .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
-
     .anyRequest().authenticated()
 )
 

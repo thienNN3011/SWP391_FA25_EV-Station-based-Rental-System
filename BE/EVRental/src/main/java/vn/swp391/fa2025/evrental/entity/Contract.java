@@ -1,10 +1,7 @@
 package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "contracts")
@@ -12,6 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Contract {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,15 +28,12 @@ public class Contract {
     private User staff;
 
     @Column(nullable = false)
-    private String type;
-
-    @Column(nullable = false)
-    private String contractPhoto;
-
-    @Column(nullable = false)
-    private String digitalSignature;
+    private String contractUrl;
 
     @Column(nullable = false)
     private String status;
+
+    @Column(nullable = false, unique = true)
+    private String token;
 }
 
