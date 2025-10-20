@@ -129,3 +129,22 @@
     font-family: 'Be Vietnam Pro', sans-serif;
   }
 }
+
+/*fix dropdown*/
+[data-radix-popper-content-wrapper] {
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+main, .flex, .flex-1 {
+  overflow: visible !important;
+}
+
+[data-radix-popper-content-wrapper],
+[data-radix-dropdown-menu-content],
+[data-radix-popper-content-wrapper] * {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 999999 !important;
+}

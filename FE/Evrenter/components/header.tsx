@@ -11,9 +11,7 @@ import { useAuth } from "./auth-context"
 
 export function Header() {
   const pathname = usePathname()
-  if (pathname.startsWith("/admin")) {
-    return null
-  }
+
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin")
   const { user, logout } = useAuth()

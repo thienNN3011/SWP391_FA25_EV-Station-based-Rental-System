@@ -93,6 +93,8 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
       router.push("/admin")
     } else if (decoded.role === "RENTER" || decoded.role === "USER") {
       router.push("/")
+    } else if (decoded.role === "STAFF" || decoded.role === "STAFF") {
+      router.push("/staff")
     }
   } catch {
     setError("Sai tài khoản hoặc mật khẩu")

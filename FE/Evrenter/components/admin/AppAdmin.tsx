@@ -13,6 +13,7 @@ import { VehicleManagement } from "@/components/admin/VehicleManagement"
 import { LocationManagement } from "@/components/admin/LocationManagement"
 import { RevenueManagement } from "@/components/admin/RevenueManagement"
 import { OrderManagement } from "@/components/admin/OrderManagement"
+import { Header } from "@/components/header"
 
 type ActivePage = "dashboard" | "users" | "staff" | "vehicles" | "locations" | "revenue" | "orders"
 
@@ -112,12 +113,16 @@ function renderActivePage(activePage: ActivePage) {
 export default function AppAdmin() {
   const [activePage, setActivePage] = useState<ActivePage>("dashboard")
   return (
+    <>
+     
     <SidebarProvider>
+    
       <div className="flex min-h-screen w-full bg-background">
         <div className="hidden md:block w-64 border-r bg-card">
           <AdminSidebar activePage={activePage} setActivePage={setActivePage} />
         </div>
         <div className="flex-1 flex flex-col min-h-screen">
+            <Header />
           <header className="border-b bg-card px-4 py-3 md:hidden shrink-0">
             <div className="flex items-center justify-between">
               <h1 className="text-lg">RentCar Admin</h1>
@@ -128,6 +133,7 @@ export default function AppAdmin() {
         </div>
       </div>
     </SidebarProvider>
+    </>
   )
 }
 
