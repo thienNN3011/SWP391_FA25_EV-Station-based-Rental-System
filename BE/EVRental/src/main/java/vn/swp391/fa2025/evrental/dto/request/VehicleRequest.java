@@ -25,6 +25,7 @@ public class VehicleRequest {
         private String color;
 
         @NotBlank(message = "Biển số xe không được để trống")
+        @Pattern(regexp = "^(\\d{2}[A-Z]-\\d{3}\\.\\d{2}|\\d{2}[A-Z]-\\d{4,5})$", message = "Biển số xe không hợp lệ (ví dụ: 59A-123.45 hoặc 30G-45678)")
         private String plateNumber;
 
     }
@@ -34,23 +35,20 @@ public class VehicleRequest {
     @Getter
     @Setter
     public static class VehicleUpdateRequest {
-        @NotNull(message = "Model ID không được để trống")
+
         private Long modelId;
 
-        @NotNull(message = "Station ID không được để trống")
+
         private Long stationId;
 
-        @NotBlank(message = "Màu xe không được để trống")
+
         private String color;
 
-        @NotBlank(message = "Biển số xe không được để trống")
+
         private String plateNumber;
 
-        @NotBlank(message = "Trạng thái không được để trống")
-        @Pattern(
-                regexp = "^(AVAILABLE|BOOKED|IN_USE|MAINTENANCE|INACTIVE)$",
-                message = "Trạng thái phải là: AVAILABLE, BOOKED, IN_USE, MAINTENANCE hoặc INACTIVE"
-        )
+
+        @Pattern(regexp = "^(AVAILABLE|BOOKED|IN_USE|MAINTENANCE|INACTIVE)$", message = "Trạng thái phải là: AVAILABLE, BOOKED, IN_USE, MAINTENANCE hoặc INACTIVE")
         private String status;
 
     }

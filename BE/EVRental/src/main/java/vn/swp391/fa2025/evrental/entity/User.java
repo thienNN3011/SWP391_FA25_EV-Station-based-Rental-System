@@ -67,4 +67,5 @@ public class User {
 
     @OneToMany(mappedBy = "staff")
     private List<Contract> managedContracts;
+
 }
