@@ -153,7 +153,7 @@ public class VehicleServiceImpl implements VehicleService {
             throw new BusinessException("Không thể xóa xe đang được sử dụng");
         }
 
-        vehicle.setStatus("INACTIVE");
+        vehicle.setStatus("UNAVAILABLE");
         vehicleRepository.save(vehicle);
     }
 }

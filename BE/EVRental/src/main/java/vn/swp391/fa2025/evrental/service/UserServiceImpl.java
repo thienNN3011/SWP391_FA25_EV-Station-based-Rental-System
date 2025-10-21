@@ -3,11 +3,10 @@ package vn.swp391.fa2025.evrental.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.request.UpdateUserRequest;
 import vn.swp391.fa2025.evrental.dto.response.CustomerResponse;
-import vn.swp391.fa2025.evrental.dto.response.UserListResponse;
 import vn.swp391.fa2025.evrental.dto.response.UpdateUserResponse;
+import vn.swp391.fa2025.evrental.dto.response.UserListResponse;
 import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
@@ -26,19 +25,22 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+
+
     @Override
     public User findByUsername(String username) {
-        User user = new User();
-        user = userRepository.findByUsername(username);
+        User user= new User();
+        user= userRepository.findByUsername(username);
         return user;
     }
 
     @Override
     public List<CustomerResponse> showPendingAccount() {
-        List<User> pendingList = userRepository.findByStatusOrderByCreatedDateAsc("PENDING");
-        if (pendingList.isEmpty()) {
-            throw new RuntimeException("Khong co tai khoan can duoc duyet");
-        }
+        List<User> pendingList= userRepository.findByStatusOrderByCreatedDateAsc("PENDING");
+        if (pendingList.isEmpty()) {throw new RuntimeException("Khong co tai khoan can duoc duyet");}
         return pendingList.stream().
                 map(user -> userMapper.toShortResponse(user)).
                 toList();
@@ -46,23 +48,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public CustomerResponse showDetailOfPendingAccount(String username) {
-        CustomerResponse customerResponse = new CustomerResponse();
+        CustomerResponse customerResponse= new CustomerResponse();
 //        User user=userRepository.findByUsernameAndStatus(username,"PENDING");
-        User user = userRepository.findByUsername(username);
-        if (user == null) throw new RuntimeException("Không tìm thấy tài khoản");
+        User user=userRepository.findByUsername(username);
+        if (user==null) throw new RuntimeException("Không tìm thấy tài khoản");
         return userMapper.toDto(user);
     }
 
     @Override
     public boolean changeAccountStatus(String username, String status) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) throw new RuntimeException("Không tìm thấy tài khoản cần thay đổi trạng thái");
-        status = status.toUpperCase();
-        if (!status.equals("PENDING") && !status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("REJECTED"))
-            throw new RuntimeException("Trạng thái tài khoản cần cập nhật không hợp lệ");
+        User user= userRepository.findByUsername(username);
+        if (user==null) throw new RuntimeException("Không tìm thấy tài khoản cần thay đổi trạng thái");
+        status=status.toUpperCase();
+        if (!status.equals("PENDING") && !status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("REJECTED")) throw new RuntimeException("Trạng thái tài khoản cần cập nhật không hợp lệ");
         user.setStatus(status);
-        userRepository.save(user);
-        return true;
+        return (userRepository.save(user)!=null);
     }
 
     @Override
@@ -83,9 +83,7 @@ public class UserServiceImpl implements UserService {
         return userList.stream().map(user -> userMapper.toListResponse(user)).toList();
     }
 
-
     @Override
-    @Transactional
     public UpdateUserResponse updateUser(String currentUsername, UpdateUserRequest request) {
         User user = userRepository.findByUsername(currentUsername);
         if (user == null) {
@@ -95,6 +93,9 @@ public class UserServiceImpl implements UserService {
 
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                throw new BusinessException("Mật khẩu mới không được trùng với mật khẩu hiện tại");
+            }
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             isUpdated = true;
         }
@@ -128,8 +129,8 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUpdateResponse(updatedUser);
     }
 
+
     @Override
-    @Transactional
     public boolean deleteUser(String username, String currentUsername) {
 
         if (username.equals(currentUsername)) {
@@ -171,9 +172,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(targetUser);
         return true;
     }
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
 
 }

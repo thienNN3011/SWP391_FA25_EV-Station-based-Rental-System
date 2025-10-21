@@ -26,6 +26,5 @@ public class CustomerResponse {
     private String idCardPhoto;
     private String driveLicensePhoto;
     private LocalDateTime createdDate;
-
 }
 

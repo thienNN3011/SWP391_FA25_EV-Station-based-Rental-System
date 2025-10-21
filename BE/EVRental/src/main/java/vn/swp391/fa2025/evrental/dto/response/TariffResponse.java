@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TariffResponse {
-    private Long tarriffId;
+    private Long tariffId;
     private String type;
     private Double price;
     private Double depositAmount;

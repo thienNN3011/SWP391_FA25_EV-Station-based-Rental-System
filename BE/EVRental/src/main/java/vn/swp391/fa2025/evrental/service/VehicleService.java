@@ -5,13 +5,13 @@ import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import java.util.List;
 
 public interface VehicleService {
-   public List<VehicleResponse> showAllVehicle();
+    List<VehicleResponse> showAllVehicle();
 
-  public   VehicleResponse getVehicleById(Long id);
+    VehicleResponse getVehicleById(Long id);
 
-  public   VehicleResponse createVehicle(VehicleRequest.VehicleCreateRequest request);
+    VehicleResponse createVehicle(VehicleRequest.VehicleCreateRequest request);
 
-  public   VehicleResponse updateVehicle(Long id, VehicleRequest.VehicleUpdateRequest request);
+    VehicleResponse updateVehicle(Long id, VehicleRequest.VehicleUpdateRequest request);
 
-   public void deleteVehicle(Long id);
+    void deleteVehicle(Long id);
 }

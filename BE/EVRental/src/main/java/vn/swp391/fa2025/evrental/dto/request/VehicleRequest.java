@@ -25,7 +25,6 @@ public class VehicleRequest {
         private String color;
 
         @NotBlank(message = "Biển số xe không được để trống")
-        @Pattern(regexp = "^(\\d{2}[A-Z]-\\d{3}\\.\\d{2}|\\d{2}[A-Z]-\\d{4,5})$", message = "Biển số xe không hợp lệ (ví dụ: 59A-123.45 hoặc 30G-45678)")
         private String plateNumber;
 
     }
@@ -48,7 +47,10 @@ public class VehicleRequest {
         private String plateNumber;
 
 
-        @Pattern(regexp = "^(AVAILABLE|BOOKED|IN_USE|MAINTENANCE|INACTIVE)$", message = "Trạng thái phải là: AVAILABLE, BOOKED, IN_USE, MAINTENANCE hoặc INACTIVE")
+        @Pattern(
+                regexp = "^(AVAILABLE|BOOKED|IN_USE|MAINTENANCE|INACTIVE)$",
+                message = "Trạng thái phải là: AVAILABLE, BOOKED, IN_USE, MAINTENANCE hoặc INACTIVE"
+        )
         private String status;
 
     }

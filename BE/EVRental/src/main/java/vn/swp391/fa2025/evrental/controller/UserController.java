@@ -13,17 +13,15 @@ import vn.swp391.fa2025.evrental.dto.request.ShowUserDetailRequest;
 import vn.swp391.fa2025.evrental.dto.request.UpdateUserRequest;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
 import vn.swp391.fa2025.evrental.dto.response.CustomerResponse;
-import vn.swp391.fa2025.evrental.dto.response.UserListResponse;
 import vn.swp391.fa2025.evrental.dto.response.UpdateUserResponse;
+import vn.swp391.fa2025.evrental.dto.response.UserListResponse;
 import vn.swp391.fa2025.evrental.service.RegistrationService;
 import vn.swp391.fa2025.evrental.service.UserServiceImpl;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
 @RestController
-
 public class UserController {
 
     @Autowired
@@ -67,7 +65,6 @@ public class UserController {
         response.setCode(200);
         return response;
     }
-
     @GetMapping("/showallusers")
     public ApiResponse<List<UserListResponse>> showAllUsers() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -107,7 +104,5 @@ public class UserController {
         response.setCode(200);
         return response;
     }
-
-
 }
 
