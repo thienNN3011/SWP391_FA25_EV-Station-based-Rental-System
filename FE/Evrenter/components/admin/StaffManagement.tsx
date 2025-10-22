@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,17 +11,45 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const staff = [
-  { id: "STF001", name: "Nguyễn Minh Khang", role: "Quản lý chi nhánh", branch: "Quận 1", phone: "0912345678", email: "khang@rentcar.com" },
-  { id: "STF002", name: "Trần Thị Hạnh", role: "Nhân viên kinh doanh", branch: "Quận 3", phone: "0923456789", email: "hanh@rentcar.com" },
-  { id: "STF003", name: "Lê Quốc Bảo", role: "Kỹ thuật viên", branch: "Quận 7", phone: "0934567890", email: "bao@rentcar.com" },
-]
-
 export function StaffManagement() {
+  const [staffList, setStaffList] = useState<any[]>([])
   const [search, setSearch] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const filtered = staff.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()) || s.role.toLowerCase().includes(search.toLowerCase()))
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch("http://localhost:8080/EVRental/showallstaffs", {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        })
+
+        if (!res.ok) throw new Error(`Lỗi khi gọi API: ${res.status}`)
+        const result = await res.json()
+        setStaffList(result.data)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStaff()
+  }, [])
+
+  const filtered = staffList.filter(
+    (s) =>
+      s.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+      s.role?.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="h-full w-full overflow-auto">
@@ -34,13 +62,21 @@ export function StaffManagement() {
           <div className="flex items-center gap-2">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 size-4 text-muted-foreground" />
-              <Input placeholder="Tìm theo tên/chức vụ" className="pl-8 w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input
+                placeholder="Tìm theo tên/chức vụ"
+                className="pl-8 w-64"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="size-4 mr-2" /> Thêm nhân viên
             </Button>
           </div>
         </div>
+
+        {loading && <p> Đang tải....</p>}
+        {error && <p className="text-red-600"> {error}</p>}
 
         <Card>
           <CardHeader>
@@ -60,40 +96,48 @@ export function StaffManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.id}</TableCell>
-                    <TableCell>{s.name}</TableCell>
-                    <TableCell>{s.role}</TableCell>
-                    <TableCell>{s.branch}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col text-sm text-muted-foreground">
-                        <span>{s.phone}</span>
-                        <span>{s.email}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <Eye className="size-4" /> Xem
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2">
-                            <Edit className="size-4" /> Sửa
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2 text-red-600">
-                            <Trash2 className="size-4" /> Xóa
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                {filtered.length > 0 ? (
+                  filtered.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell className="font-medium">{s.id}</TableCell>
+                      <TableCell>{s.fullName}</TableCell>
+                      <TableCell>{s.role}</TableCell>
+                      <TableCell>{s.branch}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col text-sm text-muted-foreground">
+                          <span>{s.phone}</span>
+                          <span>{s.email}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem className="flex items-center gap-2">
+                              <Eye className="size-4" /> Xem
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center gap-2">
+                              <Edit className="size-4" /> Sửa
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center gap-2 text-red-600">
+                              <Trash2 className="size-4" /> Xóa
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-6 text-gray-500">
+                      Không có dữ liệu nhân viên.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -147,4 +191,3 @@ export function StaffManagement() {
     </div>
   )
 }
-

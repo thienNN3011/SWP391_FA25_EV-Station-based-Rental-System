@@ -18,10 +18,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Spring Security Configuration for JWT-based authentication
- */
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -33,54 +29,40 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // public endpoit, ko can authen
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ⚡ Cho phép preflight
                         .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
-                                "/vehiclemodel/getvehicelmodeldetail")
-                        .permitAll()
-
-                        // cho phep truy cap thu muc
+                                "/vehiclemodel/getvehicelmodeldetail").permitAll()
                         .requestMatchers("/EVRental/**", "/**.jpg", "/**.jpeg", "/**.png").permitAll()
 
-                        //CRUD USER
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/showallrenters").hasAnyAuthority("STAFF", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/showallstaffs").hasAnyAuthority( "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/showallstaffs").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/updateuser").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/deleteuser/**").hasAnyAuthority("STAFF", "ADMIN")
-                        .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
-                        .hasAnyAuthority("STAFF", "ADMIN")
 
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
                         .hasAnyAuthority("STAFF", "ADMIN")
-                        .requestMatchers("/bookings/confirm", "/bookings/reject").hasAuthority("RENTER")
-                        .requestMatchers("/bookings/startrental").hasAuthority("STAFF")
-                        .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
-                        .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking").hasAnyAuthority("RENTER", "STAFF", "ADMIN")
-                        //CRUD VEHICLE
-                        .requestMatchers(HttpMethod.GET, "/veh  icles/showall", "/vehicles/showbyid/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
+
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("http://localhost:3000")); 
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 

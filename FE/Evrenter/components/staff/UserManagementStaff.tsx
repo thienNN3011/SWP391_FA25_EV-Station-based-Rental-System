@@ -1,53 +1,100 @@
 "use client"
 import { SimpleDropdown } from "@/components/ui/simple-dropdown"
-
-import { useState, useRef, useEffect } from "react"
-import {Search,MoreHorizontal,UserPlus} from "lucide-react"
+import { useState, useEffect } from "react"
+import { Search, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {Card,CardContent,CardDescription,CardHeader,CardTitle} from "@/components/ui/card"
-import {Table,TableBody,TableCell,TableHead,TableHeader,TableRow,} from "@/components/ui/table"
-import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle,} from "@/components/ui/dialog"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-
-
-const usersData = [
-  {
-    id: "USR001",
-    fullName: "Nguyễn Văn An",
-    phone: "0987654321",
-    email: "nguyenvanan@email.com",
-    cccd: "079123456789",
-    driverLicense: "DL123456789",
-    cccdImage: "",
-    licenseImage: "",
-    status: "ACTIVE",
-  },
-  {
-    id: "USR002",
-    fullName: "Trần Thị Bình",
-    phone: "0976543210",
-    email: "tranthibinh@email.com",
-    cccd: "079987654321",
-    driverLicense: "DL987654321",
-    cccdImage: "",
-    licenseImage: "",
-    status: "PENDING",
-  },
-]
 
 export function UserManagementStaff() {
   const [search, setSearch] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [users, setUsers] = useState(usersData)
+  const [users, setUsers] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
+ 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true)
+        const token = localStorage.getItem("token")
+        const response = await fetch(
+          "http://localhost:8080/EVRental/showallrenters",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+
+        if (response.status === 403) throw new Error("Không có quyền truy cập.")
+        if (!response.ok)
+          throw new Error(`Lỗi khi gọi API: ${response.status}`)
+
+        const result = await response.json()
+        const userList = Array.isArray(result.data) ? result.data : []
+        setUsers(userList)
+      } catch (error: any) {
+        console.error("Lỗi tải người dùng:", error)
+        setError(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUsers()
+  }, [])
+
+  
+  const changeAccountStatus = async (username: string, status: string) => {
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(
+        "http://localhost:8080/EVRental/changeaccountstatus",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ username, status }),
+        }
+      )
+
+      const result = await response.json()
+
+      if (result.success) {
+        alert(
+          ` ${status === "ACTIVE" ? "Kích hoạt" : "Hủy"} tài khoản thành công!`
+        )
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.username === username ? { ...u, status } : u
+          )
+        )
+      } else {
+        alert("Thao tác thất bại: " + (result.message || "Lỗi không xác định"))
+      }
+    } catch (err) {
+      console.error("Lỗi khi đổi trạng thái:", err)
+      alert("Không thể kết nối đến server!")
+    }
+  }
+
+ 
   const filtered = users.filter(
     (u) =>
-      u.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.phone.includes(search)
+      u.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+      u.email?.toLowerCase().includes(search.toLowerCase()) ||
+      u.phone?.includes(search)
   )
+
 
   const renderStatus = (status: string) => {
     switch (status) {
@@ -56,22 +103,11 @@ export function UserManagementStaff() {
       case "PENDING":
         return <Badge className="bg-yellow-500/20 text-yellow-700">Pending</Badge>
       case "BLOCKED":
+      case "REJECTED":
         return <Badge className="bg-red-500/20 text-red-700">Blocked</Badge>
       default:
-        return null
+        return <Badge className="bg-gray-200 text-gray-600">{status}</Badge>
     }
-  }
-
-  const handleActivate = (id: string) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, status: "ACTIVE" } : u))
-    )
-  }
-
-  const handleDeactivate = (id: string) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, status: "BLOCKED" } : u))
-    )
   }
 
   return (
@@ -80,9 +116,7 @@ export function UserManagementStaff() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-semibold">Quản lý người dùng</h1>
-            <p className="text-muted-foreground">
-              Danh sách tài khoản khách hàng
-            </p>
+            <p className="text-muted-foreground">Danh sách tài khoản khách hàng</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -100,6 +134,8 @@ export function UserManagementStaff() {
           </div>
         </div>
 
+        {loading && <p>🔄 Đang tải dữ liệu...</p>}
+        {error && <p className="text-red-600">❌ {error}</p>}
 
         <Card>
           <CardHeader>
@@ -124,42 +160,52 @@ export function UserManagementStaff() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.fullName}</TableCell>
-                    <TableCell>{u.phone}</TableCell>
-                    <TableCell>{u.email}</TableCell>
-                    <TableCell>{u.cccd}</TableCell>
-                    <TableCell>{u.driverLicense}</TableCell>
-                    <TableCell>{renderStatus(u.status)}</TableCell>
-                    <TableCell>
-                      <img
-                        src={u.cccdImage}
-                        alt="CCCD"
-                        className="w-16 h-10 object-cover rounded bg-muted"
-                      />
+                {filtered.length > 0 ? (
+                  filtered.map((u) => (
+                    <TableRow key={u.username}>
+                      <TableCell className="font-medium">{u.fullName}</TableCell>
+                      <TableCell>{u.phone}</TableCell>
+                      <TableCell>{u.email}</TableCell>
+                      <TableCell>{u.idCard}</TableCell>
+                      <TableCell>{u.driveLicense}</TableCell>
+                      <TableCell>{renderStatus(u.status)}</TableCell>
+                      <TableCell>
+                        <img
+                          src={u.idCardImage}
+                          alt="CCCD"
+                          className="w-16 h-10 object-cover rounded bg-muted"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <img
+                          src={u.licenseImage}
+                          alt="GPLX"
+                          className="w-16 h-10 object-cover rounded bg-muted"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <SimpleDropdown
+                          onActivate={() =>
+                            changeAccountStatus(u.username, "ACTIVE")
+                          }
+                          onDeactivate={() =>
+                            changeAccountStatus(u.username, "REJECTED")
+                          }
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-6 text-gray-500">
+                      Không có dữ liệu người dùng.
                     </TableCell>
-                    <TableCell>
-                      <img
-                        src={u.licenseImage}
-                        alt="GPLX"
-                        className="w-16 h-10 object-cover rounded bg-muted"
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-  <SimpleDropdown
-    onActivate={() => handleActivate(u.id)}
-    onDeactivate={() => handleDeactivate(u.id)}
-  />
-</TableCell>
-
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
-
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent>
