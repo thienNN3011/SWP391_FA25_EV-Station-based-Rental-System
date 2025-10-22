@@ -12,6 +12,7 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+         <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-balance mb-2">Tìm xe điện bạn muốn</h1>

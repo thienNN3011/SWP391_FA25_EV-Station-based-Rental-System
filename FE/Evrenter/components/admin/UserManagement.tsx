@@ -28,12 +28,16 @@ export function UserManagement() {
     })()
   }, [])
 
-  const filtered = rows.filter((c) => c.fullName.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase()))
+  const filtered = rows.filter((c) =>
+  (c.fullName?.toLowerCase() ?? '').includes(search.toLowerCase()) ||
+  (c.email?.toLowerCase() ?? '').includes(search.toLowerCase())
+)
 
-  const approve = async (username: string) => {
-    await changeAccountStatus(username, 'ACTIVE')
-    setRows(prev => prev.filter(x => x.username !== username))
-  }
+const approve = async (username: string) => {
+  await changeAccountStatus(username, 'ACTIVE')
+  setRows(prev => prev.filter(x => x.username !== username))
+}
+
   const reject = async (username: string) => {
     await changeAccountStatus(username, 'REJECTED')
     setRows(prev => prev.filter(x => x.username !== username))
