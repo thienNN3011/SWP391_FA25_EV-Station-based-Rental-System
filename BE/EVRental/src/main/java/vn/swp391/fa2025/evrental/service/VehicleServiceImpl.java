@@ -4,7 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import vn.swp391.fa2025.evrental.dto.request.VehicleRequest;
+import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
+import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
@@ -51,7 +52,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional
-    public VehicleResponse createVehicle(VehicleRequest.VehicleCreateRequest request) {
+    public VehicleResponse createVehicle(VehicleCreateRequest request) {
 
         VehicleModel model = vehicleModelRepository.findById(request.getModelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy model xe với ID: " + request.getModelId()));
@@ -78,33 +79,66 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional
-    public VehicleResponse updateVehicle(Long id, VehicleRequest.VehicleUpdateRequest request) {
-
+    public VehicleResponse updateVehicle(Long id, VehicleUpdateRequest request) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + id));
 
-        VehicleModel model = vehicleModelRepository.findById(request.getModelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy model xe với ID: " + request.getModelId()));
+        boolean isUpdated = false;
 
-        Station station = stationRepository.findById(request.getStationId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + request.getStationId()));
 
-        if (!"OPEN".equals(station.getStatus())) {
-            throw new BusinessException("Trạm hiện không hoạt động");
+        if (request.getModelId() != null) {
+            if (!vehicle.getModel().getModelId().equals(request.getModelId())) {
+                VehicleModel model = vehicleModelRepository.findById(request.getModelId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy model xe với ID: " + request.getModelId()));
+                vehicle.setModel(model);
+                isUpdated = true;
+            }
         }
 
-        vehicleRepository.findByPlateNumber(request.getPlateNumber())
-                .ifPresent(existingVehicle -> {
-                    if (!existingVehicle.getVehicleId().equals(id)) {
-                        throw new BusinessException("Biển số xe đã tồn tại: " + request.getPlateNumber());
-                    }
-                });
 
-        vehicle.setModel(model);
-        vehicle.setStation(station);
-        vehicle.setColor(request.getColor());
-        vehicle.setPlateNumber(request.getPlateNumber());
-        vehicle.setStatus(request.getStatus());
+        if (request.getStationId() != null) {
+            if (!vehicle.getStation().getStationId().equals(request.getStationId())) {
+                Station station = stationRepository.findById(request.getStationId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + request.getStationId()));
+
+                if (!"OPEN".equals(station.getStatus())) {
+                    throw new BusinessException("Trạm hiện không hoạt động");
+                }
+                vehicle.setStation(station);
+                isUpdated = true;
+            }
+        }
+
+        if (request.getPlateNumber() != null && !request.getPlateNumber().isBlank()) {
+            if (!vehicle.getPlateNumber().equals(request.getPlateNumber())) {
+                if (vehicleRepository.findByPlateNumber(request.getPlateNumber()).isPresent()) {
+                    throw new BusinessException("Biển số xe đã tồn tại: " + request.getPlateNumber());
+                }
+                vehicle.setPlateNumber(request.getPlateNumber());
+                isUpdated = true;
+            }
+        }
+
+
+        if (request.getColor() != null && !request.getColor().isBlank()) {
+            if (!vehicle.getColor().equals(request.getColor())) {
+                vehicle.setColor(request.getColor());
+                isUpdated = true;
+            }
+        }
+
+
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            if (!vehicle.getStatus().equals(request.getStatus())) {
+                vehicle.setStatus(request.getStatus());
+                isUpdated = true;
+            }
+        }
+
+
+        if (!isUpdated) {
+            throw new BusinessException("Không có thông tin nào được thay đổi");
+        }
 
         Vehicle updatedVehicle = vehicleRepository.save(vehicle);
         return vehicleMapper.toVehicleResponse(updatedVehicle);
@@ -116,11 +150,16 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + id));
 
+        if ("INACTIVE".equals(vehicle.getStatus())) {
+            throw new BusinessException("Xe đã ở trạng thái INACTIVE");
+        }
+
+
         if ("IN_USE".equalsIgnoreCase(vehicle.getStatus())) {
             throw new BusinessException("Không thể xóa xe đang được sử dụng");
         }
 
-        vehicle.setStatus("UNAVAILABLE");
+        vehicle.setStatus("INACTIVE");
         vehicleRepository.save(vehicle);
     }
 }

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
-public class UserListResponse {
+public class RenterListResponse {
     private String fullName;
     private String phone;
     private String email;

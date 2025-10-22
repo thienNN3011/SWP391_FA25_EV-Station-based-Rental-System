@@ -3,7 +3,8 @@ package vn.swp391.fa2025.evrental.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import vn.swp391.fa2025.evrental.dto.request.VehicleRequest;
+import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
+import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.service.VehicleService;
@@ -38,7 +39,7 @@ public class VehicleController {
 
     @PostMapping("/create")
     public ApiResponse<VehicleResponse> createVehicle(
-            @Valid @RequestBody VehicleRequest.VehicleCreateRequest request) {
+            @Valid @RequestBody VehicleCreateRequest request) {
         ApiResponse<VehicleResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Tạo xe mới thành công");
@@ -50,7 +51,7 @@ public class VehicleController {
     @PutMapping("/update/{id}")
     public ApiResponse<VehicleResponse> updateVehicle(
             @PathVariable Long id,
-            @Valid @RequestBody VehicleRequest.VehicleUpdateRequest request) {
+            @Valid @RequestBody VehicleUpdateRequest request) {
         ApiResponse<VehicleResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Cập nhật thông tin xe thành công");

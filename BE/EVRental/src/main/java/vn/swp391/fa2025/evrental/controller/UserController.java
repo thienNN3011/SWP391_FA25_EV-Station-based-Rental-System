@@ -4,12 +4,14 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vn.swp391.fa2025.evrental.dto.request.ChangeUserStatusRequest;
 import vn.swp391.fa2025.evrental.dto.request.RegisterCustomerRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowUserDetailRequest;
-import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
-import vn.swp391.fa2025.evrental.dto.response.CustomerResponse;
+import vn.swp391.fa2025.evrental.dto.request.UserUpdateRequest;
+import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.service.RegistrationService;
 import vn.swp391.fa2025.evrental.service.UserServiceImpl;
 
@@ -57,6 +59,58 @@ public class UserController {
         response.setData(userService.changeAccountStatus(request.getUsername(), request.getStatus()));
         response.setSuccess(true);
         response.setMessage("Thay đổi trạng thái tài khoản thành công");
+        response.setCode(200);
+        return response;
+    }
+
+    @GetMapping("/showallstaffs")
+    public ApiResponse<List<StaffListResponse>> showAllStaffs() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        ApiResponse<List<StaffListResponse>> response = new ApiResponse<>();
+        response.setData(userService.showAllStaffs(username));
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin toàn bộ staff thành công");
+        response.setCode(200);
+        return response;
+    }
+    @GetMapping("/showallrenters")
+    public ApiResponse<List<RenterListResponse>> showAllRenters() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        ApiResponse<List<RenterListResponse>> response = new ApiResponse<>();
+        response.setData(userService.showAllRenters(username));
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin toàn bộ renter thành công");
+        response.setCode(200);
+        return response;
+    }
+
+    @PutMapping("/updateuser")
+    public ApiResponse<UserUpdateResponse> updateUser(@RequestBody UserUpdateRequest request) {
+        // Lấy username từ token
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+
+        ApiResponse<UserUpdateResponse> response = new ApiResponse<>();
+        response.setData(userService.updateUser(currentUsername, request));
+        response.setSuccess(true);
+        response.setMessage("Cập nhật thông tin user thành công");
+        response.setCode(200);
+        return response;
+    }
+
+    @DeleteMapping("/deleteuser/{username}")
+    public ApiResponse<Boolean> deleteUser(@PathVariable String username) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+
+        ApiResponse<Boolean> response = new ApiResponse<>();
+        response.setData(userService.deleteUser(username, currentUsername));
+        response.setSuccess(true);
+        response.setMessage("Xóa user thành công");
         response.setCode(200);
         return response;
     }
