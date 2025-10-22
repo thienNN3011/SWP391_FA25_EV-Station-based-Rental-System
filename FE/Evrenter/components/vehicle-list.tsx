@@ -96,11 +96,21 @@ export function VehicleList({ stationName }: VehicleListProps) {
                 </p>
 
                 <div className="mt-2 border-t pt-2">
-                  {v.tariffs.map((t) => (
-                    <p key={t.tarriffId} className="text-xs">
-                      {t.type}: {t.price.toLocaleString()} VND
-                    </p>
-                  ))}
+                  {v.tariffs.map((t) => {
+                       const typeVi =
+                        t.type === "HOURLY"
+                        ? "Theo giờ"
+                        : t.type === "DAILY"
+                        ? "Theo ngày"
+                        : t.type === "MONTHLY"
+                        ? "Theo tháng"
+                        : t.type 
+                          return (
+                <p key={t.tarriffId} className="text-xs">
+                {typeVi}: {t.price.toLocaleString()} VND
+                </p>
+                    )
+                  })}
                 </div>
               </li>
             ))}
