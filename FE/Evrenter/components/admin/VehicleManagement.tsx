@@ -160,15 +160,24 @@ export function VehicleManagement() {
                   return (
                     <TableRow key={v.vehicleId}>
                       <TableCell className="font-medium">{v.plateNumber}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <ImageWithFallback src={'/placeholder.jpg'} alt={v.modelName} className="w-16 h-10 object-cover rounded" />
-                          <div>
-                            <div className="font-medium">{v.brand}</div>
-                            <div className="text-sm text-muted-foreground">{v.modelName}</div>
-                          </div>
-                        </div>
-                      </TableCell>
+                          <TableCell>
+  <div className="flex items-center gap-3">
+    <img
+      src={
+        v.imageUrl?.[0]?.imageUrl
+          ? `http://localhost:8080/EVRental/${v.imageUrl[0].imageUrl.split("\\").pop()}`
+          : "/placeholder.jpg"
+      }
+      alt={v.modelName || v.brand}
+      className="w-16 h-10 object-cover rounded"
+    />
+    <div>
+      <div className="font-medium">{v.brand}</div>
+      <div className="text-sm text-muted-foreground">{v.modelName}</div>
+    </div>
+  </div>
+</TableCell>
+
                       <TableCell>{v.color}</TableCell>
                       <TableCell>{v.stationName}</TableCell>
                       <TableCell><Badge variant={st.variant}>{st.label}</Badge></TableCell>

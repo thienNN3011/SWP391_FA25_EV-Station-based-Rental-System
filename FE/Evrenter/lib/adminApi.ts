@@ -9,6 +9,8 @@ export interface CustomerResponse {
 export interface VehicleResponse {
   vehicleId: number; modelId: number; modelName: string; brand: string;
   stationId: number; stationName: string; color: string; status: string; plateNumber: string;
+  imageUrl?: { imageUrl: string; color: string }[];
+
 }
 
 export async function getPendingAccounts() {
