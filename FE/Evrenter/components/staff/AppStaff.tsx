@@ -8,14 +8,16 @@ import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, S
 import { Dashboard } from "@/components/admin/Dashboard"
 import { UserManagementStaff } from "@/components/staff/UserManagementStaff"
 import { Header } from "@/components/header"
+import { LocationManagementStaff } from "./LocationManagementStaff"
 
 
 
-type ActivePage = "dashboard" | "users" 
+type ActivePage = "dashboard" | "users" | "station"
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
   { id: "users" as ActivePage, label: "Quản lý khách hàng", icon: Users },
+  { id: "station" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
 ]
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {
@@ -86,6 +88,8 @@ function renderActivePage(activePage: ActivePage) {
       return <Dashboard />
     case "users":
       return <UserManagementStaff />
+    case "station":
+      return <LocationManagementStaff />
     default:
       return <Dashboard />
   }
