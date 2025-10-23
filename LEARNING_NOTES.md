@@ -110,14 +110,77 @@ Ngày: 2025-10-23
 - Không đổi stack. Sử dụng sẵn `VehicleRepository`, `VehicleMapper`, `UserRepository`.
 - Context-path: `/EVRental` → endpoint là `/EVRental/station/me`.
 
-4) Steps (đã triển khai)
-- Thêm DTO gộp: `MyStationResponse { stationName, address, openingHours, List<VehicleResponse> vehicles }`.
-- Repository: bổ sung `List<Vehicle> findByStation_StationId(Long stationId)`.
-- Mapper: mở rộng `VehicleMapper.toShortVehicleResponse` để map thêm `status`.
-- Service:
-  - Đổi chữ ký `StationService#getCurrentStaffStation` trả `MyStationResponse`.
-  - `StationServiceImpl`: kiểm tra user tồn tại, quyền (`STAFF` hoặc `ADMIN`), lấy `station` → 404 nếu thiếu; truy vấn xe theo `stationId`, map sang `VehicleResponse` rút gọn + `status`.
-- Controller: `GET /station/me` trả `ApiResponse<MyStationResponse>`; bỏ try/catch để `GlobalExceptionHandler` xử lý lỗi.
+4) Steps (chi tiết từng file)
+1. Tạo DTO phản hồi gộp (station + vehicles)
+   - File: `BE/EVRental/src/main/java/vn/swp391/fa2025/evrental/dto/response/MyStationResponse.java`
+   - Nội dung trường: `stationName`, `address`, `openingHours`, `List<VehicleResponse> vehicles`.
+   - Mục đích: Không sửa `StationResponse` đang dùng ở nơi khác; gom dữ liệu cho endpoint `/station/me` một cách rõ ràng.
+
+2. Repository: truy vấn danh sách xe theo trạm
+   - File: `BE/EVRental/src/main/java/vn/swp391/fa2025/evrental/repository/VehicleRepository.java`
+   - Thêm method:
+     ```java
+     List<Vehicle> findByStation_StationId(Long stationId);
+     ```
+   - Mục đích: Lấy tất cả xe thuộc 1 station để hiển thị trong phản hồi.
+
+3. Mapper: mở rộng Short Vehicle DTO kèm status
+   - File: `BE/EVRental/src/main/java/vn/swp391/fa2025/evrental/mapper/VehicleMapper.java`
+   - Ở method `toShortVehicleResponse(Vehicle vehicle)`, bổ sung mapping:
+     ```java
+     @Mapping(target = "status", source = "status")
+     ```
+   - Kết quả: Short VehicleResponse gồm các trường: `plateNumber`, `color`, `modelName`, `brand`, `status`.
+
+4. Service contract: đổi kiểu trả về
+   - File: `BE/EVRental/src/main/java/vn/swp391/fa2025/evrental/service/StationService.java`
+   - Đổi chữ ký:
+     ```java
+     MyStationResponse getCurrentStaffStation(String username);
+     ```
+   - Lý do: Endpoint cần trả cả station + vehicles.
+
+5. Service implementation: ráp dữ liệu + kiểm tra nghiệp vụ
+   - File: `BE/EVRental/src/main/java/vn/swp391/fa2025/evrental/service/StationServiceImpl.java`
+   - Tiêm thêm `VehicleRepository` và `VehicleMapper`.
+   - Luồng xử lý trong `getCurrentStaffStation`:
+     - Từ `username` (đọc từ JWT), tìm `User`. Nếu không có → `ResourceNotFoundException` (404).
+     - Kiểm tra quyền: cho phép `STAFF` và `ADMIN` (phù hợp `SecurityConfig`). Nếu khác → `BusinessException` (400).
+     - Lấy `station` từ `user`. Nếu `null` → `ResourceNotFoundException` (404).
+     - Lấy danh sách xe theo `stationId`, map sang `VehicleResponse` rút gọn (đã có `status`).
+     - Trả về `MyStationResponse` (stationName, address, openingHours, vehicles).
+
+6. Controller: trả MyStationResponse, giao lỗi cho GlobalExceptionHandler
+   - File: `BE/EVRental/src/main/java/vn/swp391/fa2025/evrental/controller/StationController.java`
+   - Endpoint: `GET /station/me` (nằm dưới context-path `/EVRental`).
+   - Thay kiểu trả về: `ApiResponse<MyStationResponse>`.
+   - Lấy `username` từ `SecurityContextHolder`, gọi service, set `success=true`, `code=200`.
+   - Không `try/catch` tại controller; để handler xử lý lỗi thống nhất.
+
+7. Security: phân quyền endpoint
+   - File: `BE/EVRental/src/main/java/vn/swp391/fa2025/evrental/config/SecurityConfig.java`
+   - Rule hiện có: `.requestMatchers(HttpMethod.GET, "/station/me").hasAnyAuthority("STAFF", "ADMIN")`.
+   - Ghi chú: `server.servlet.context-path=/EVRental`. Matcher trong Security áp dụng trên đường dẫn đã loại context-path, vì vậy KHÔNG cần (và nên xoá) rule `"/EVRental/**"` tránh nhầm lẫn.
+
+8. (Tùy chọn) Exception mapping chi tiết
+   - File: `BE/EVRental/src/main/java/vn/swp391/fa2025/evrental/exception/GlobalExceptionHandler.java`
+   - Khuyến nghị thêm:
+     - `@ExceptionHandler(ResourceNotFoundException.class)` → HTTP 404 với `ApiResponse` thống nhất.
+     - `@ExceptionHandler(BusinessException.class)` → HTTP 400.
+     - Thêm `AuthenticationEntryPoint` và `AccessDeniedHandler` để trả JSON cho 401/403.
+
+9. Build & Run & Test
+   - Build test: `cd BE/EVRental && ./mvnw -q -DskipTests=false test`
+   - Chạy app: `cd BE/EVRental && ./mvnw spring-boot:run`
+   - Gọi API (cần JWT hợp lệ trong header):
+     ```bash
+     curl -H "Authorization: Bearer <JWT>" http://localhost:8080/EVRental/station/me
+     ```
+   - Kỳ vọng:
+     - 200: Trả `{ stationName, address, openingHours, vehicles[] }` (mỗi vehicle có `plateNumber`, `color`, `modelName`, `brand`, `status`).
+     - 404: Không có user/station tương ứng.
+     - 403: Role không phải STAFF/ADMIN.
+     - 401: Thiếu hoặc JWT không hợp lệ.
 
 5) Testing (gợi ý)
 - 200 OK (STAFF/ADMIN có station): body chứa 3 cột trạm + mảng `vehicles` mỗi phần tử có `plateNumber`, `color`, `modelName`, `brand`, `status`.
