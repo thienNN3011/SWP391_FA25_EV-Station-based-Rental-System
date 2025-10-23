@@ -28,6 +28,7 @@ public interface VehicleMapper {
     @Mapping(target = "color", source = "color")
     @Mapping(target = "modelName", source = "model.name")
     @Mapping(target = "brand", source = "model.brand")
+    @Mapping(target = "status", source = "status")
     VehicleResponse toShortVehicleResponse(Vehicle vehicle);
 
     @Mapping(target = "vehicleId", ignore = true)

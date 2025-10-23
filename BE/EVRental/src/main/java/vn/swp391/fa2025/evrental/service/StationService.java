@@ -9,4 +9,5 @@ import java.util.List;
 @Service
 public interface StationService {
     public List<StationResponse> showActiveStation();
+    public StationResponse getCurrentStaffStation(String username);
 }

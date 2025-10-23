@@ -93,3 +93,49 @@ Ngày: 2025-10-16
 
 ---
 
+# LEARNING NOTES — API Station của staff + danh sách xe (rút gọn có status)
+
+Ngày: 2025-10-23
+
+1) Overview (mục tiêu, bối cảnh)
+- Mục tiêu: Thêm API trả về thông tin trạm gắn với user hiện tại và danh sách xe thuộc trạm đó.
+- Bối cảnh: Đã có DTO `StationResponse` (3 cột) và `VehicleResponse`. Cần trả thêm danh sách xe (bao gồm `status`).
+
+2) Core concepts
+- Lấy username từ JWT qua `SecurityContextHolder` (đã được `JwtAuthenticationFilter` set `Authentication`).
+- Phân quyền tại `SecurityConfig`: `GET /station/me` yêu cầu `STAFF` hoặc `ADMIN`.
+- Không trả entity trực tiếp; dùng DTO + mapper MapStruct để kiểm soát dữ liệu.
+
+3) Preparation
+- Không đổi stack. Sử dụng sẵn `VehicleRepository`, `VehicleMapper`, `UserRepository`.
+- Context-path: `/EVRental` → endpoint là `/EVRental/station/me`.
+
+4) Steps (đã triển khai)
+- Thêm DTO gộp: `MyStationResponse { stationName, address, openingHours, List<VehicleResponse> vehicles }`.
+- Repository: bổ sung `List<Vehicle> findByStation_StationId(Long stationId)`.
+- Mapper: mở rộng `VehicleMapper.toShortVehicleResponse` để map thêm `status`.
+- Service:
+  - Đổi chữ ký `StationService#getCurrentStaffStation` trả `MyStationResponse`.
+  - `StationServiceImpl`: kiểm tra user tồn tại, quyền (`STAFF` hoặc `ADMIN`), lấy `station` → 404 nếu thiếu; truy vấn xe theo `stationId`, map sang `VehicleResponse` rút gọn + `status`.
+- Controller: `GET /station/me` trả `ApiResponse<MyStationResponse>`; bỏ try/catch để `GlobalExceptionHandler` xử lý lỗi.
+
+5) Testing (gợi ý)
+- 200 OK (STAFF/ADMIN có station): body chứa 3 cột trạm + mảng `vehicles` mỗi phần tử có `plateNumber`, `color`, `modelName`, `brand`, `status`.
+- 404 Not Found: user không tồn tại hoặc chưa được gán station.
+- 403 Forbidden: role không phải STAFF/ADMIN (bị chặn ở SecurityConfig).
+- 401 Unauthorized: thiếu/sai JWT.
+
+6) Troubleshooting
+- Nếu `vehicles` rỗng: kiểm tra dữ liệu xe gắn với `stationId`.
+- Nếu ADMIN không có station: nhận 404 là hợp lý theo nghiệp vụ hiện tại.
+- Nếu response không map `status`: kiểm tra lại `VehicleMapper.toShortVehicleResponse` đã thêm mapping `status`.
+
+7) Customization/Advanced
+- Có thể thêm phân trang/lọc xe (status, model, color).
+- Tách DTO `VehicleShortResponse` riêng để làm rõ hợp đồng trả về nếu cần.
+- Hoàn thiện `GlobalExceptionHandler` để map `ResourceNotFoundException` → HTTP 404, `BusinessException` → 400.
+
+8) Next steps
+- [ ] Bổ sung test MockMvc cho `/station/me` (happy path + 404 + 403 + 401).
+- [ ] Cân nhắc xoá matcher không cần thiết `"/EVRental/**"` trong `SecurityConfig`.
+- [ ] Đồng bộ README về endpoint mới.
