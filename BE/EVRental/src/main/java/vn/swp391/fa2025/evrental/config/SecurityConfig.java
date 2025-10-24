@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ⚡ Cho phép preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
                         .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
                                 "/vehiclemodel/getvehicelmodeldetail").permitAll()
                         .requestMatchers("/EVRental/**", "/**.jpg", "/**.jpeg", "/**.png").permitAll()
@@ -43,7 +43,20 @@ public class SecurityConfig {
 
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
                         .hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers("/bookings/confirm", "/bookings/reject").hasAuthority("RENTER")
+                        .requestMatchers("/bookings/startrental").hasAuthority("STAFF")
+                        .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
+                        .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
+                        .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")
+                        //CRUD VEHICLE
+                        .requestMatchers(HttpMethod.GET, "/veh  icles/showall", "/vehicles/showbyid/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/station/me").hasAnyAuthority("STAFF", "ADMIN")
+                        // booking sua loi 403
+                        .requestMatchers(HttpMethod.POST, "/EVRental/bookings/createbooking").permitAll()
+
 
                         .anyRequest().authenticated()
                 )
