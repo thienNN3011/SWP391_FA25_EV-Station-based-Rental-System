@@ -25,6 +25,7 @@ public interface  UserMapper {
 
     //map showall Renters
     @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "username", source = "username")
     @Mapping(target = "fullName", source = "fullName")
     @Mapping(target = "phone", source = "phone")
     @Mapping(target = "email", source = "email")
@@ -56,5 +57,6 @@ public interface  UserMapper {
     @Mapping(target = "updatedDate", source = "updatedDate")
     UserUpdateResponse toUpdateResponse(User user);
 
-}
 
+
+}
