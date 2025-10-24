@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Zap, MapPin, DollarSign } from "lucide-react"
 import { api } from "@/lib/api"
 
@@ -14,53 +13,58 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   const [vehicle, setVehicle] = useState<any>(null)
   const [startTime, setStartTime] = useState("")
   const [endTime, setEndTime] = useState("")
+  const [selectedTariff, setSelectedTariff] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
 
+ 
   useEffect(() => {
     const selected = localStorage.getItem("selectedVehicle")
     if (selected) setVehicle(JSON.parse(selected))
   }, [isOpen])
 
-  const handleBooking = async () => {
-  if (!vehicle) return
-  setLoading(true)
-  setMessage("")
-
-  const body = {
-    stationName: vehicle.stationName,
-    modelId: vehicle.modelId.toString(),
-    color: vehicle.imageUrl?.[0]?.color || "blue",
-    tariffId: vehicle.tariffs?.[0]?.tariffId || 0, 
-    startTime: `${startTime}:00`,
-    endTime: `${endTime}:00`,
-  }
-
-  console.log("Payload gửi đi:", JSON.stringify(body, null, 2))
-
-  try {
-    const res = await api.post("/bookings/createbooking", body)
-
-    if (res.status === 200 || res.status === 201) {
-      setMessage("Đặt xe thành công!")
-    } else {
-      setMessage("Có lỗi xảy ra, vui lòng thử lại.")
+  
+  useEffect(() => {
+    if (vehicle?.tariffs?.length) {
+      setSelectedTariff(vehicle.tariffs[0])
     }
-  } catch (err: any) {
-    console.error("Booking error:", err)
+  }, [vehicle])
 
-    const msg =
-      err.response?.data?.message ||
-      (err.response?.status === 403
-        ? "Bạn không có quyền đặt xe"
-        : "Lỗi kết nối đến máy chủ")
+  const handleBooking = async () => {
+    if (!vehicle || !selectedTariff) return
+    setLoading(true)
+    setMessage("")
 
-    setMessage(msg)
-  } finally {
-    setLoading(false)
+    const body = {
+      stationName: vehicle.stationName,
+      modelId: vehicle.modelId.toString(),
+      color: vehicle.imageUrl?.[0]?.color || "blue",
+      tariffId: selectedTariff.tariffId,
+      startTime: `${startTime}:00`,
+      endTime: `${endTime}:00`,
+    }
+
+    console.log("Payload gửi đi:", JSON.stringify(body, null, 2))
+
+    try {
+      const res = await api.post("/bookings/createbooking", body)
+      if (res.status === 200 || res.status === 201) {
+        setMessage("Đặt xe thành công!")
+      } else {
+        setMessage("Có lỗi xảy ra, vui lòng thử lại.")
+      }
+    } catch (err: any) {
+      console.error("Booking error:", err)
+      const msg =
+        err.response?.data?.message ||
+        (err.response?.status === 403
+          ? "Bạn không có quyền đặt xe"
+          : "Lỗi kết nối đến máy chủ")
+      setMessage(msg)
+    } finally {
+      setLoading(false)
+    }
   }
-}
-
 
   if (!vehicle) return null
 
@@ -89,6 +93,29 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         </Card>
 
         <div className="space-y-3">
+         
+          <div>
+            <Label>Chọn thời gian bạn muốn thuê</Label>
+            <select
+              className="w-full border rounded p-2"
+              value={selectedTariff?.tariffId}
+              onChange={(e) => {
+                const tariff = vehicle.tariffs.find(
+                  (t: any) => t.tariffId === Number(e.target.value)
+                )
+                setSelectedTariff(tariff)
+              }}
+            >
+              {vehicle.tariffs.map((t: any) => (
+    <option key={t.tariffId} value={t.tariffId}>
+      {t.type === "hour" ? "Giờ" : t.type === "day" ? "Ngày" : "Tháng"} -{" "}
+      {t.price.toLocaleString()} VND
+    </option>
+  ))}
+            </select>
+          </div>
+
+         
           <div>
             <Label>Bắt đầu</Label>
             <Input
@@ -96,6 +123,8 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               onChange={(e) => setStartTime(e.target.value.replace("T", " "))}
             />
           </div>
+
+          
           <div>
             <Label>Kết thúc</Label>
             <Input
@@ -104,6 +133,7 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
             />
           </div>
 
+         
           <Button
             onClick={handleBooking}
             disabled={loading}
