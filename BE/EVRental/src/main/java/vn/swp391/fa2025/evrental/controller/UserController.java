@@ -14,6 +14,7 @@ import vn.swp391.fa2025.evrental.dto.request.UserUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.service.RegistrationService;
 import vn.swp391.fa2025.evrental.service.UserServiceImpl;
+import vn.swp391.fa2025.evrental.service.UserStatsService;
 
 import java.net.URI;
 import java.util.List;
@@ -26,6 +27,9 @@ public class UserController {
 
     @Autowired
     private UserServiceImpl userService;
+
+    @Autowired
+    private UserStatsService userStatsService;
 
     @PostMapping(value = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponse> createUser(@Valid @ModelAttribute RegisterCustomerRequest req) {
@@ -111,6 +115,21 @@ public class UserController {
         response.setData(userService.deleteUser(username, currentUsername));
         response.setSuccess(true);
         response.setMessage("Xóa user thành công");
+        response.setCode(200);
+        return response;
+    }
+
+    @GetMapping("/users/me/stats")
+    public ApiResponse<UserStatsResponse> getCurrentUserStats() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        UserStatsResponse stats = userStatsService.getCurrentUserStats(username);
+
+        ApiResponse<UserStatsResponse> response = new ApiResponse<>();
+        response.setData(stats);
+        response.setSuccess(true);
+        response.setMessage("Lấy thống kê hoạt động thành công");
         response.setCode(200);
         return response;
     }
