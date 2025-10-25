@@ -3,6 +3,8 @@ package vn.swp391.fa2025.evrental.controller;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletResponse;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.StartRentingRequest;
 import vn.swp391.fa2025.evrental.dto.response.BookingResponse;
@@ -12,7 +14,11 @@ import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 import vn.swp391.fa2025.evrental.service.ContractServiceImpl;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.io.IOException;
+import java.net.URLEncoder;
+
 
 @RestController
 @RequestMapping("/bookings")
@@ -68,21 +74,23 @@ public class BookingController {
     }
 
     @GetMapping("/confirm")
-    public ApiResponse<String> confirmBooking(@RequestParam("token") String token){
-        ApiResponse<String> response = new ApiResponse<>();
-        try {
-            String result = contractService.confirmContract(token);
-            response.setSuccess(true);
-            response.setMessage("Xác nhận hợp đồng thành công");
-            response.setData(result);
-            response.setCode(200);
-        } catch (RuntimeException e) {
-            response.setSuccess(false);
-            response.setMessage(e.getMessage());
-            response.setCode(400);
-        }
-        return response;
+public ApiResponse<String> confirmBooking(@RequestParam("token") String token) {
+    ApiResponse<String> response = new ApiResponse<>();
+    try {
+        String result = contractService.confirmContract(token);
+        response.setSuccess(true);
+        response.setMessage("Hợp đồng đã được xác nhận thành công");
+        response.setData(result);
+        response.setCode(200);
+    } catch (RuntimeException e) {
+        response.setSuccess(false);
+        response.setMessage(e.getMessage());
+        response.setCode(400);
     }
+    return response;
+}
+
+
 
     @GetMapping("/reject")
     public ApiResponse<String> rejectBooking(@RequestParam("token") String token) {

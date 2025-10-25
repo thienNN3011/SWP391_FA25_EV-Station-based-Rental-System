@@ -43,7 +43,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
                         .hasAnyAuthority("STAFF", "ADMIN")
-                        .requestMatchers("/bookings/confirm", "/bookings/reject").hasAuthority("RENTER")
+                        .requestMatchers("/bookings/confirm", "/bookings/reject").permitAll()                //.hasAuthority("RENTER") test thu
                         .requestMatchers("/bookings/startrental").hasAuthority("STAFF")
                         .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
                         .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
