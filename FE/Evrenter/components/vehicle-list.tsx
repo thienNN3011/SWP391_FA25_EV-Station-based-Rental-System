@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Car } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface VehicleModel {
   modelId: number
@@ -19,12 +21,14 @@ interface VehicleModel {
 
 interface VehicleListProps {
   stationName: string | null
+  onSelectVehicle?: (vehicle: VehicleModel) => void
 }
 
-export function VehicleList({ stationName }: VehicleListProps) {
+export function VehicleList({ stationName, onSelectVehicle  }: VehicleListProps) {
   const [vehicles, setVehicles] = useState<VehicleModel[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     if (!stationName) return
@@ -41,7 +45,7 @@ export function VehicleList({ stationName }: VehicleListProps) {
 
         if (!response.ok) throw new Error(`HTTP error: ${response.status}`)
         const result = await response.json()
-      console.log("👉 Data BE trả về:", result)
+        console.log("👉 Data BE trả về:", result)
 
         if (result.success && result.data) {
           setVehicles(result.data)
@@ -57,6 +61,13 @@ export function VehicleList({ stationName }: VehicleListProps) {
 
     fetchVehicles()
   }, [stationName])
+
+
+  const handleSelect = (vehicle: VehicleModel) => {
+    localStorage.setItem("selectedVehicle", JSON.stringify(vehicle))
+    if (onSelectVehicle) onSelectVehicle(vehicle)
+  }
+
 
   return (
     <Card className="h-[500px] flex flex-col">
@@ -80,11 +91,10 @@ export function VehicleList({ stationName }: VehicleListProps) {
                 className="border rounded-lg p-3 hover:bg-muted/50 transition-all shadow-sm"
               >
                 <img
-  src={`http://localhost:8080/EVRental/${v.imageUrl?.[0]?.imageUrl.split("\\").pop()}`}
-  alt={v.name}
-  className="w-full h-40 object-cover rounded-md mb-2"
-/>
-
+                  src={`http://localhost:8080/EVRental/${v.imageUrl?.[0]?.imageUrl.split("\\").pop()}`}
+                  alt={v.name}
+                  className="w-full h-40 object-cover rounded-md mb-2"
+                />
 
                 <p className="font-medium text-base">{v.name}</p>
                 <p className="text-xs text-muted-foreground">{v.brand}</p>
@@ -96,12 +106,30 @@ export function VehicleList({ stationName }: VehicleListProps) {
                 </p>
 
                 <div className="mt-2 border-t pt-2">
-                  {v.tariffs.map((t) => (
-                    <p key={t.tarriffId} className="text-xs">
-                      {t.type}: {t.price.toLocaleString()} VND
-                    </p>
-                  ))}
+                  {v.tariffs.map((t) => {
+                    const typeVi =
+                      t.type === "HOURLY"
+                        ? "Theo giờ"
+                        : t.type === "DAILY"
+                        ? "Theo ngày"
+                        : t.type === "MONTHLY"
+                        ? "Theo tháng"
+                        : t.type
+                    return (
+                      <p key={t.tarriffId} className="text-xs">
+                        {typeVi}: {t.price.toLocaleString()} VND
+                      </p>
+                    )
+                  })}
                 </div>
+
+               
+                <Button
+                  className="w-full mt-3 bg-sky-500 hover:bg-sky-800 text-white"
+                  onClick={() => handleSelect(v)}
+                >
+                  Đặt xe
+                </Button>
               </li>
             ))}
           </ul>

@@ -61,28 +61,30 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public String confirmContract(String token) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        Contract contract = contractRepository.findByToken(token);
-        if (!contract.getBooking().getUser().getUsername().equals(username)) {
-            throw new RuntimeException("Bạn không có quyền xác nhận hợp đồng này.");
-        }
-        if (contract == null) {
-            throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
-        }
-        if (!contract.getStatus().equals("PENDING")) {
-            throw new RuntimeException("Hợp đồng đã được xác nhận hoặc không hợp lệ.");
-        }
-        contract.setStatus("CONFIRMED");
-        contract.getBooking().setStatus("RENTING");
-        contractRepository.save(contract);
-        bookingRepository.save(contract.getBooking());
-        return """
-            <h2>Hợp đồng đã được xác nhận thành công!</h2>
-            <p>Bạn có thể quay lại hệ thống để tiếp tục quy trình thuê xe.</p>
-        """;
+    public String confirmContract(String token) { //fe test mail, ko chay dc thi back lai
+    Contract contract = contractRepository.findByToken(token);
+
+    if (contract == null) {
+        throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
     }
+
+    if (!"PENDING".equals(contract.getStatus())) {
+        throw new RuntimeException("Hợp đồng đã được xác nhận hoặc không hợp lệ.");
+    }
+
+   
+    contract.setStatus("CONFIRMED");
+    contract.getBooking().setStatus("RENTING");
+
+    contractRepository.save(contract);
+    bookingRepository.save(contract.getBooking());
+
+    return """
+        <h2>Hợp đồng đã được xác nhận thành công!</h2>
+        <p>Bạn có thể quay lại hệ thống để tiếp tục quy trình thuê xe.</p>
+    """;
+}
+
 
     @Override
     public String rejectContract(String token) {

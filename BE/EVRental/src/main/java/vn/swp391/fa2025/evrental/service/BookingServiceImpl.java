@@ -239,8 +239,12 @@ public class BookingServiceImpl implements  BookingService{
         bookingRepository.save(booking);
         String token = UUID.randomUUID().toString();
         contractService.saveContractFile(pdfBytes, booking, customer, staff, token);
-        String confirmUrl = "http://localhost:8080/EVRental/bookings/confirm?token=" + token;
-        String rejectUrl = "http://localhost:8080/EVRental/bookings/reject?token=" + token;
+        String frontendBaseUrl = "http://localhost:3000"; //test tren fe port ko dc thi xoa
+       // String confirmUrl = "http://localhost:8080/EVRental/bookings/confirm?token=" + token;
+       // String rejectUrl = "http://localhost:8080/EVRental/bookings/reject?token=" + token;
+       //co loi thi xoa
+String confirmUrl = frontendBaseUrl + "/rental-response?action=confirm&token=" + token;
+String rejectUrl = frontendBaseUrl + "/rental-response?action=reject&token=" + token;
 
         String emailBody = """
         <p>Xin chào %s,</p>

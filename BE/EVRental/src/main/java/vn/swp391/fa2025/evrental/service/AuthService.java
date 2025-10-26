@@ -34,7 +34,7 @@ public class AuthService {
             throw new RuntimeException("username is not exits");
         }
 
-        if (passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid username or password");
         }
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {

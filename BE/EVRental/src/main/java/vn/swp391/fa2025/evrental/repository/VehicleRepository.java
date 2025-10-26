@@ -16,4 +16,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     Vehicle findFirstByModel_ModelIdAndStation_StationName(Long modelId, String stationName);
 
     Optional<Vehicle> findByPlateNumber(String plateNumber);
+
+    // Lấy danh sách xe theo stationId
+    List<Vehicle> findByStation_StationId(Long stationId);
 }

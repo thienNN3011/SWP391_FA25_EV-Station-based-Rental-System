@@ -1,6 +1,8 @@
 package vn.swp391.fa2025.evrental.service;
 
-import vn.swp391.fa2025.evrental.dto.request.VehicleRequest;
+import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
+
+import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import java.util.List;
 
@@ -9,9 +11,9 @@ public interface VehicleService {
 
     VehicleResponse getVehicleById(Long id);
 
-    VehicleResponse createVehicle(VehicleRequest.VehicleCreateRequest request);
+    VehicleResponse createVehicle(VehicleCreateRequest request);
 
-    VehicleResponse updateVehicle(Long id, VehicleRequest.VehicleUpdateRequest request);
+    VehicleResponse updateVehicle(Long id, VehicleUpdateRequest request);
 
     void deleteVehicle(Long id);
 }

@@ -1,7 +1,7 @@
 package vn.swp391.fa2025.evrental.config;
 
 import java.util.Arrays;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,10 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/**
- * Spring Security Configuration for JWT-based authentication
- */
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -32,46 +28,58 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-    // public endpoit, ko can authen
-    .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
-            "/vehiclemodel/getvehicelmodeldetail", "/payments/vnpay-return")
-    .permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
+                        .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
+                                "/vehiclemodel/getvehicelmodeldetail").permitAll()
+                        .requestMatchers("/EVRental/**", "/**.jpg", "/**.jpeg", "/**.png").permitAll()
 
-    // cho phep truy cap thu muc
-    .requestMatchers("/EVRental/**", "/**.jpg", "/**.jpeg", "/**.png").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/showallrenters").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/showallstaffs").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/updateuser").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/deleteuser/**").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users/me/stats").hasAuthority("RENTER")
 
-    .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
+                        .hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers("/bookings/confirm", "/bookings/reject").permitAll()                //.hasAuthority("RENTER") test thu
+                        .requestMatchers("/bookings/startrental").hasAuthority("STAFF")
+                        .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
+                        .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
+                        .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")
+                        //CRUD VEHICLE
+                        .requestMatchers(HttpMethod.GET, "/veh  icles/showall", "/vehicles/showbyid/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/station/me").hasAnyAuthority("STAFF", "ADMIN")
+                        // booking sua loi 403
+                        .requestMatchers(HttpMethod.POST, "/EVRental/bookings/createbooking").permitAll()
 
-    .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
-    .hasAnyAuthority("STAFF", "ADMIN")
-                        .requestMatchers("/bookings/confirm", "/bookings/reject").hasAuthority("RENTER")
-                        .requestMatchers("/bookings/startrental", "/bookings/endrental").hasAuthority("STAFF")
-    .requestMatchers("/bookings/createbooking").hasAuthority("RENTER")
-                        .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking").hasAnyAuthority("RENTER", "STAFF", "ADMIN")
-    .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
-    .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
-    .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
-    .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
-    .anyRequest().authenticated()
-)
 
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+        config.setAllowedMethods(
+            Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+        );
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
