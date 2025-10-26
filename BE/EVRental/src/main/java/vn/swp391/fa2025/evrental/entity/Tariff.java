@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -25,13 +26,13 @@ public class Tariff {
     private String type;
 
     @Column(nullable = false)
-    private Double price;
+    private BigDecimal price;
 
     @Column(nullable = false)
     private Long numberOfContractAppling;
 
     @Column(nullable = false)
-    private Double depositAmount;
+    private BigDecimal depositAmount;
 
     @Column(nullable = false)
     private String status;

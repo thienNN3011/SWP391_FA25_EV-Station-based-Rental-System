@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,10 +26,7 @@ public class Payment {
     private String paymentType;
 
     @Column(nullable = false)
-    private String method;
-
-    @Column(nullable = false)
-    private Double amount;
+    private BigDecimal amount;
 
     @Column(nullable = false)
     private String referenceCode;

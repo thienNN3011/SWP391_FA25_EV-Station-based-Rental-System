@@ -6,16 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TariffResponse {
-    private Long tariffId;
-    private String type;
-    private BigDecimal price;
-    private BigDecimal depositAmount;
+public class AfterBookingResponse {
+    private BookingResponse bookingResponse;
+    private String qr;
 }

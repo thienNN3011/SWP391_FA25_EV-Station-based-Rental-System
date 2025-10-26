@@ -2,11 +2,14 @@ package vn.swp391.fa2025.evrental.dto.request;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class StartRentingRequest {
+public class EndRentingRequest {
     private Long bookingId;
+    private Long endOdo;
     private String vehicleStatus;
-    private Long startOdo;
+    private String referenceCode;
+    private LocalDateTime transactionDate;
 }

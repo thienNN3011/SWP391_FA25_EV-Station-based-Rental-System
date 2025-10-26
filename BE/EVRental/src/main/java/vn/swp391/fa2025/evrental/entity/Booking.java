@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,10 +41,13 @@ public class Booking {
     private Tariff tariff;
 
     @Column(nullable = false)
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
     private Long startOdo;
     private Long endOdo;
+
+    private String beforeRentingStatus;
+    private String afterRentingStatus;
 
     @Column(nullable = false)
     private LocalDateTime createdDate;

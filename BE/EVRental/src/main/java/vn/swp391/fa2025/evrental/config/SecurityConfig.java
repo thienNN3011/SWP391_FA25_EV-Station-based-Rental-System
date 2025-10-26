@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
     // public endpoit, ko can authen
     .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
-            "/vehiclemodel/getvehicelmodeldetail")
+            "/vehiclemodel/getvehicelmodeldetail", "/payments/vnpay-return")
     .permitAll()
 
     // cho phep truy cap thu muc
@@ -47,8 +47,8 @@ public class SecurityConfig {
     .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
     .hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers("/bookings/confirm", "/bookings/reject").hasAuthority("RENTER")
-                        .requestMatchers("/bookings/startrental").hasAuthority("STAFF")
-    .requestMatchers("/bookings/createbooking").hasAnyAuthority("USER", "RENTER")
+                        .requestMatchers("/bookings/startrental", "/bookings/endrental").hasAuthority("STAFF")
+    .requestMatchers("/bookings/createbooking").hasAuthority("RENTER")
                         .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking").hasAnyAuthority("RENTER", "STAFF", "ADMIN")
     .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
     .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")

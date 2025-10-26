@@ -5,17 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.checkerframework.checker.units.qual.N;
 
 import java.math.BigDecimal;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TariffResponse {
-    private Long tariffId;
-    private String type;
-    private BigDecimal price;
-    private BigDecimal depositAmount;
+public class EndRentingResponse {
+    private String qr;
+    private BookingResponse bookingResponse;
 }
