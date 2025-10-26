@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
+import vn.swp391.fa2025.evrental.dto.request.CancelBookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.EndRentingRequest;
 import vn.swp391.fa2025.evrental.dto.request.StartRentingRequest;
 import vn.swp391.fa2025.evrental.dto.response.AfterBookingResponse;
@@ -119,6 +120,17 @@ public ApiResponse<String> confirmBooking(@RequestParam("token") String token) {
         response.setSuccess(true);
         response.setMessage("Kết thúc thuê xe thành công");
         response.setData(bookingService.endRental(req, request.getBookingId(), request.getVehicleStatus(), request.getEndOdo(), request.getTransactionDate(), request.getReferenceCode()));
+        response.setCode(200);
+        return response;
+    }
+
+    @PostMapping("/cancelbooking")
+    ApiResponse<String> cancelRental(@RequestBody CancelBookingRequest request) {
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Hủy booking thành công");
+        bookingService.cancelBooking(request.getBookingId());
+        response.setData("Hủy booking thành công");
         response.setCode(200);
         return response;
     }

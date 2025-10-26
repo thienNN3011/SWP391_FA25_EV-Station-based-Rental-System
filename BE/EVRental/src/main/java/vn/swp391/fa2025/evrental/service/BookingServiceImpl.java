@@ -79,13 +79,6 @@ public class BookingServiceImpl implements  BookingService{
         booking.setCreatedDate(LocalDateTime.now());
         booking.setStatus("UNCONFIRMED");
         booking.setTotalAmount((BigDecimal) BigDecimal.ZERO);
-        if (bookingRepository.save(booking)!=null) {
-            Vehicle vehicle= booking.getVehicle();
-            vehicle.setStatus("IN_USE");
-            vehicleRepository.save(vehicle);
-            tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()+1);
-            tariffRepository.save(tariff);
-        }
         VehicleResponse vehicleResponse= new VehicleResponse(
                 booking.getVehicle().getPlateNumber(),
                 booking.getVehicle().getColor(),
@@ -127,6 +120,13 @@ public class BookingServiceImpl implements  BookingService{
             qr= QrUtils.generateQrBase64(paymentUrl);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+        if (bookingRepository.save(booking)!=null) {
+            Vehicle vehicle= booking.getVehicle();
+            vehicle.setStatus("IN_USE");
+            vehicleRepository.save(vehicle);
+            tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()+1);
+            tariffRepository.save(tariff);
         }
         bookingRepository.save(booking);
         AfterBookingResponse response= AfterBookingResponse.builder()
@@ -243,8 +243,8 @@ public class BookingServiceImpl implements  BookingService{
        // String confirmUrl = "http://localhost:8080/EVRental/bookings/confirm?token=" + token;
        // String rejectUrl = "http://localhost:8080/EVRental/bookings/reject?token=" + token;
        //co loi thi xoa
-String confirmUrl = frontendBaseUrl + "/rental-response?action=confirm&token=" + token;
-String rejectUrl = frontendBaseUrl + "/rental-response?action=reject&token=" + token;
+        String confirmUrl = frontendBaseUrl + "/rental-response?action=confirm&token=" + token;
+        String rejectUrl = frontendBaseUrl + "/rental-response?action=reject&token=" + token;
 
         String emailBody = """
         <p>Xin chào %s,</p>
@@ -335,7 +335,12 @@ String rejectUrl = frontendBaseUrl + "/rental-response?action=reject&token=" + t
                 .bookingResponse(bookingMapper.toEndBookingResponse(booking))
                 .qr(qr)
                 .build();
-
+        Vehicle vehicle = booking.getVehicle();
+        vehicle.setStatus("MAINTENANCE");
+        vehicleRepository.save(vehicle);
+        Tariff tariff = booking.getTariff();
+        tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling() - 1);
+        tariffRepository.save(tariff);
         bookingRepository.save(booking);
         return response;
     }
@@ -354,7 +359,7 @@ String rejectUrl = frontendBaseUrl + "/rental-response?action=reject&token=" + t
     @Override
     public void cancelBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
-        if (!booking.getStatus().equalsIgnoreCase("UNCONFIRMED")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING");
+        if (!booking.getStatus().equalsIgnoreCase("UNCONFIRMED") || !booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING/UNCONFIRMED");
         Vehicle vehicle = vehicleRepository
                 .findById(booking.getVehicle().getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle không tồn tại"));
