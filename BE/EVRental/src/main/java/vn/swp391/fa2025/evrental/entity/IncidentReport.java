@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -37,7 +38,7 @@ public class IncidentReport {
     private String resolutionNote;
 
     @Column(nullable = false)
-    private Double cost;
+    private BigDecimal cost;
 
     private String incidentPhoto;
 }

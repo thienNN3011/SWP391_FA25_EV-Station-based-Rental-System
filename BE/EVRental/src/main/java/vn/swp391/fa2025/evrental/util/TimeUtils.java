@@ -1,6 +1,7 @@
 package vn.swp391.fa2025.evrental.util;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class TimeUtils {
@@ -11,32 +12,32 @@ public class TimeUtils {
             t2 = temp;
         }
 
-        long hours = ChronoUnit.HOURS.between(t2, t1);
+        long minutes = ChronoUnit.MINUTES.between(t2, t1);
         double result;
 
         switch (unit.toLowerCase()) {
             case "hour":
             case "hours":
             case "giờ":
-                result = hours;
+                result = minutes / 60.0;
                 break;
 
             case "day":
             case "days":
             case "ngày":
-                result = hours / 24.0;
+                result = minutes / (60.0 * 24);
                 break;
 
             case "week":
             case "weeks":
             case "tuần":
-                result = hours / (24.0 * 7);
+                result = minutes / (60.0 * 24 * 7);
                 break;
 
             case "month":
             case "months":
             case "tháng":
-                result = hours / (24.0 * 30);
+                result = minutes / (60.0 * 24 * 30);
                 break;
 
             default:
@@ -45,4 +46,15 @@ public class TimeUtils {
 
         return (long) Math.ceil(result);
     }
+
+    public static LocalDateTime parsePayDate(String payDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return LocalDateTime.parse(payDate, formatter);
+    }
+    public static String formatPayDate(LocalDateTime dateTime) {
+        if (dateTime == null) return null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return dateTime.format(formatter);
+    }
+
 }

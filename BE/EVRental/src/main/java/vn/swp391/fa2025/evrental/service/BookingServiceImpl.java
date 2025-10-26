@@ -1,5 +1,6 @@
 package vn.swp391.fa2025.evrental.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -7,16 +8,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest;
-import vn.swp391.fa2025.evrental.dto.response.BookingResponse;
-import vn.swp391.fa2025.evrental.dto.response.StationResponse;
-import vn.swp391.fa2025.evrental.dto.response.TariffResponse;
-import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
+import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.*;
 import vn.swp391.fa2025.evrental.mapper.BookingMapper;
 import vn.swp391.fa2025.evrental.repository.*;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
+import vn.swp391.fa2025.evrental.util.QrUtils;
 import vn.swp391.fa2025.evrental.util.TimeUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,9 +42,13 @@ public class BookingServiceImpl implements  BookingService{
     private ContractServiceImpl contractService;
     @Autowired
     private EmailUtils emailUtils;
+    @Autowired
+    private VnPayService vnPayService;
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     @Override
-    public BookingResponse bookVehicle(BookingRequest bookingRequest) {
+    public AfterBookingResponse bookVehicle(HttpServletRequest req, BookingRequest bookingRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String username = authentication.getName();
@@ -55,7 +60,7 @@ public class BookingServiceImpl implements  BookingService{
         List<Vehicle> vehicles = vehicleRepository.findByStation_StationIdAndModel_ModelIdAndColor(station.getStationId(),bookingRequest.getModelId(), bookingRequest.getColor());
         for (Vehicle vehicle : vehicles) {
             if (vehicle.getStatus().equals("AVAILABLE")) {
-                vehicle.setStatus("BOOKED");
+                vehicle.setStatus("IN_USE");
                 booking.setVehicle(vehicle);
                 break;
             }
@@ -72,11 +77,11 @@ public class BookingServiceImpl implements  BookingService{
         if (tariff.getStatus().equals("INACTIVE")) throw new RuntimeException("Tariff hiện tại không khả dụng");
         booking.setTariff(tariff);
         booking.setCreatedDate(LocalDateTime.now());
-        booking.setStatus("BOOKING");
-        booking.setTotalAmount((Double) 0.0);
+        booking.setStatus("UNCONFIRMED");
+        booking.setTotalAmount((BigDecimal) BigDecimal.ZERO);
         if (bookingRepository.save(booking)!=null) {
             Vehicle vehicle= booking.getVehicle();
-            vehicle.setStatus("BOOKED");
+            vehicle.setStatus("IN_USE");
             vehicleRepository.save(vehicle);
             tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()+1);
             tariffRepository.save(tariff);
@@ -110,7 +115,25 @@ public class BookingServiceImpl implements  BookingService{
                 .endTime(booking.getEndTime())
                 .status(booking.getStatus())
                 .build();
-        return bookingResponse;
+
+        String paymentUrl="";
+        try {
+            paymentUrl= vnPayService.createPaymentUrl(req, booking.getTariff().getDepositAmount(), "Thanh toán đặt cọc cho Booking ID: "+booking.getBookingId(), booking.getBookingId());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        String qr="";
+        try {
+            qr= QrUtils.generateQrBase64(paymentUrl);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        bookingRepository.save(booking);
+        AfterBookingResponse response= AfterBookingResponse.builder()
+                .bookingResponse(bookingResponse)
+                .qr(qr)
+                .build();
+        return response;
     }
 
     @Override
@@ -166,7 +189,6 @@ public class BookingServiceImpl implements  BookingService{
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String staffname = authentication.getName();
         User staff=userRepository.findByUsername(staffname);
-        if (staff==null || !staff.getRole().equalsIgnoreCase("STAFF")) throw new RuntimeException("User không hợp lệ");
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
         if (!booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Booking không ở trạng thái BOOKING");
         User customer = userRepository
@@ -197,7 +219,13 @@ public class BookingServiceImpl implements  BookingService{
         data.put("tariffPrice", booking.getTariff().getPrice() + " VND");
         data.put("tariffType", booking.getTariff().getType());
         data.put("depositAmount", booking.getTariff().getDepositAmount() + " VND");
-        Double totalAmount= TimeUtils.ceilTimeDiff(booking.getEndTime(), booking.getActualStartTime(), booking.getTariff().getType()) * booking.getTariff().getPrice();
+        BigDecimal totalAmount = BigDecimal.valueOf(
+                TimeUtils.ceilTimeDiff(
+                        booking.getEndTime(),
+                        booking.getActualStartTime(),
+                        booking.getTariff().getType()
+                )
+        ).multiply(booking.getTariff().getPrice());
         booking.setTotalAmount(totalAmount);
         data.put("totalAmount", booking.getTotalAmount() + " VND");
         byte[] pdfBytes=null;
@@ -206,6 +234,7 @@ public class BookingServiceImpl implements  BookingService{
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        booking.setBeforeRentingStatus(vehicleStatus);
         booking.setStartOdo(startOdo);
         bookingRepository.save(booking);
         String token = UUID.randomUUID().toString();
@@ -237,5 +266,104 @@ String rejectUrl = frontendBaseUrl + "/rental-response?action=reject&token=" + t
                 "contract.pdf"
         );
         return "Bạn đã bắt đầu thuê xe thành công. Hợp đồng đã được gửi đến email của khách hàng để xác nhận.";
+    }
+
+    @Override
+    public EndRentingResponse endRental(HttpServletRequest request, Long bookingId, String vehicleStatus,
+                                        Long endOdo, LocalDateTime transactionDate, String referanceCode) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+
+        if (!booking.getStatus().equalsIgnoreCase("RENTING"))
+            throw new RuntimeException("Booking không ở trạng thái RENTING");
+
+        booking.setActualEndTime(LocalDateTime.now());
+
+        if (booking.getStartOdo() > endOdo)
+            throw new RuntimeException("Số km kết thúc phải lớn hơn số km bắt đầu");
+
+        booking.setEndOdo(endOdo);
+        booking.setAfterRentingStatus(vehicleStatus);
+
+        Long overtime = 0L;
+        if (booking.getActualEndTime().isAfter(booking.getEndTime())) {
+            overtime = TimeUtils.ceilTimeDiff(
+                    booking.getActualEndTime(),
+                    booking.getEndTime(),
+                    booking.getTariff().getType()
+            );
+        }
+
+        BigDecimal extraFee = BigDecimal.ZERO;
+        if (overtime > 0) {
+            extraFee = BigDecimal.valueOf(overtime)
+                    .multiply(
+                            booking.getTariff().getPrice()
+                                    .add(booking.getTariff().getPrice().multiply(BigDecimal.valueOf(0.1))) // +10%
+                    );
+            booking.setTotalAmount(booking.getTotalAmount().add(extraFee));
+        }
+
+        String paymentUrl;
+        try {
+            paymentUrl = vnPayService.createPaymentUrl(
+                    request,
+                    booking.getTotalAmount(),
+                    "Thanh toán chi phí cho Booking ID: " + booking.getBookingId(),
+                    booking.getBookingId()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        String qr;
+        try {
+            qr = QrUtils.generateQrBase64(paymentUrl);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        paymentRepository.save(Payment.builder()
+                .transactionDate(transactionDate)
+                .booking(booking)
+                .paymentType("REFUND_DEPOSIT")
+                .amount(paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), "DEPOSIT").getAmount())
+                .referenceCode(referanceCode)
+                .build());
+
+        EndRentingResponse response = EndRentingResponse.builder()
+                .bookingResponse(bookingMapper.toEndBookingResponse(booking))
+                .qr(qr)
+                .build();
+
+        bookingRepository.save(booking);
+        return response;
+    }
+
+
+    @Override
+    public Booking findById(Long id) {
+        return bookingRepository.findById(id).orElseThrow(()-> new RuntimeException("Booking không tồn tại"));
+    }
+
+    @Override
+    public void updateBooking(Booking booking) {
+        bookingRepository.save(booking);
+    }
+
+    @Override
+    public void cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+        if (!booking.getStatus().equalsIgnoreCase("UNCONFIRMED")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING");
+        Vehicle vehicle = vehicleRepository
+                .findById(booking.getVehicle().getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Vehicle không tồn tại"));
+        vehicle.setStatus("AVAILABLE");
+        Tariff tariff = booking.getTariff();
+        tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()-1);
+        tariffRepository.save(tariff);
+        vehicleRepository.save(vehicle);
+        booking.setStatus("CANCELLED");
+        bookingRepository.save(booking);
     }
 }

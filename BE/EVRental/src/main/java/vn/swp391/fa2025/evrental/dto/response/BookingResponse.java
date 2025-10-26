@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -23,8 +24,10 @@ public class BookingResponse {
     private LocalDateTime endTime;
     private LocalDateTime actualStartTime;
     private LocalDateTime actualEndTime;
+    private String beforeRentingStatus;
+    private String afterRentingStatus;
     private Long startOdo;
     private Long endOdo;
-    private Double totalAmount;
+    private BigDecimal totalAmount;
     private String status;
 }

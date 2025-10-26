@@ -7,15 +7,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TariffResponse {
-    private Long tariffId;
-    private String type;
-    private BigDecimal price;
-    private BigDecimal depositAmount;
+public class PaymentReturnResponse {
+    private String referenceCode;
+    private BigDecimal amount;
+    private String bankCode;
+    private LocalDateTime paymentDate;
 }

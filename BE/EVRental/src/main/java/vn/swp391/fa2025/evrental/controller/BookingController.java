@@ -1,14 +1,18 @@
 package vn.swp391.fa2025.evrental.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
+import vn.swp391.fa2025.evrental.dto.request.EndRentingRequest;
 import vn.swp391.fa2025.evrental.dto.request.StartRentingRequest;
+import vn.swp391.fa2025.evrental.dto.response.AfterBookingResponse;
 import vn.swp391.fa2025.evrental.dto.response.BookingResponse;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
+import vn.swp391.fa2025.evrental.dto.response.EndRentingResponse;
 import vn.swp391.fa2025.evrental.entity.Contract;
 import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 import vn.swp391.fa2025.evrental.service.ContractServiceImpl;
@@ -31,11 +35,11 @@ public class BookingController {
     private EmailUtils emailUtils;
     
     @PostMapping("/createbooking")
-    ApiResponse<BookingResponse> createBooking(@RequestBody BookingRequest bookingRequest){
-        ApiResponse<BookingResponse> response = new ApiResponse<>();
+    ApiResponse<AfterBookingResponse> createBooking(HttpServletRequest request, @RequestBody BookingRequest bookingRequest){
+        ApiResponse<AfterBookingResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Tạo booking thành công");
-        response.setData(bookingService.bookVehicle(bookingRequest));
+        response.setData(bookingService.bookVehicle(request, bookingRequest));
         response.setCode(200);
         return response;
     }
@@ -68,7 +72,7 @@ public class BookingController {
         ApiResponse<String> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Bắt đầu thuê xe thành công");
-        response.setData(bookingService.startRental(request.getBookingId(), request.getVehicleStatus(), request.getStarOdo()));
+        response.setData(bookingService.startRental(request.getBookingId(), request.getVehicleStatus(), request.getStartOdo()));
         response.setCode(200);
         return response;
     }
@@ -106,6 +110,16 @@ public ApiResponse<String> confirmBooking(@RequestParam("token") String token) {
             response.setMessage(e.getMessage());
             response.setCode(400);
         }
+        return response;
+    }
+
+    @PostMapping("/endrental")
+    ApiResponse<EndRentingResponse> endRental(HttpServletRequest req, @RequestBody EndRentingRequest request) {
+        ApiResponse<EndRentingResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Kết thúc thuê xe thành công");
+        response.setData(bookingService.endRental(req, request.getBookingId(), request.getVehicleStatus(), request.getEndOdo(), request.getTransactionDate(), request.getReferenceCode()));
+        response.setCode(200);
         return response;
     }
 }
