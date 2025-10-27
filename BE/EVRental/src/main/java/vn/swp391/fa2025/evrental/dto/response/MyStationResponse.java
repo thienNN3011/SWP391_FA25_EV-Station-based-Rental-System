@@ -21,7 +21,6 @@ public class MyStationResponse {
     private String stationName;
     private String address;
     private String openingHours;
-    private String status;
     private List<VehicleResponse> vehicles;
 }
 

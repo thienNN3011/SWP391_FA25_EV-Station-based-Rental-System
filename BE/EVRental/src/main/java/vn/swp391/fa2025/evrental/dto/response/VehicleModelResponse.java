@@ -21,7 +21,7 @@ public class VehicleModelResponse {
     private Long range;
     private Integer seat;
     private String description;
-    private List<ModelImageUrlResponse> imageUrls;
+    private List<ModelImageUrlResponse> imageUrl;
     private List<TariffResponse> tariffs;
     private Set<String> colors;
 }

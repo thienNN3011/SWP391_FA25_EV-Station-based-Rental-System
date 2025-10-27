@@ -1,5 +1,7 @@
 package vn.swp391.fa2025.evrental.config;
 
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +16,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -37,7 +36,6 @@ public class SecurityConfig {
                                 "/vehiclemodel/getvehicelmodeldetail", "/vnpay-return").permitAll()
                         .requestMatchers("/EVRental/**", "/**.jpg", "/**.jpeg", "/**.png").permitAll()
 
-                                .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/showallrenters").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/showallstaffs").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/updateuser").authenticated()
@@ -52,38 +50,12 @@ public class SecurityConfig {
                         .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
                         .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")
                         //CRUD VEHICLE
-                                .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/veh  icles/showall", "/vehicles/showbyid/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/station/me").hasAnyAuthority("STAFF", "ADMIN")
-                        //CRUD VEHICLE MODEL
-                        .requestMatchers(HttpMethod.GET, "/vehiclemodel/showall", "/vehiclemodel/showbyid/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/vehiclemodel/create").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/vehiclemodel/update/**").hasAuthority("ADMIN")
-                        //.requestMatchers(HttpMethod.DELETE, "/vehiclemodel/delete/**").hasAuthority("ADMIN")
-
-                        .requestMatchers(HttpMethod.GET, "/vehiclemodel/*/images").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/vehiclemodel/*/images").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/vehiclemodel/images/*").hasAuthority("ADMIN")
-                        //.requestMatchers(HttpMethod.DELETE, "/vehiclemodel/*/images/*").hasAuthority("ADMIN")
-
-                        .requestMatchers(HttpMethod.POST, "/station/create").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/station/update/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/station/delete/**").hasAuthority("ADMIN")
-
-                        .requestMatchers(HttpMethod.GET, "/tariff/showall","/tariff/showbyid/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/tariff/create").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/tariff/update/**").hasAuthority("ADMIN")
-                         .requestMatchers(HttpMethod.DELETE, "/tariff/delete/**").hasAuthority("ADMIN")
-
-
-                        .requestMatchers(HttpMethod.GET, "/api/stats/stations/**").hasAnyAuthority("STAFF", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/stats/stations/utilization").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/stats/stations/revenue/quick-summary").hasAuthority("ADMIN")
-
-
-                                // booking sua loi 403
+                        // booking sua loi 403
                         .requestMatchers(HttpMethod.POST, "/EVRental/bookings/createbooking").permitAll()
 
 

@@ -15,5 +15,4 @@ public class StationResponse {
     private String stationName;
     private String address;
     private String openingHours;
-
 }
