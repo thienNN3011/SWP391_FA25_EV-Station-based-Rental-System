@@ -40,6 +40,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/showallrenters").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/showallstaffs").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/updateuser").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/deleteuser/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/me/stats").hasAuthority("RENTER")
@@ -49,14 +50,19 @@ public class SecurityConfig {
                         .requestMatchers("/bookings/confirm", "/bookings/reject").permitAll()                //.hasAuthority("RENTER") test thu
                         .requestMatchers("/bookings/startrental", "/bookings/endrental").hasAuthority("STAFF")
                         .requestMatchers("/bookings/createbooking", "/bookings/cancelbooking").hasAuthority("RENTER")
-                        .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
+                        .requestMatchers("bookings/showbookingbystatus", "/bookings/showdetailbooking")
                         .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")
                         //CRUD VEHICLE
+<<<<<<< HEAD
                                 .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
+=======
+                        .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
                         .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/station/me").hasAnyAuthority("STAFF", "ADMIN")
+<<<<<<< HEAD
                         //CRUD VEHICLE MODEL
                         .requestMatchers(HttpMethod.GET, "/vehiclemodel/showall", "/vehiclemodel/showbyid/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/vehiclemodel/create").hasAuthority("ADMIN")
@@ -84,6 +90,24 @@ public class SecurityConfig {
 
 
                                 // booking sua loi 403
+=======
+
+                        .requestMatchers(HttpMethod.GET, "/vehiclemodel/showall", "/vehiclemodel/showbyid/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/vehiclemodel/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/vehiclemodel/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/vehiclemodel/delete/**").hasAuthority("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/stations/showall", "/stations/showbyid/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/stations/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/stations/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/stations/delete/**").hasAuthority("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/tariffs/showall", "/tariffs/showbyid/**", "/tariffs/showbymodel/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/tariffs/create").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/tariffs/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/tariffs/delete/**").hasAuthority("ADMIN")
+                        // booking sua loi 403
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
                         .requestMatchers(HttpMethod.POST, "/EVRental/bookings/createbooking").permitAll()
 
 

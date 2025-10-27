@@ -8,8 +8,11 @@ import vn.swp391.fa2025.evrental.dto.request.StationCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.StationUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.StationResponse;
 import vn.swp391.fa2025.evrental.dto.response.MyStationResponse;
+<<<<<<< HEAD
 import vn.swp391.fa2025.evrental.dto.response.StationUpdateResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
@@ -38,7 +41,10 @@ public class StationServiceImpl implements StationService {
     @Autowired
     private StationMapper stationMapper;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
     @Override
     public List<StationResponse> showActiveStation() {
         List<Station> stations = stationRepository.findByStatus("OPEN");
@@ -83,6 +89,7 @@ public class StationServiceImpl implements StationService {
                 .vehicles(vehicles)
                 .build();
     }
+<<<<<<< HEAD
     @Override
     @Transactional
     public StationResponse createStation(StationCreateRequest request) {
@@ -97,10 +104,35 @@ public class StationServiceImpl implements StationService {
                 .openingHours(request.getOpeningHours())
                 .status("OPEN") // Mặc định OPEN khi tạo mới
                 .build();
+=======
+
+    @Override
+    @Transactional
+    public StationResponse getStationById(Long id) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + id));
+
+        return stationMapper.toStationResponse(station);
+    }
+
+    @Override
+    public StationResponse createStation(StationCreateRequest request) {
+        if (stationRepository.existsByStationName(request.getStationName())) {
+            throw new BusinessException("Tên trạm '" + request.getStationName() + "' đã tồn tại");
+        }
+
+        Station station = stationMapper.toStationFromCreateRequest(request);
+
+        // Set default status if not provided
+        if (station.getStatus() == null || station.getStatus().isBlank()) {
+            station.setStatus("OPEN");
+        }
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
 
         Station savedStation = stationRepository.save(station);
         return stationMapper.toStationResponse(savedStation);
     }
+<<<<<<< HEAD
 
     @Override
     @Transactional
@@ -117,13 +149,31 @@ public class StationServiceImpl implements StationService {
                 Station existingStation = stationRepository.findByStationName(request.getStationName());
                 if (existingStation != null && !existingStation.getStationId().equals(stationId)) {
                     throw new BusinessException("Tên trạm đã tồn tại: " + request.getStationName());
+=======
+    @Override
+    @Transactional
+    public StationResponse updateStation(Long id, StationUpdateRequest request) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + id));
+
+        boolean isUpdated = false;
+
+        if (request.getStationName() != null && !request.getStationName().isBlank()) {
+            if (!station.getStationName().equals(request.getStationName())) {
+                // Kiểm tra tên mới có trùng với trạm khác không
+                if (stationRepository.existsByStationName(request.getStationName())) {
+                    throw new BusinessException("Tên trạm '" + request.getStationName() + "' đã tồn tại");
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
                 }
                 station.setStationName(request.getStationName());
                 isUpdated = true;
             }
         }
 
+<<<<<<< HEAD
         // Update address
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         if (request.getAddress() != null && !request.getAddress().isBlank()) {
             if (!station.getAddress().equals(request.getAddress())) {
                 station.setAddress(request.getAddress());
@@ -131,7 +181,10 @@ public class StationServiceImpl implements StationService {
             }
         }
 
+<<<<<<< HEAD
         // Update openingHours
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         if (request.getOpeningHours() != null && !request.getOpeningHours().isBlank()) {
             if (!station.getOpeningHours().equals(request.getOpeningHours())) {
                 station.setOpeningHours(request.getOpeningHours());
@@ -139,7 +192,10 @@ public class StationServiceImpl implements StationService {
             }
         }
 
+<<<<<<< HEAD
         // Update status
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         if (request.getStatus() != null && !request.getStatus().isBlank()) {
             if (!station.getStatus().equals(request.getStatus())) {
                 station.setStatus(request.getStatus());
@@ -152,6 +208,7 @@ public class StationServiceImpl implements StationService {
         }
 
         Station updatedStation = stationRepository.save(station);
+<<<<<<< HEAD
         return stationMapper.toStationUpdateResponse(updatedStation);
     }
     @Override
@@ -166,6 +223,30 @@ public class StationServiceImpl implements StationService {
         }
 
 
+=======
+        return stationMapper.toStationResponse(updatedStation);
+    }
+
+    @Override
+    @Transactional
+    public void deleteStation(Long id) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + id));
+
+        // Kiểm tra có xe nào đang thuộc trạm này không
+        if (station.getVehicles() != null && !station.getVehicles().isEmpty()) {
+            throw new BusinessException("Không thể xóa trạm đang có " +
+                    station.getVehicles().size() + " xe");
+        }
+
+        // Kiểm tra có nhân viên nào đang thuộc trạm này không
+        if (station.getUsers() != null && !station.getUsers().isEmpty()) {
+            throw new BusinessException("Không thể xóa trạm đang có " +
+                    station.getUsers().size() + " nhân viên");
+        }
+
+        // Soft delete: chuyển trạng thái thành CLOSED
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         station.setStatus("CLOSED");
         stationRepository.save(station);
     }

@@ -49,16 +49,36 @@ public class StationController {
         return response;
     }
 
+<<<<<<< HEAD
     @PostMapping("/station/create")
     public ApiResponse<StationResponse> createStation(@Valid @RequestBody StationCreateRequest request) {
         ApiResponse<StationResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Tạo trạm thành công");
+=======
+    @GetMapping("/showbyid/{id}")
+    public ApiResponse<StationResponse> getStationById(@PathVariable Long id) {
+        ApiResponse<StationResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin trạm thành công");
+        response.setData(stationService.getStationById(id));
+        response.setCode(200);
+        return response;
+    }
+
+    @PostMapping("/create")
+    public ApiResponse<StationResponse> createStation(
+            @Valid @RequestBody StationCreateRequest request) {
+        ApiResponse<StationResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Tạo trạm mới thành công");
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         response.setData(stationService.createStation(request));
         response.setCode(201);
         return response;
     }
 
+<<<<<<< HEAD
     @PutMapping("/station/update/{stationId}")
     public ApiResponse<StationUpdateResponse> updateStation(
             @PathVariable Long stationId,
@@ -74,6 +94,24 @@ public class StationController {
     public ApiResponse<Void> deleteStation(@PathVariable Long stationId) {
         ApiResponse<Void> response = new ApiResponse<>();
         stationService.deleteStation(stationId);
+=======
+    @PutMapping("/update/{id}")
+    public ApiResponse<StationResponse> updateStation(
+            @PathVariable Long id,
+            @Valid @RequestBody StationUpdateRequest request) {
+        ApiResponse<StationResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Cập nhật thông tin trạm thành công");
+        response.setData(stationService.updateStation(id, request));
+        response.setCode(200);
+        return response;
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ApiResponse<Void> deleteStation(@PathVariable Long id) {
+        ApiResponse<Void> response = new ApiResponse<>();
+        stationService.deleteStation(id);
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         response.setSuccess(true);
         response.setMessage("Xóa trạm thành công");
         response.setCode(200);

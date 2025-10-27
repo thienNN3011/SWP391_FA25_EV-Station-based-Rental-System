@@ -4,7 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+<<<<<<< HEAD
 import org.springframework.web.server.ResponseStatusException;
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
 import vn.swp391.fa2025.evrental.dto.request.VehicleModelCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleModelUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.ModelImageUrlResponse;
@@ -15,7 +18,12 @@ import vn.swp391.fa2025.evrental.entity.Vehicle;
 import vn.swp391.fa2025.evrental.entity.VehicleModel;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
+<<<<<<< HEAD
 import vn.swp391.fa2025.evrental.mapper.ModelVehicleMapper;
+=======
+import vn.swp391.fa2025.evrental.mapper.VehicleModelMapper;
+import vn.swp391.fa2025.evrental.repository.ModelImageUrlRepository;
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
 import vn.swp391.fa2025.evrental.repository.StationRepository;
 import vn.swp391.fa2025.evrental.repository.VehicleModelRepository;
 import vn.swp391.fa2025.evrental.repository.VehicleRepository;
@@ -37,10 +45,18 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     private VehicleRepository vehicleRepository;
 
     @Autowired
+<<<<<<< HEAD
     private ModelVehicleMapper modelVehicleMapper;
 
     @Autowired
     private FileStorageService fileStorageService;
+=======
+    private VehicleModelMapper vehicleModelMapper;
+
+    @Autowired
+    private ModelImageUrlRepository modelImageUrlRepository;
+
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
 
     @Override
     public List<VehicleModelResponse> getVihecleModelsByStationWithActiveTariffs(String stationName) {
@@ -125,22 +141,34 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     }
 
     @Override
+<<<<<<< HEAD
     public List<VehicleModelResponse> showAllVehicleModel() {
         return vehicleModelRepository.findAll().stream()
                 .map(modelVehicleMapper::toVehicleModelResponse)
+=======
+    public List<VehicleModelResponse> showAllVehicleModels() {
+        return vehicleModelRepository.findAll().stream()
+                .map(vehicleModelMapper::toVehicleModelResponse)
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
                 .collect(Collectors.toList());
     }
 
     @Override
     public VehicleModelResponse getVehicleModelById(Long id) {
         VehicleModel vehicleModel = vehicleModelRepository.findById(id)
+<<<<<<< HEAD
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy model xe với ID: " + id));
         return modelVehicleMapper.toVehicleModelResponse(vehicleModel);
+=======
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu xe với ID: " + id));
+        return vehicleModelMapper.toVehicleModelResponse(vehicleModel);
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
     }
 
     @Override
     @Transactional
     public VehicleModelResponse createVehicleModel(VehicleModelCreateRequest request) {
+<<<<<<< HEAD
         // Validate tên model xe không được trùng lặp
         if (vehicleModelRepository.existsByName(request.getName())) {
             throw new BusinessException("Tên model xe đã tồn tại: " + request.getName());
@@ -202,10 +230,41 @@ public class VehicleModelServiceImpl implements VehicleModelService {
 
         return modelVehicleMapper.toVehicleModelResponse(vehicleModel);
     }
+=======
+        // Kiểm tra tên mẫu xe đã tồn tại chưa (nếu cần)
+        if (vehicleModelRepository.existsByNameAndBrand(request.getName(), request.getBrand())) {
+            throw new BusinessException("Mẫu xe với tên '" + request.getName() +
+                    "' và thương hiệu '" + request.getBrand() + "' đã tồn tại");
+        }
+
+        VehicleModel vehicleModel = vehicleModelMapper.toVehicleModelFromCreateRequest(request);
+        VehicleModel savedModel = vehicleModelRepository.save(vehicleModel);
+
+        // Xử lý image URLs nếu có
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            List<ModelImageUrl> imageUrls = request.getImageUrls().stream()
+                    .map(imgReq -> {
+                        ModelImageUrl img = new ModelImageUrl();
+                        img.setImageUrl(imgReq.getImageUrl());
+                        img.setColor(imgReq.getColor());
+                        img.setModel(savedModel);
+                        return img;
+                    })
+                    .collect(Collectors.toList());
+
+            modelImageUrlRepository.saveAll(imageUrls);
+            savedModel.setImageUrls(imageUrls);
+        }
+
+        return vehicleModelMapper.toVehicleModelResponse(savedModel);
+    }
+
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
     @Override
     @Transactional
     public VehicleModelResponse updateVehicleModel(Long id, VehicleModelUpdateRequest request) {
         VehicleModel vehicleModel = vehicleModelRepository.findById(id)
+<<<<<<< HEAD
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy model xe với ID: " + id));
 
         boolean isUpdated = false;
@@ -216,12 +275,23 @@ public class VehicleModelServiceImpl implements VehicleModelService {
                 if (vehicleModelRepository.existsByName(request.getName())) {
                     throw new BusinessException("Tên model xe đã tồn tại: " + request.getName());
                 }
+=======
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu xe với ID: " + id));
+
+        boolean isUpdated = false;
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            if (!vehicleModel.getName().equals(request.getName())) {
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
                 vehicleModel.setName(request.getName());
                 isUpdated = true;
             }
         }
 
+<<<<<<< HEAD
         // Update brand
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         if (request.getBrand() != null && !request.getBrand().isBlank()) {
             if (!vehicleModel.getBrand().equals(request.getBrand())) {
                 vehicleModel.setBrand(request.getBrand());
@@ -229,7 +299,10 @@ public class VehicleModelServiceImpl implements VehicleModelService {
             }
         }
 
+<<<<<<< HEAD
         // Update batteryCapacity
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         if (request.getBatteryCapacity() != null) {
             if (!vehicleModel.getBatteryCapacity().equals(request.getBatteryCapacity())) {
                 vehicleModel.setBatteryCapacity(request.getBatteryCapacity());
@@ -237,7 +310,10 @@ public class VehicleModelServiceImpl implements VehicleModelService {
             }
         }
 
+<<<<<<< HEAD
         // Update range
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         if (request.getRange() != null) {
             if (!vehicleModel.getRange().equals(request.getRange())) {
                 vehicleModel.setRange(request.getRange());
@@ -245,7 +321,10 @@ public class VehicleModelServiceImpl implements VehicleModelService {
             }
         }
 
+<<<<<<< HEAD
         // Update seat
+=======
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         if (request.getSeat() != null) {
             if (!vehicleModel.getSeat().equals(request.getSeat())) {
                 vehicleModel.setSeat(request.getSeat());
@@ -253,20 +332,78 @@ public class VehicleModelServiceImpl implements VehicleModelService {
             }
         }
 
+<<<<<<< HEAD
         // Update description
         if (request.getDescription() != null && !request.getDescription().isBlank()) {
             if (!vehicleModel.getDescription().equals(request.getDescription())) {
+=======
+        if (request.getDescription() != null) {
+            if (vehicleModel.getDescription() == null ||
+                    !vehicleModel.getDescription().equals(request.getDescription())) {
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
                 vehicleModel.setDescription(request.getDescription());
                 isUpdated = true;
             }
         }
 
+<<<<<<< HEAD
+=======
+        // Cập nhật image URLs nếu có
+        if (request.getImageUrls() != null) {
+            // Xóa ảnh cũ
+            if (vehicleModel.getImageUrls() != null && !vehicleModel.getImageUrls().isEmpty()) {
+                modelImageUrlRepository.deleteByModel_ModelId(id);
+            }
+
+            // Thêm ảnh mới
+            List<ModelImageUrl> newImageUrls = request.getImageUrls().stream()
+                    .map(imgReq -> {
+                        ModelImageUrl img = new ModelImageUrl();
+                        img.setImageUrl(imgReq.getImageUrl());
+                        img.setColor(imgReq.getColor());
+                        img.setModel(vehicleModel);
+                        return img;
+                    })
+                    .collect(Collectors.toList());
+
+            modelImageUrlRepository.saveAll(newImageUrls);
+            vehicleModel.setImageUrls(newImageUrls);
+            isUpdated = true;
+        }
+
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
         if (!isUpdated) {
             throw new BusinessException("Không có thông tin nào được thay đổi");
         }
 
         VehicleModel updatedModel = vehicleModelRepository.save(vehicleModel);
+<<<<<<< HEAD
         return modelVehicleMapper.toVehicleModelResponse(updatedModel);
+=======
+        return vehicleModelMapper.toVehicleModelResponse(updatedModel);
+    }
+
+    @Override
+    @Transactional
+    public void deleteVehicleModel(Long id) {
+        VehicleModel vehicleModel = vehicleModelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu xe với ID: " + id));
+
+        // Kiểm tra xem có xe nào đang sử dụng model này không
+        if (vehicleModel.getVehicles() != null && !vehicleModel.getVehicles().isEmpty()) {
+            throw new BusinessException("Không thể xóa mẫu xe đang được sử dụng bởi " +
+                    vehicleModel.getVehicles().size() + " xe");
+        }
+
+        // Kiểm tra xem có tariff nào đang liên kết với model này không
+        if (vehicleModel.getTariffs() != null && !vehicleModel.getTariffs().isEmpty()) {
+            throw new BusinessException("Không thể xóa mẫu xe đang có bảng giá liên kết");
+        }
+
+        modelImageUrlRepository.deleteByModel_ModelId(id);
+
+        vehicleModelRepository.delete(vehicleModel);
+>>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
     }
 }
 
