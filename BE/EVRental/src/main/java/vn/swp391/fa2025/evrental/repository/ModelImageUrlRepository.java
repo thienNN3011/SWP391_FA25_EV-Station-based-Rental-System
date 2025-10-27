@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 import vn.swp391.fa2025.evrental.entity.ModelImageUrl;
 
 import java.util.List;
-<<<<<<< HEAD
 import java.util.Optional;
 
 @Repository
@@ -24,12 +23,5 @@ public interface ModelImageUrlRepository extends JpaRepository<ModelImageUrl, Lo
     long countByModel_ModelId(Long modelId);
 
     // Xóa tất cả ảnh của model (cascade sẽ xử lý nhưng có thể dùng khi cần)
-=======
-
-@Repository
-public interface ModelImageUrlRepository extends JpaRepository<ModelImageUrl, Long> {
-    List<ModelImageUrl> findByModel_ModelId(Long modelId);
-
->>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
     void deleteByModel_ModelId(Long modelId);
 }

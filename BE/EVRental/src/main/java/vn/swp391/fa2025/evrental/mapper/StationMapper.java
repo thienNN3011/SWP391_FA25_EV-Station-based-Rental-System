@@ -4,8 +4,6 @@ import org.mapstruct.*;
 import vn.swp391.fa2025.evrental.dto.response.StationResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationUpdateResponse;
 import vn.swp391.fa2025.evrental.entity.Station;
-import vn.swp391.fa2025.evrental.dto.request.StationCreateRequest;
-
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 
@@ -17,29 +15,10 @@ public interface StationMapper {
     @Mapping(target = "openingHours", source = "openingHours")
     StationResponse toStationResponse(Station station);
 
-<<<<<<< HEAD
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "stationName", source = "stationName")
     @Mapping(target = "address", source = "address")
     @Mapping(target = "openingHours", source = "openingHours")
     @Mapping(target = "status",source ="status")
     StationUpdateResponse toStationUpdateResponse(Station station);
-=======
-    @Mapping(target = "stationId", ignore = true)
-    @Mapping(target = "users", ignore = true)
-    @Mapping(target = "vehicles", ignore = true)
-    @Mapping(target = "stationName", source = "stationName")
-    @Mapping(target = "address", source = "address")
-    @Mapping(target = "openingHours", source = "openingHours")
-    @Mapping(target = "status", source = "status")
-    Station toStationFromCreateRequest(StationCreateRequest request);
-
-    default Integer getTotalVehicles(Station station) {
-        return station.getVehicles() != null ? station.getVehicles().size() : 0;
-    }
-
-    default Integer getTotalStaffs(Station station) {
-        return station.getUsers() != null ? station.getUsers().size() : 0;
-    }
->>>>>>> cbb589721694ca5ce33df740b71da07f71ba805f
 }
