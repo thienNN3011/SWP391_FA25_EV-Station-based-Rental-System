@@ -10,4 +10,5 @@ import java.util.List;
 public interface StationRepository extends JpaRepository<Station, Long> {
     List<Station> findByStatus(String status);
     Station findByStationName(String stationName);
+    boolean existsByStationName(String stationName);
 }
