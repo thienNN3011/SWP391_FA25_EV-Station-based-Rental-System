@@ -40,7 +40,7 @@ export function RentalHistory() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Car className="h-5 w-5 text-secondary" />
-          Lịch sử thuê xe
+          Lịch sử thuê xe chưa có data
         </CardTitle>
         <CardDescription>Danh sách xe điện gần đây thuê</CardDescription>
       </CardHeader>
