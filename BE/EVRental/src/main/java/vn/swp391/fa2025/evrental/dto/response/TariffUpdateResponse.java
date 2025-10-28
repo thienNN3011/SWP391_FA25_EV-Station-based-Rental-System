@@ -6,14 +6,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class StationResponse {
-    private String stationName;
-    private String address;
-    private String openingHours;
-
+public class TariffUpdateResponse {
+    private Long tariffId;
+    private Long modelId;
+    private String modelName;
+    private String type;
+    private BigDecimal price;
+    private BigDecimal depositAmount;
+    private String status;
 }
