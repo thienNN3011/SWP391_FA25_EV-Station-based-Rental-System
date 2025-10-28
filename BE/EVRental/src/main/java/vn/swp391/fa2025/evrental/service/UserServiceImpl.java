@@ -185,8 +185,14 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
+    @Override
+    public CustomerResponse showUserInfo(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new ResourceNotFoundException("Không tìm thấy thông tin user");
+        }
+        return userMapper.toDto(user);
 
-
-
+    }
 
 }

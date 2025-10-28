@@ -133,5 +133,19 @@ public class UserController {
         response.setCode(200);
         return response;
     }
+
+    @GetMapping("/showuserinfo")
+    public ApiResponse<CustomerResponse> showUserInfo() {
+        // Lấy username từ token
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        ApiResponse<CustomerResponse> response = new ApiResponse<>();
+        response.setData(userService.showUserInfo(username));
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin user thành công");
+        response.setCode(200);
+        return response;
 }
+    }
 
