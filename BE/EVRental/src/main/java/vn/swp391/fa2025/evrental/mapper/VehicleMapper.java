@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.mapper;
 import org.mapstruct.*;
 import org.springframework.context.annotation.Bean;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
+import vn.swp391.fa2025.evrental.dto.response.ActiveVehicleResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
 
@@ -39,4 +40,18 @@ public interface VehicleMapper {
     @Mapping(target = "plateNumber", source = "plateNumber")
     Vehicle toVehicleFromCreateRequest(VehicleCreateRequest request);
 
+
+    @Mapping(target = "vehicleId", source = "vehicleId")
+    @Mapping(target = "color", source = "color")
+    @Mapping(target = "stationName", source = "station.stationName")
+    @Mapping(target = "plateNumber", source = "plateNumber")
+    @Mapping(target = "modelId", source = "model.modelId")
+    @Mapping(target = "modelName", source = "model.name")
+    @Mapping(target = "brand", source = "model.brand")
+    @Mapping(target = "batteryCapacity", source = "model.batteryCapacity")
+    @Mapping(target = "range", source = "model.range")
+    @Mapping(target = "seat", source = "model.seat")
+    @Mapping(target = "description", source = "model.description")
+    @Mapping(target = "imageUrls", source = "model.imageUrls")
+    ActiveVehicleResponse toActiveVehicleResponse(Vehicle vehicle);
 }

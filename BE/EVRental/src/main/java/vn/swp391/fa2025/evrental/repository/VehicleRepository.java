@@ -19,4 +19,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     // Lấy danh sách xe theo stationId
     List<Vehicle> findByStation_StationId(Long stationId);
+
+    List<Vehicle> findByStation_StationNameAndStatus(String stationName, String status);
 }
