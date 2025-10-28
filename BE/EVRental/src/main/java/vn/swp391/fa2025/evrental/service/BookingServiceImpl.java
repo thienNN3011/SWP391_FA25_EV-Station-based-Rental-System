@@ -108,7 +108,14 @@ public class BookingServiceImpl implements  BookingService{
                 .endTime(booking.getEndTime())
                 .status(booking.getStatus())
                 .build();
-
+        if (bookingRepository.save(booking)!=null) {
+            Vehicle vehicle= booking.getVehicle();
+            vehicle.setStatus("IN_USE");
+            vehicleRepository.save(vehicle);
+            tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()+1);
+            tariffRepository.save(tariff);
+        }
+        bookingRepository.save(booking);
         String paymentUrl="";
         try {
             paymentUrl= vnPayService.createPaymentUrl(req, booking.getTariff().getDepositAmount(), "Thanh toán đặt cọc cho Booking ID: "+booking.getBookingId(), booking.getBookingId());
@@ -121,14 +128,6 @@ public class BookingServiceImpl implements  BookingService{
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        if (bookingRepository.save(booking)!=null) {
-            Vehicle vehicle= booking.getVehicle();
-            vehicle.setStatus("IN_USE");
-            vehicleRepository.save(vehicle);
-            tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()+1);
-            tariffRepository.save(tariff);
-        }
-        bookingRepository.save(booking);
         AfterBookingResponse response= AfterBookingResponse.builder()
                 .bookingResponse(bookingResponse)
                 .qr(qr)
@@ -179,7 +178,13 @@ public class BookingServiceImpl implements  BookingService{
 
     @Override
     public BookingResponse getBookingById(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username=authentication.getName();
+        User user = userRepository.findByUsername(username);
         Booking booking= bookingRepository.findById(id).orElseThrow(()-> new RuntimeException("Booking không tồn tại"));
+        if (user.getRole().equalsIgnoreCase("STAFF") && !user.getStation().getStationId().equals(booking.getVehicle().getStation().getStationId())) {
+            throw new RuntimeException("Booking này không thuộc station của bạn!");
+        }
         return bookingMapper.toBookingResponse(booking);
     }
 
