@@ -20,5 +20,5 @@ public interface UserService {
     public List<StaffListResponse> showAllStaffs(String username);
     public UserUpdateResponse updateUser(String currentUsername, UserUpdateRequest request);
     public boolean deleteUser(String username, String currentUsername);
-
+    public CustomerResponse showUserInfo(String username);
 }
