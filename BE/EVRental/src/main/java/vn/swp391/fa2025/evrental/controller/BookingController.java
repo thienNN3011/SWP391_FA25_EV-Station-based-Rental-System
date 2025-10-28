@@ -58,7 +58,7 @@ public class BookingController {
         response.setCode(200);
         return response;
     }
-    @PostMapping("showdetailbooking")
+    @PostMapping("/showdetailbooking")
     ApiResponse<BookingResponse> showBookingDetail(@RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
         ApiResponse<BookingResponse> response = new ApiResponse<>();
         response.setSuccess(true);
@@ -68,7 +68,7 @@ public class BookingController {
         return response;
     }
 
-    @PostMapping("startrental")
+    @PostMapping("/startrental")
     ApiResponse<String> startRental(@RequestBody StartRentingRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
         response.setSuccess(true);

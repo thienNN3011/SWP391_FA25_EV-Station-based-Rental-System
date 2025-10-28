@@ -30,8 +30,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Override
     public List<VehicleModelResponse> getVihecleModelsByStationWithActiveTariffs(String stationName) {
         if (stationRepository.findByStationName(stationName) == null || !stationRepository.findByStationName(stationName).getStatus().equals("OPEN")) throw new IllegalArgumentException("Station is inactive or does not exist");
-        List<VehicleModel> models= vehicleModelRepository.findDistinctByVehiclesStationStationName(stationName);
-
+        List<VehicleModel> models= vehicleModelRepository.findDistinctByVehiclesStationStationNameAndVehiclesStatus(stationName, "AVAILABLE");
         return models.stream().map(model -> {
             List<TariffResponse> activeTariffs = model.getTariffs().stream()
                     .filter(t -> "active".equalsIgnoreCase(t.getStatus()))
@@ -45,6 +44,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
 
             Set<String> availableColors = model.getVehicles().stream()
                     .filter(vehicle -> "available".equalsIgnoreCase(vehicle.getStatus()))
+                    .filter(vehicle -> stationName.equalsIgnoreCase(vehicle.getStation().getStationName()))
                     .map(Vehicle::getColor)
                     .collect(Collectors.toSet());
             List<ModelImageUrlResponse> imageUrls = model.getImageUrls().stream()
