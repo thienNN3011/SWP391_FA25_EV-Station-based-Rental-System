@@ -23,4 +23,5 @@ public interface BookingService {
     Booking findById(Long id);
     void updateBooking(Booking booking);
     void cancelBooking(Long bookingId);
+    void cancelBookingForSystem(Long bookingId);
 }

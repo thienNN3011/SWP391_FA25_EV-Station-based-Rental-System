@@ -18,7 +18,9 @@ import vn.swp391.fa2025.evrental.util.TimeUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -68,7 +70,17 @@ public class BookingServiceImpl implements  BookingService{
         if (booking.getVehicle()==null) {
             throw new RuntimeException("Hiện tại không có xe nào khả dụng cho mẫu xe này");
         }
+        LocalDateTime now= LocalDateTime.now();
+        LocalDateTime startTime=bookingRequest.getStartTime();
         if (bookingRequest.getStartTime().isBefore(LocalDateTime.now())) throw new RuntimeException("Thời gian bắt đầu phải sau thời gian hiện tại");
+        LocalDate currentDate = now.toLocalDate();
+        LocalDate startDate = startTime.toLocalDate();
+        if (!startTime.toLocalTime().equals(LocalTime.MIDNIGHT)) {
+            startDate = startDate.plusDays(1);
+        }
+        if (startDate.isAfter(currentDate.plusWeeks(1))) {
+            throw new RuntimeException("Ngày kết thúc không được vượt quá 1 tuần kể từ hôm nay.");
+        }
         booking.setStartTime(bookingRequest.getStartTime());
         if (bookingRequest.getEndTime().isBefore(booking.getStartTime())) throw new RuntimeException("Thời gian kết thúc phải sau thời gian bắt đầu");
         booking.setEndTime(bookingRequest.getEndTime());
@@ -195,6 +207,7 @@ public class BookingServiceImpl implements  BookingService{
         String staffname = authentication.getName();
         User staff=userRepository.findByUsername(staffname);
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+        if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Bạn không có quyền tương tác với booking này");
         if (!booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Booking không ở trạng thái BOOKING");
         User customer = userRepository
                 .findById(booking.getUser().getUserId())
@@ -381,6 +394,22 @@ public class BookingServiceImpl implements  BookingService{
                 .referenceCode("REFUND_" + System.currentTimeMillis())
                 .build();
         paymentRepository.save(refund);
+        Tariff tariff = booking.getTariff();
+        tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()-1);
+        tariffRepository.save(tariff);
+        vehicleRepository.save(vehicle);
+        booking.setStatus("CANCELLED");
+        bookingRepository.save(booking);
+    }
+
+    @Override
+    public void cancelBookingForSystem(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+        if (!booking.getStatus().equalsIgnoreCase("UNCONFIRMED") && !booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING/UNCONFIRMED");
+        Vehicle vehicle = vehicleRepository
+                .findById(booking.getVehicle().getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Vehicle không tồn tại"));
+        vehicle.setStatus("AVAILABLE");
         Tariff tariff = booking.getTariff();
         tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()-1);
         tariffRepository.save(tariff);
