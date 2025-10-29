@@ -19,6 +19,7 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   const [bookingSuccess, setBookingSuccess] = useState(false)
   const [message, setMessage] = useState("")
 
+
   useEffect(() => {
     const selected = localStorage.getItem("selectedVehicle")
     if (selected) setVehicle(JSON.parse(selected))
@@ -36,11 +37,12 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     const body = {
       stationName: vehicle.stationName,
       modelId: vehicle.modelId.toString(),
-      color: vehicle.imageUrl?.[0]?.color || "red",
+      color: vehicle.color,
       tariffId: selectedTariff.tariffId,
       startTime: `${startTime}:00`,
       endTime: `${endTime}:00`,
     }
+    console.log("Body raw gửi lên backend:", body)
 
     try {
       const res = await api.post("/bookings/createbooking", body)

@@ -7,9 +7,12 @@ import { Car } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface VehicleModel {
+  vehicleId: number
   modelId: number
+  modelName: string
   stationName: string
-  name: string
+  plateNumber: string
+  color: string
   brand: string
   batteryCapacity: number
   range: number
@@ -28,7 +31,9 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
   const [vehicles, setVehicles] = useState<VehicleModel[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedVehicleByModel, setSelectedVehicleByModel] = useState<{ [modelId: number]: VehicleModel }>({})
   const router = useRouter()
+    const [bodyPreview, setBodyPreview] = useState<object | null>(null)
 
   useEffect(() => {
     if (!stationName) return
@@ -37,7 +42,7 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
       setLoading(true)
       setError(null)
       try {
-        const response = await fetch("http://localhost:8080/EVRental/vehiclemodel", {
+        const response = await fetch("http://localhost:8080/EVRental/vehicles/showactivebystation", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ stationName }),
@@ -62,10 +67,52 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
     fetchVehicles()
   }, [stationName])
 
-  const handleSelect = (vehicle: VehicleModel) => {
-    localStorage.setItem("selectedVehicle", JSON.stringify(vehicle))
-    if (onSelectVehicle) onSelectVehicle(vehicle)
+  const handleColorSelect = (v: VehicleModel) => {
+    console.log("Chọn màu:", v)
+    setSelectedVehicleByModel(prev => ({ ...prev, [v.modelId]: v }))
   }
+
+  const handleSelect = (modelId: number) => {
+  const vehicle = selectedVehicleByModel[modelId]
+  if (!vehicle) return alert("Vui lòng chọn màu xe trước khi đặt.")
+
+  const payload = {
+    stationName: vehicle.stationName,
+    modelId: vehicle.modelId,
+    color: vehicle.color,
+    tariffId: vehicle.tariffs[0]?.tarriffId,
+    startTime: "2025-10-31 20:00:00", 
+    endTime: "2025-11-10 07:00:00"
+  }
+
+  
+  console.log("Body raw gửi lên backend:", payload)
+ setBodyPreview(payload)
+  
+  fetch("http://localhost:8080/EVRental/vehicles/select", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.json())
+    .then(data => console.log("Response từ backend:", data))
+    .catch(err => console.error("Lỗi gửi lên backend:", err))
+
+  
+  localStorage.setItem("selectedVehicle", JSON.stringify(vehicle))
+  if (onSelectVehicle) onSelectVehicle(vehicle)
+
+  console.log("Selected vehicle:", vehicle)
+}
+
+
+ 
+  const modelsMap: { [modelId: number]: VehicleModel[] } = {}
+  vehicles.forEach(v => {
+    if (!modelsMap[v.modelId]) modelsMap[v.modelId] = []
+    modelsMap[v.modelId].push(v)
+  })
+ 
 
   return (
     <Card className="h-[500px] flex flex-col">
@@ -83,37 +130,52 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
 
         {!loading && !error && vehicles.length > 0 && (
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {vehicles.map((v, i) => {
-              const imgSrc = v.imageUrls?.[0]?.imageUrl || "/no-image.png"
+            {Object.values(modelsMap).map((modelVehicles, idx) => {
+              const firstVehicle = modelVehicles[0]
+              const selectedVehicle = selectedVehicleByModel[firstVehicle.modelId] || firstVehicle
+              const imgSrc = selectedVehicle.imageUrls?.[0]?.imageUrl || "/no-image.png"
 
               return (
                 <li
-                  key={i}
+                  key={idx}
                   className="border rounded-lg p-3 hover:bg-muted/50 transition-all shadow-sm"
                 >
                   <img
                     src={imgSrc}
-                    alt={v.name}
+                    alt={firstVehicle.modelName}
                     className="w-full h-40 object-cover rounded-md mb-2"
                   />
 
-                  <p className="font-medium text-base">{v.name}</p>
-                  <p className="text-xs text-muted-foreground">{v.brand}</p>
+                  <p className="font-medium text-base">{firstVehicle.modelName}</p>
+                  <p className="text-xs text-muted-foreground">{firstVehicle.brand}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Pin: {v.batteryCapacity} kWh | Quãng đường: {v.range} km
+                    Pin: {firstVehicle.batteryCapacity} kWh | Quãng đường: {firstVehicle.range} km
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Số ghế: {v.seat} | {v.description}
+                    Số ghế: {firstVehicle.seat} | {firstVehicle.description}
                   </p>
 
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {modelVehicles.map((v) => (
+                      <button
+                        key={v.vehicleId}
+                        className={`w-6 h-6 rounded-full border ${selectedVehicle.vehicleId === v.vehicleId ? "border-black" : "border-gray-300"}`}
+                        style={{ backgroundColor: v.color.toLowerCase() }}
+                        onClick={() => handleColorSelect(v)}
+                        title={v.color}
+                      />
+                    ))}
+                  </div>
+
+                 
                   <div className="mt-2 border-t pt-2">
-                    {v.tariffs.map((t) => {
+                    {selectedVehicle.tariffs.map((t) => {
                       const typeVi =
-                        t.type === "HOURLY"
+                        t.type.toUpperCase() === "HOURLY"
                           ? "Theo giờ"
-                          : t.type === "DAILY"
+                          : t.type.toUpperCase() === "DAILY"
                           ? "Theo ngày"
-                          : t.type === "MONTHLY"
+                          : t.type.toUpperCase() === "MONTHLY"
                           ? "Theo tháng"
                           : t.type
                       return (
@@ -126,7 +188,7 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
 
                   <Button
                     className="w-full mt-3 bg-sky-500 hover:bg-sky-800 text-white"
-                    onClick={() => handleSelect(v)}
+                    onClick={() => handleSelect(firstVehicle.modelId)}
                   >
                     Đặt xe
                   </Button>

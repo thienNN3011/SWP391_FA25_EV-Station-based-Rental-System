@@ -4,8 +4,9 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { Inter } from "next/font/google"
-
 import { AuthProvider } from "@/components/auth-context" 
+
+
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700"],
@@ -34,7 +35,7 @@ export default function RootLayout({
           <Suspense fallback={null}>{children}</Suspense>
           <Analytics />
         </AuthProvider>
-        
+     
       </body>
     </html>
   )
