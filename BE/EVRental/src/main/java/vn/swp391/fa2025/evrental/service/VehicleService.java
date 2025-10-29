@@ -16,4 +16,6 @@ public interface VehicleService {
     VehicleResponse updateVehicle(Long id, VehicleUpdateRequest request);
 
     void deleteVehicle(Long id);
+
+    List<VehicleResponse> showByStatus(String status);
 }

@@ -1,6 +1,8 @@
 package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -8,15 +10,18 @@ import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.entity.Station;
+import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
 import vn.swp391.fa2025.evrental.entity.VehicleModel;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.mapper.VehicleMapper;
 import vn.swp391.fa2025.evrental.repository.StationRepository;
+import vn.swp391.fa2025.evrental.repository.UserRepository;
 import vn.swp391.fa2025.evrental.repository.VehicleModelRepository;
 import vn.swp391.fa2025.evrental.repository.VehicleRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +41,8 @@ public class VehicleServiceImpl implements VehicleService {
     @Autowired
     private VehicleMapper vehicleMapper;
 
+    @Autowired
+    private UserRepository userRepository;
     @Override
     public List<VehicleResponse> showAllVehicle() {
         return vehicleRepository.findAll().stream()
@@ -162,4 +169,27 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setStatus("INACTIVE");
         vehicleRepository.save(vehicle);
     }
+
+    @Override
+    public List<VehicleResponse> showByStatus(String status) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String staffname = authentication.getName();
+        User staff=userRepository.findByUsername(staffname);
+        status=status.toUpperCase();
+        String[] statusList={"ALL", "AVAILABLE", "UNAVAILABLE", "IN_USE", "MAINTENANCE"};
+        boolean ok=false;
+        for (String st: statusList){
+            if (status.equals(st)){
+                ok=true;
+                break;
+            }
+        }
+        if (!ok) throw new RuntimeException("Status không hợp lệ");
+        List<Vehicle> vehicles=new ArrayList<>();
+        if (status.equals("ALL")) vehicles=vehicleRepository.findByStation_StationId(staff.getStation().getStationId());
+        else vehicles=vehicleRepository.findByStation_StationIdAndStatus(staff.getStation().getStationId(), status);
+        return vehicleMapper.toShortVehicleResponseList(vehicles);
+    }
+
+
 }

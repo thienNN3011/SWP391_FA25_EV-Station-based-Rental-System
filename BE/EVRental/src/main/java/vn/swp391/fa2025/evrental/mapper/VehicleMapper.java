@@ -6,6 +6,8 @@ import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface VehicleMapper {
     //Map show thong tin xe
@@ -39,4 +41,6 @@ public interface VehicleMapper {
     @Mapping(target = "plateNumber", source = "plateNumber")
     Vehicle toVehicleFromCreateRequest(VehicleCreateRequest request);
 
+    @IterableMapping(qualifiedByName = "toShortVehicleResponse")
+    List<VehicleResponse> toShortVehicleResponseList(List<Vehicle> vehicles);
 }

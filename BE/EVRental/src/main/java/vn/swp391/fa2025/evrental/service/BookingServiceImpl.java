@@ -363,12 +363,24 @@ public class BookingServiceImpl implements  BookingService{
 
     @Override
     public void cancelBooking(Long bookingId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String rentername = authentication.getName();
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
-        if (!booking.getStatus().equalsIgnoreCase("UNCONFIRMED") || !booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING/UNCONFIRMED");
+        if (!booking.getUser().getUsername().equalsIgnoreCase(rentername)) throw new RuntimeException("Không có quyền thao tác trên booking này");
+        if (!booking.getStatus().equalsIgnoreCase("UNCONFIRMED") && !booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING/UNCONFIRMED");
         Vehicle vehicle = vehicleRepository
                 .findById(booking.getVehicle().getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle không tồn tại"));
         vehicle.setStatus("AVAILABLE");
+        Payment deposit=paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), "DEPOSIT");
+        Payment refund = Payment.builder()
+                .booking(booking)
+                .transactionDate(LocalDateTime.now())
+                .paymentType("REFUND_DEPOSIT")
+                .amount(deposit.getAmount().multiply(new BigDecimal("0.7")))
+                .referenceCode("REFUND_" + System.currentTimeMillis())
+                .build();
+        paymentRepository.save(refund);
         Tariff tariff = booking.getTariff();
         tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()-1);
         tariffRepository.save(tariff);
