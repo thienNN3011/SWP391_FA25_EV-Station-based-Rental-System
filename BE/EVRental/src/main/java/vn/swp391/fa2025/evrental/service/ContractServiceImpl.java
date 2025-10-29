@@ -84,12 +84,7 @@ public String confirmContract(String token) {
 
     @Override
     public String rejectContract(String token) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
         Contract contract = contractRepository.findByToken(token);
-        if (!contract.getBooking().getUser().getUsername().equals(username)) {
-            throw new RuntimeException("Bạn không có quyền hủy hợp đồng này.");
-        }
         if (contract == null) {
             throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
         }

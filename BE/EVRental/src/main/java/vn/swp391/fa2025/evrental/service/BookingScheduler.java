@@ -35,7 +35,7 @@ public class BookingScheduler {
                 LocalDateTime now = LocalDateTime.now();
                 long minutesElapsed = Duration.between(createdTime, now).toMinutes();
                 if (minutesElapsed >= 15) {
-                    bookingService.cancelBooking(booking.getBookingId());
+                    bookingService.cancelBookingForSystem(booking.getBookingId());
                     System.out.println("⏰ Booking #" + booking.getBookingId() + " bị hủy do quá hạn thanh toán.");
                 }
             }
