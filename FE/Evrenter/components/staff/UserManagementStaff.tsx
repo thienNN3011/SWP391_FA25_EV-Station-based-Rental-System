@@ -135,7 +135,7 @@ export function UserManagementStaff() {
         </div>
 
         {loading && <p>🔄 Đang tải dữ liệu...</p>}
-        {error && <p className="text-red-600">❌ {error}</p>}
+        {error && <p className="text-red-600"> {error}</p>}
 
         <Card>
           <CardHeader>
@@ -169,20 +169,25 @@ export function UserManagementStaff() {
                       <TableCell>{u.idCard}</TableCell>
                       <TableCell>{u.driveLicense}</TableCell>
                       <TableCell>{renderStatus(u.status)}</TableCell>
-                      <TableCell>
-                        <img
-                          src={u.idCardImage}
-                          alt="CCCD"
-                          className="w-16 h-10 object-cover rounded bg-muted"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <img
-                          src={u.licenseImage}
-                          alt="GPLX"
-                          className="w-16 h-10 object-cover rounded bg-muted"
-                        />
-                      </TableCell>
+                          <TableCell>
+  <a href={u.idCardPhoto} target="_blank" rel="noopener noreferrer">
+    <img
+      src={u.idCardPhoto}
+      alt="CCCD"
+      className="w-16 h-10 object-cover rounded bg-muted hover:scale-105 transition"
+    />
+  </a>
+</TableCell>
+<TableCell>
+  <a href={u.driveLicensePhoto} target="_blank" rel="noopener noreferrer">
+    <img
+      src={u.driveLicensePhoto}
+      alt="GPLX"
+      className="w-16 h-10 object-cover rounded bg-muted hover:scale-105 transition"
+    />
+  </a>
+</TableCell>
+
                       <TableCell className="text-right">
                         <SimpleDropdown
                           onActivate={() =>

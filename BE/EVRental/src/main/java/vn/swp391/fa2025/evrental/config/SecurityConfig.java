@@ -34,7 +34,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
                         .requestMatchers("/auth/**", "/", "/hello", "/error", "/vehiclemodel", "/showactivestation",
-                                "/vehiclemodel/getvehicelmodeldetail", "/vnpay-return").permitAll()
+                                "/vehiclemodel/getvehicelmodeldetail", "/payments/vnpay-return").permitAll()
+                                
+
                         .requestMatchers("/EVRental/**", "/**.jpg", "/**.jpeg", "/**.png").permitAll()
 
                                 .requestMatchers(HttpMethod.POST, "/users").permitAll()

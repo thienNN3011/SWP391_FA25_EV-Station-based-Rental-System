@@ -61,29 +61,25 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public String confirmContract(String token) { //fe test mail, ko chay dc thi back lai
+public String confirmContract(String token) {
     Contract contract = contractRepository.findByToken(token);
-
     if (contract == null) {
         throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
     }
-
     if (!"PENDING".equals(contract.getStatus())) {
         throw new RuntimeException("Hợp đồng đã được xác nhận hoặc không hợp lệ.");
     }
-
-   
     contract.setStatus("CONFIRMED");
     contract.getBooking().setStatus("RENTING");
-
     contractRepository.save(contract);
     bookingRepository.save(contract.getBooking());
 
     return """
-        <h2>Hợp đồng đã được xác nhận thành công!</h2>
-        <p>Bạn có thể quay lại hệ thống để tiếp tục quy trình thuê xe.</p>
+    <h2>Hợp đồng đã được xác nhận thành công!</h2>
+    <p>Bạn có thể quay lại hệ thống để tiếp tục quy trình thuê xe.</p>
     """;
 }
+
 
 
     @Override

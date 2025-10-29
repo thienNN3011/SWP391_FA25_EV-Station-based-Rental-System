@@ -37,9 +37,9 @@ public class RegisterCustomerRequest {
     private String driveLicense;
 
     @NotNull(message = "ID Card photo is required")
-    private MultipartFile idCardPhoto;
+    private String idCardPhoto;
 
     @NotNull(message = "Driver license photo is required")
-    private MultipartFile driveLicensePhoto;
+    private String driveLicensePhoto;
 }
 

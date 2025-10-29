@@ -43,12 +43,13 @@ public class RegistrationService {
         }
 
         // Store images
-        String idCardPath = fileStorageService.saveImage(req.getIdCardPhoto(), "idcard");
-        String driveLicensePath = fileStorageService.saveImage(req.getDriveLicensePhoto(), "drivelic");
+       String idCardPath = req.getIdCardPhoto();
+        String driveLicensePath = req.getDriveLicensePhoto();
+
 
         // Map request -> entity via MapStruct
         User user = userMapper.toEntity(req, idCardPath, driveLicensePath);
-        user.setRole("USER");
+        user.setRole("RENTER");
         user.setStatus("PENDING");
         user.setCreatedDate(LocalDateTime.now());
         user.setPassword(passwordEncoder.encode(user.getPassword()));

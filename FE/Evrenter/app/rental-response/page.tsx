@@ -8,7 +8,7 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react"
 
 export default function RentalResponsePage() {
   const searchParams = useSearchParams()
-  const action = searchParams.get("action") 
+  const action = searchParams.get("action")
   const token = searchParams.get("token")
   const [message, setMessage] = useState("")
   const [htmlContent, setHtmlContent] = useState("")
@@ -16,57 +16,42 @@ export default function RentalResponsePage() {
   const [success, setSuccess] = useState<boolean | null>(null)
 
   useEffect(() => {
-    const handleAction = async () => {
-      if (!action || !token) {
-        setMessage("Liên kết không hợp lệ.")
-        setSuccess(false)
-        setLoading(false)
-        return
-      }
-
-            try {
-  const url =
-    action === "confirm"
-      ? `http://localhost:8080/EVRental/bookings/confirm?token=${token}`
-      : `http://localhost:8080/EVRental/bookings/reject?token=${token}`
-
-  const res = await axios.get(url, {
-    headers: { Accept: "application/json, text/html" },
-    responseType: "text", 
-  })
-
-  let parsed
-  try {
-   
-    parsed = JSON.parse(res.data)
-  } catch {
-    parsed = null
-  }
-
-  if (parsed && typeof parsed === "object" && "code" in parsed) {
-    
-    setSuccess(parsed.success)
-    setMessage(parsed.message || "Có lỗi xảy ra khi xử lý yêu cầu.")
-    setHtmlContent("")
-  } else {
-    
-    setSuccess(true)
-    setMessage("Thao tác thành công.")
-    setHtmlContent(res.data)
-  }
-} catch (err: any) {
-  console.error("Rental response error:", err)
-  setSuccess(false)
-  setMessage("Token không hợp lệ hoặc đã hết hạn.")
-} finally {
-  setLoading(false)
-}
-
-
+  const handleAction = async () => {
+    if (!action || !token) {
+      setMessage("Liên kết không hợp lệ.");
+      setSuccess(false);
+      setLoading(false);
+      return;
     }
 
-    handleAction()
-  }, [action, token])
+    try {
+      const url =
+        action === "confirm"
+          ? `http://localhost:8080/EVRental/bookings/confirm?token=${token}`
+          : `http://localhost:8080/EVRental/bookings/reject?token=${token}`;
+
+      const res = await axios.get(url, {
+        headers: { Accept: "text/html" },
+        responseType: "text",
+      });
+
+      // luôn hiển thị HTML trả về từ backend
+      setHtmlContent(res.data);
+      setSuccess(true);
+      setMessage("Thao tác thành công.");
+    } catch (err) {
+      console.error(err);
+      setHtmlContent("");
+      setSuccess(false);
+      setMessage("Token không hợp lệ hoặc đã hết hạn.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  handleAction();
+}, [action, token]);
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -95,12 +80,11 @@ export default function RentalResponsePage() {
           <p className="mt-4 text-sm text-gray-700">{message}</p>
 
           {success && htmlContent && (
-  <div
-    className="mt-4 text-left text-gray-700 border-t pt-3 text-sm"
-    dangerouslySetInnerHTML={{ __html: htmlContent }}
-  />
-)}
-
+            <div
+              className="mt-4 text-left text-gray-700 border-t pt-3 text-sm"
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
+          )}
         </CardContent>
       </Card>
     </div>
