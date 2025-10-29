@@ -130,7 +130,7 @@ public ApiResponse<String> confirmBooking(@RequestParam("token") String token) {
         response.setSuccess(true);
         response.setMessage("Hủy booking thành công");
         bookingService.cancelBooking(request.getBookingId());
-        response.setData("Hủy booking thành công");
+        response.setData("Hủy booking thành công. Đã hoàn lại 70% số tiền đặt cọc cho khách hàng!");
         response.setCode(200);
         return response;
     }

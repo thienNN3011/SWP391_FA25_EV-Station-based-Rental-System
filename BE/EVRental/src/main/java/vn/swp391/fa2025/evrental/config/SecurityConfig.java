@@ -48,7 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
                         .hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers("/bookings/confirm", "/bookings/reject").permitAll()                //.hasAuthority("RENTER") test thu
-                        .requestMatchers("/bookings/startrental", "/bookings/endrental").hasAuthority("STAFF")
+                        .requestMatchers("/bookings/startrental", "/bookings/endrental", "vehicles/showbystatus").hasAuthority("STAFF")
                         .requestMatchers("/bookings/createbooking", "/bookings/cancelbooking").hasAuthority("RENTER")
                         .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
                         .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")

@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import vn.swp391.fa2025.evrental.dto.request.ShowVehicleByStatusRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowActiveVehicleByStationRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
@@ -72,6 +73,12 @@ public class VehicleController {
         return response;
     }
 
+    @PostMapping("/showbystatus")
+    public ApiResponse<List<VehicleResponse>> showAllVehicleByStatus(@RequestBody ShowVehicleByStatusRequest request){
+        ApiResponse<List<VehicleResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy xe theo status thành công");
+        response.setData(vehicleService.showByStatus(request.getStatus()));
 
     @PostMapping("/showactivebystation")
     public ApiResponse<List<ActiveVehicleResponse>> showActiveVehiclesByStation(
