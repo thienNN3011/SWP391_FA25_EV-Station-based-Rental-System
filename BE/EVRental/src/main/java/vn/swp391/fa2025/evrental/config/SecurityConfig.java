@@ -53,7 +53,8 @@ public class SecurityConfig {
                         .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
                         .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")
                         //CRUD VEHICLE
-                                .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/vehicles/showactivebystation").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")

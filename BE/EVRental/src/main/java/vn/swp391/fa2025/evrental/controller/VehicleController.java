@@ -4,8 +4,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import vn.swp391.fa2025.evrental.dto.request.ShowVehicleByStatusRequest;
+import vn.swp391.fa2025.evrental.dto.request.ShowActiveVehicleByStationRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
+import vn.swp391.fa2025.evrental.dto.response.ActiveVehicleResponse;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.service.VehicleService;
@@ -77,6 +79,14 @@ public class VehicleController {
         response.setSuccess(true);
         response.setMessage("Lấy xe theo status thành công");
         response.setData(vehicleService.showByStatus(request.getStatus()));
+
+    @PostMapping("/showactivebystation")
+    public ApiResponse<List<ActiveVehicleResponse>> showActiveVehiclesByStation(
+            @RequestBody ShowActiveVehicleByStationRequest request) {
+        ApiResponse<List<ActiveVehicleResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin các xe đang hoạt động của trạm thành công");
+        response.setData(vehicleService.getActiveVehiclesByStation(request.getStationName()));
         response.setCode(200);
         return response;
     }

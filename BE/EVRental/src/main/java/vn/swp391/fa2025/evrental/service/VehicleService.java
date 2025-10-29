@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.service;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
+import vn.swp391.fa2025.evrental.dto.response.ActiveVehicleResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import java.util.List;
 
@@ -18,4 +19,5 @@ public interface VehicleService {
     void deleteVehicle(Long id);
 
     List<VehicleResponse> showByStatus(String status);
+    List<ActiveVehicleResponse> getActiveVehiclesByStation(String stationName);
 }

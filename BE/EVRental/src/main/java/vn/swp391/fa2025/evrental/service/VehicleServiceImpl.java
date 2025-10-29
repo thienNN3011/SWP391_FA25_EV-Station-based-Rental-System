@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
+import vn.swp391.fa2025.evrental.dto.response.ActiveVehicleResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
@@ -192,4 +193,25 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
 
+    public List<ActiveVehicleResponse> getActiveVehiclesByStation(String stationName) {
+
+        Station station = stationRepository.findByStationName(stationName);
+        if (station == null) {
+            throw new ResourceNotFoundException("Không tìm thấy trạm: " + stationName);
+        }
+        if (!"OPEN".equals(station.getStatus())) {
+            throw new BusinessException("Trạm hiện không hoạt động");
+        }
+
+
+        List<Vehicle> vehicles = vehicleRepository.findByStation_StationNameAndStatus(
+                stationName,
+                "AVAILABLE"
+        );
+
+
+        return vehicles.stream()
+                .map(vehicleMapper::toActiveVehicleResponse)
+                .collect(Collectors.toList());
+    }
 }
