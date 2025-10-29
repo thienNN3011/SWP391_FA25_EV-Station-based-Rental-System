@@ -29,17 +29,10 @@ public class IncidentReport {
     private String description;
 
     @Column(nullable = false)
-    private String severity;
-
-    @Column(nullable = false)
     private String status;
-
-    @Column(columnDefinition = "NVARCHAR(255)")
-    private String resolutionNote;
 
     @Column(nullable = false)
     private BigDecimal cost;
 
-    private String incidentPhoto;
 }
 

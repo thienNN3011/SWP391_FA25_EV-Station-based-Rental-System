@@ -79,40 +79,28 @@ public class BookingController {
     }
 
     @GetMapping("/confirm")
-public ApiResponse<String> confirmBooking(@RequestParam("token") String token) {
-    ApiResponse<String> response = new ApiResponse<>();
+public void confirmBooking(@RequestParam("token") String token, HttpServletResponse response) throws IOException {
+    response.setContentType("text/html;charset=UTF-8");
     try {
-        String result = contractService.confirmContract(token);
-        response.setSuccess(true);
-        response.setMessage("Hợp đồng đã được xác nhận thành công");
-        response.setData(result);
-        response.setCode(200);
+        String html = contractService.confirmContract(token); 
+        response.getWriter().write(html);
     } catch (RuntimeException e) {
-        response.setSuccess(false);
-        response.setMessage(e.getMessage());
-        response.setCode(400);
+        response.getWriter().write("<h2>Lỗi: " + e.getMessage() + "</h2>");
     }
-    return response;
 }
 
 
 
     @GetMapping("/reject")
-    public ApiResponse<String> rejectBooking(@RequestParam("token") String token) {
-        ApiResponse<String> response = new ApiResponse<>();
-        try {
-            String result = contractService.rejectContract(token);
-            response.setSuccess(true);
-            response.setMessage("Hủy hợp đồng thành công");
-            response.setData(result);
-            response.setCode(200);
-        } catch (RuntimeException e) {
-            response.setSuccess(false);
-            response.setMessage(e.getMessage());
-            response.setCode(400);
-        }
-        return response;
+    public void rejectBooking(@RequestParam("token") String token, HttpServletResponse response) throws IOException {
+    response.setContentType("text/html;charset=UTF-8");
+    try {
+        String html = contractService.rejectContract(token);
+        response.getWriter().write(html);
+    } catch (RuntimeException e) {
+        response.getWriter().write("<h2>Lỗi: " + e.getMessage() + "</h2>");
     }
+}
 
     @PostMapping("/endrental")
     ApiResponse<EndRentingResponse> endRental(HttpServletRequest req, @RequestBody EndRentingRequest request) {

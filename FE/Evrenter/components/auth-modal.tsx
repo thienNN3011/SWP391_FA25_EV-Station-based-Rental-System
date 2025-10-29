@@ -13,6 +13,7 @@ import { CheckCircle, AlertCircle, User } from "lucide-react"
 import { Eye, EyeOff } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { useAuth } from "./auth-context"
+import { supabase } from "@/lib/supabaseClient"
 
 
 interface AuthModalProps {
@@ -102,20 +103,64 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
 }
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+  e.preventDefault()
+  setError("")
 
-    const form = e.target as HTMLFormElement
-    const formData = new FormData(form)
+  const form = e.target as HTMLFormElement
+  const formData = new FormData(form)
 
-    try {
-      await registerApi(formData)
-      setIsSignedUp(true)
-      setUserStatus("unverified")
-    } catch (err: any) {
-      setError(err.message || "Đăng ký thất bại")
+  try {
+    const idCardPhoto = formData.get("idCardPhoto") as File
+    const driveLicensePhoto = formData.get("driveLicensePhoto") as File
+
+    // 
+    const uploadToSupabase = async (file: File, folder: string) => {
+      const fileName = `${folder}/${Date.now()}-${file.name}`
+      const { error } = await supabase.storage.from("uploads").upload(fileName, file)
+      if (error) throw error
+      const { data } = supabase.storage.from("uploads").getPublicUrl(fileName)
+      return data.publicUrl
     }
+
+    const idCardUrl = await uploadToSupabase(idCardPhoto, "idcards")
+    const driveUrl = await uploadToSupabase(driveLicensePhoto, "licenses")
+
+    // 
+    const payload = {
+      username: formData.get("username"),
+      password: formData.get("password"), 
+      fullName: formData.get("fullName"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      idCard: formData.get("idCard"),
+      driveLicense: formData.get("driveLicense"),
+      role: "RENTER",
+      status: "PENDING",
+      idCardPhoto: idCardUrl,          
+      driveLicensePhoto: driveUrl,     
+      createdDate: new Date().toISOString(),
+    }
+     console.log("form gửi lên backend:", payload)
+
+   
+    const res = await fetch("http://localhost:8080/EVRental/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.message || "Đăng ký thất bại")
+    }
+
+    setIsSignedUp(true)
+    setUserStatus("unverified")
+  } catch (err: any) {
+    console.error("Upload/Register error:", err)
+    setError(err.message || "Đăng ký thất bại")
   }
+}
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault()
   const formData = new FormData(e.currentTarget)

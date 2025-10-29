@@ -31,11 +31,13 @@ public class UserController {
     @Autowired
     private UserStatsService userStatsService;
 
-    @PostMapping(value = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CustomerResponse> createUser(@Valid @ModelAttribute RegisterCustomerRequest req) {
-        CustomerResponse res = registrationService.registerCustomer(req);
-        return ResponseEntity.created(URI.create("/users/" + res.getUserId())).body(res);
-    }
+    @PostMapping(value = "/users", consumes = MediaType.APPLICATION_JSON_VALUE) //fix de nhan json
+public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomerRequest req) {
+    CustomerResponse res = registrationService.registerCustomer(req);
+    return ResponseEntity.created(URI.create("/users/" + res.getUserId())).body(res);
+}
+
+
 
     @GetMapping("/showpendingaccount")
     public ApiResponse<List<CustomerResponse>> showPendingAccount() {

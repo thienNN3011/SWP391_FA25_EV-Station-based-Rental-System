@@ -22,4 +22,6 @@ public class ActiveVehicleResponse {
     private Integer seat;
     private String description;
     private List<ModelImageUrlResponse> imageUrls;
+
+    private List<TariffResponse> tariffs;
 }

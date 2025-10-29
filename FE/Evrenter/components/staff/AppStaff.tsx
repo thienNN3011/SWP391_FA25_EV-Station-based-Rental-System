@@ -11,11 +11,12 @@ import { Header } from "@/components/header"
 import { LocationManagementStaff } from "./LocationManagementStaff"
 import {BookingStaff} from "./BookingStaff"
 import StartRentalStaff from "./StartRental"
+import EndRentalStaff from "./EndRentalStaff"
 
 
 
 
-type ActivePage = "dashboard" | "users" | "station" | "booking" |"rental"
+type ActivePage = "dashboard" | "users" | "station" | "booking" |"rental" | "endrental"
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
@@ -23,6 +24,7 @@ const menuItems = [
   { id: "station" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
   { id: "booking" as ActivePage, label: "Quản lý booking", icon: MapPin },
   { id: "rental" as ActivePage, label: "Bắt đầu hợp đồng", icon: MapPin },
+  { id: "endrental" as ActivePage, label: "Kết thúc", icon: MapPin },
 ]
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {
@@ -99,6 +101,8 @@ function renderActivePage(activePage: ActivePage) {
       return <BookingStaff />
     case "rental":
       return <StartRentalStaff />
+    case "endrental":
+      return <EndRentalStaff />
     default:
       return <Dashboard />
   }
