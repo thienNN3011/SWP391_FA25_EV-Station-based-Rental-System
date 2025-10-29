@@ -74,12 +74,15 @@ public class VehicleController {
     }
 
     @PostMapping("/showbystatus")
-    public ApiResponse<List<VehicleResponse>> showAllVehicleByStatus(@RequestBody ShowVehicleByStatusRequest request){
+    public ApiResponse<List<VehicleResponse>> showAllVehicleByStatus(@RequestBody ShowVehicleByStatusRequest request) {
         ApiResponse<List<VehicleResponse>> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Lấy xe theo status thành công");
         response.setData(vehicleService.showByStatus(request.getStatus()));
-
+        response.setCode(200);
+        return response;
+    }
+    
     @PostMapping("/showactivebystation")
     public ApiResponse<List<ActiveVehicleResponse>> showActiveVehiclesByStation(
             @RequestBody ShowActiveVehicleByStationRequest request) {
