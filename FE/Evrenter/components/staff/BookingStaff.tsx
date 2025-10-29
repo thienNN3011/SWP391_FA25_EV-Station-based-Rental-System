@@ -26,7 +26,7 @@ export function BookingStaff() {
     setLoading(true)
     setError("")
     try {
-      const res = await api.post("/bookings/showbookingbystatus", { status: "BOOKING" })
+      const res = await api.post("/bookings/showbookingbystatus", { status: "ALL" })
       if (res.data?.data) {
         const mapped = res.data.data.map((b: any) => ({
           bookingId: b.bookingId,
