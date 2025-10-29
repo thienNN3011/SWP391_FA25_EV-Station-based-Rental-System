@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.ActiveVehicleResponse;
+import vn.swp391.fa2025.evrental.dto.response.TariffResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
@@ -211,7 +212,24 @@ public class VehicleServiceImpl implements VehicleService {
 
 
         return vehicles.stream()
-                .map(vehicleMapper::toActiveVehicleResponse)
-                .collect(Collectors.toList());
+                .map(vehicle -> {
+
+                    ActiveVehicleResponse response = vehicleMapper.toActiveVehicleResponse(vehicle);
+
+
+                    List<TariffResponse> activeTariffs = vehicle.getModel().getTariffs().stream()
+                            .filter(t -> "active".equalsIgnoreCase(t.getStatus()))
+                            .map(t -> new TariffResponse(
+                                    t.getTariffId(),
+                                    t.getType(),
+                                    t.getPrice(),
+                                    t.getDepositAmount()
+                            ))
+                            .toList();
+
+                    response.setTariffs(activeTariffs);
+                    return response;
+                })
+                .toList();
     }
 }
