@@ -81,6 +81,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/tariff/update/**").hasAuthority("ADMIN")
                          .requestMatchers(HttpMethod.DELETE, "/tariff/delete/**").hasAuthority("ADMIN")
 
+                        .requestMatchers(HttpMethod.POST, "/incidentreport/create").hasAnyAuthority("ADMIN", "STAFF")
 
 
                                 // booking sua loi 403

@@ -57,5 +57,6 @@ public interface VehicleMapper {
     @Mapping(target = "seat", source = "model.seat")
     @Mapping(target = "description", source = "model.description")
     @Mapping(target = "imageUrls", source = "model.imageUrls")
+    @Mapping(target = "tariffs", ignore = true)
     ActiveVehicleResponse toActiveVehicleResponse(Vehicle vehicle);
 }
