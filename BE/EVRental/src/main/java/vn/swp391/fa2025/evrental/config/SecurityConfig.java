@@ -86,10 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/incidentreport/showbystation/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/incidentreport/update").hasAuthority("ADMIN")
 
-                                // booking sua loi 403
-                        .requestMatchers(HttpMethod.POST, "/EVRental/bookings/createbooking").permitAll()
-
-
+                        .requestMatchers("/systemconfig/**").asAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

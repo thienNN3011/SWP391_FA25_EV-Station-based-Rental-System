@@ -20,6 +20,8 @@ public class BookingScheduler {
     private BookingRepository bookingRepository;
     @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
+    private SystemConfigServiceImpl systemConfigService;
 
     @Scheduled(fixedRate = 15 * 60 * 1000)
     public void cancelBooking() {
@@ -34,7 +36,7 @@ public class BookingScheduler {
                 LocalDateTime createdTime = booking.getCreatedDate();
                 LocalDateTime now = LocalDateTime.now();
                 long minutesElapsed = Duration.between(createdTime, now).toMinutes();
-                if (minutesElapsed >= 15) {
+                if (minutesElapsed >= Integer.parseInt(systemConfigService.getSystemConfigByKey("QR_EXPIRE").getValue())) {
                     bookingService.cancelBookingForSystem(booking.getBookingId());
                     System.out.println("⏰ Booking #" + booking.getBookingId() + " bị hủy do quá hạn thanh toán.");
                 }
