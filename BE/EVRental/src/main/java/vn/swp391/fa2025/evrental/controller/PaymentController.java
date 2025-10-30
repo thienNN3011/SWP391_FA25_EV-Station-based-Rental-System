@@ -42,7 +42,7 @@ public class PaymentController {
         String page;
 
         try {
-            // --- Xác thực chữ ký ---
+          
             String vnp_SecureHash = params.get("vnp_SecureHash");
             Map<String, String> filteredParams = new HashMap<>(params);
             filteredParams.remove("vnp_SecureHash");
@@ -69,7 +69,7 @@ public class PaymentController {
                 <a href="http://localhost:3000/booking">Quay lại hệ thống</a>
                 """;
             } else {
-                
+              
                 String responseCode = params.get("vnp_ResponseCode");
                 String txnRef = params.get("vnp_TxnRef");
                 Long bookingId = Long.parseLong(txnRef.substring(txnRef.indexOf("BID") + 3));
@@ -81,11 +81,11 @@ public class PaymentController {
                 BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
 
                 if ("00".equals(responseCode)) {
-                 
+                    
                     String paymentType = (paymentService.getPaymentByBookingIdAndType(bookingId, "DEPOSIT") != null)
                             ? "FINAL_PAYMENT" : "DEPOSIT";
 
-                   
+                  
                     Payment payment = Payment.builder()
                             .booking(booking)
                             .paymentType(paymentType)
@@ -103,7 +103,7 @@ public class PaymentController {
                     }
                     bookingService.updateBooking(booking);
 
-                
+                   
                     page = """
                     <!DOCTYPE html>
                     <html lang="vi">
@@ -135,7 +135,7 @@ public class PaymentController {
                     """.formatted(bookingId, amount, transactionNo, bankCode, paymentType);
 
                 } else {
-             
+                    
                     page = """
                     <!DOCTYPE html>
                     <html lang="vi">
