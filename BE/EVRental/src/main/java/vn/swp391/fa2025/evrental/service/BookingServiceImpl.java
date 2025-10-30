@@ -48,6 +48,8 @@ public class BookingServiceImpl implements  BookingService{
     private VnPayService vnPayService;
     @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
+    private SystemConfigServiceImpl systemConfigService;
 
     @Override
     public AfterBookingResponse bookVehicle(HttpServletRequest req, BookingRequest bookingRequest) {
@@ -316,7 +318,7 @@ public class BookingServiceImpl implements  BookingService{
             extraFee = BigDecimal.valueOf(overtime)
                     .multiply(
                             booking.getTariff().getPrice()
-                                    .add(booking.getTariff().getPrice().multiply(BigDecimal.valueOf(0.1))) // +10%
+                                    .add(booking.getTariff().getPrice().multiply(BigDecimal.valueOf(Double.parseDouble(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue()))))
                     );
             booking.setTotalAmount(booking.getTotalAmount().add(extraFee));
         }

@@ -83,10 +83,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/incidentreport/create").hasAnyAuthority("ADMIN", "STAFF")
 
-
-                                // booking sua loi 403
-                        .requestMatchers(HttpMethod.POST, "/EVRental/bookings/createbooking").permitAll()
-
+                        .requestMatchers("/systemconfig/**").hasAuthority("ADMIN")
 
                         .anyRequest().authenticated()
                 )

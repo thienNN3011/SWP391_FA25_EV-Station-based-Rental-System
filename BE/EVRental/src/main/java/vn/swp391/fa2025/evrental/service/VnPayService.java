@@ -1,6 +1,7 @@
 package vn.swp391.fa2025.evrental.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,8 @@ import java.util.*;
 
 @Service
 public class VnPayService {
+    @Autowired
+    private SystemConfigServiceImpl systemConfigService;
 
     @Value("${vnpay.tmnCode}")
     private String vnp_TmnCode;
@@ -55,7 +58,7 @@ public class VnPayService {
         vnp_Params.put("vnp_CreateDate", formatter.format(cld.getTime()));
 
         Calendar expire = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-        expire.add(Calendar.MINUTE, 15);
+        expire.add(Calendar.MINUTE, Integer.parseInt(systemConfigService.getSystemConfigByKey("QR_EXPIRE").getValue()));
         vnp_Params.put("vnp_ExpireDate", formatter.format(expire.getTime()));
 
         List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
