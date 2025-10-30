@@ -82,7 +82,9 @@ public class SecurityConfig {
                          .requestMatchers(HttpMethod.DELETE, "/tariff/delete/**").hasAuthority("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/incidentreport/create").hasAnyAuthority("ADMIN", "STAFF")
-
+                        .requestMatchers(HttpMethod.GET, "/incidentreport/showall").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/incidentreport/showbystation/**").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/incidentreport/update").hasAuthority("ADMIN")
 
                                 // booking sua loi 403
                         .requestMatchers(HttpMethod.POST, "/EVRental/bookings/createbooking").permitAll()

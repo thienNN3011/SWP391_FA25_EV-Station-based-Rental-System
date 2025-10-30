@@ -19,6 +19,6 @@ public class IncidentReportResponse {
     private Long bookingId;
     private LocalDateTime incidentDate;
     private String description;
+    private String incidentImageUrl;
     private String status;
-    private BigDecimal cost;
 }
