@@ -24,7 +24,6 @@ import java.io.IOException;
 
 
 @RestController
-
 @RequestMapping("/payments")
 public class PaymentController {
 
@@ -38,114 +37,138 @@ public class PaymentController {
     private String vnp_HashSecret;
 
     @GetMapping("/vnpay-return")
-public void returnPayment(@RequestParam Map<String, String> params, HttpServletResponse response) throws IOException {
-    response.setContentType("text/html;charset=UTF-8");
-    String page;
+    public void returnPayment(@RequestParam Map<String, String> params, HttpServletResponse response) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        String page;
 
-    try {
-        String vnp_SecureHash = params.get("vnp_SecureHash");
-        Map<String, String> filteredParams = new HashMap<>(params);
-        filteredParams.remove("vnp_SecureHash");
-        filteredParams.remove("vnp_SecureHashType");
+        try {
+          
+            String vnp_SecureHash = params.get("vnp_SecureHash");
+            Map<String, String> filteredParams = new HashMap<>(params);
+            filteredParams.remove("vnp_SecureHash");
+            filteredParams.remove("vnp_SecureHashType");
 
-        List<String> fieldNames = new ArrayList<>(filteredParams.keySet());
-        Collections.sort(fieldNames);
-        StringBuilder hashData = new StringBuilder();
-        for (Iterator<String> itr = fieldNames.iterator(); itr.hasNext();) {
-            String fieldName = itr.next();
-            String fieldValue = filteredParams.get(fieldName);
-            if (fieldValue != null && !fieldValue.isEmpty()) {
-                hashData.append(fieldName).append('=')
-                        .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
-                if (itr.hasNext()) hashData.append('&');
+            List<String> fieldNames = new ArrayList<>(filteredParams.keySet());
+            Collections.sort(fieldNames);
+            StringBuilder hashData = new StringBuilder();
+            for (Iterator<String> itr = fieldNames.iterator(); itr.hasNext();) {
+                String fieldName = itr.next();
+                String fieldValue = filteredParams.get(fieldName);
+                if (fieldValue != null && !fieldValue.isEmpty()) {
+                    hashData.append(fieldName).append('=')
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
+                    if (itr.hasNext()) hashData.append('&');
+                }
             }
-        }
 
-        String computedHash = vnPayService.hmacSHA512(vnp_HashSecret, hashData.toString());
-        if (!computedHash.equalsIgnoreCase(vnp_SecureHash)) {
-            page = """
-            <h2>Lỗi: Sai chữ ký bảo mật! Dữ liệu không hợp lệ.</h2>
-            <a href="http://localhost:3000/booking">Quay lại hệ thống</a>
-            """;
-        } else {
-            String responseCode = params.get("vnp_ResponseCode");
-            String txnRef = params.get("vnp_TxnRef");
-            Long bookingId = Long.parseLong(txnRef.substring(txnRef.indexOf("BID")+3));
-            Booking booking = bookingService.findById(bookingId);
-            String bankCode = params.get("vnp_BankCode");
-            String transactionNo = params.get("vnp_TransactionNo");
-            BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
+            String computedHash = vnPayService.hmacSHA512(vnp_HashSecret, hashData.toString());
 
-            if ("00".equals(responseCode)) {
-                
-                booking.setStatus("BOOKING");
-                bookingService.updateBooking(booking);
-
+            if (!computedHash.equalsIgnoreCase(vnp_SecureHash)) {
                 page = """
-                <!DOCTYPE html>
-                <html lang="vi">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Thanh toán thành công</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; background: #f7f7f7; text-align: center; padding: 50px; }
-                        .container { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: inline-block; }
-                        h2 { color: #4CAF50; }
-                        p { margin: 15px 0; font-size: 16px; }
-                        .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #2196F3; color: #fff; text-decoration: none; border-radius: 5px; }
-                        .btn:hover { background: #1976D2; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h2>Thanh toán thành công!</h2>
-                        <p><strong>Booking ID:</strong> %d</p>
-                        <p><strong>Số tiền:</strong> %s VND</p>
-                        <p><strong>Mã giao dịch:</strong> %s</p>
-                        <p><strong>Ngân hàng:</strong> %s</p>
-                        <a class="btn" href="http://localhost:3000/booking">Quay lại hệ thống</a>
-                    </div>
-                </body>
-                </html>
-                """.formatted(bookingId, amount, transactionNo, bankCode);
-
+                <h2>Lỗi: Sai chữ ký bảo mật! Dữ liệu không hợp lệ.</h2>
+                <a href="http://localhost:3000/booking">Quay lại hệ thống</a>
+                """;
             } else {
               
-                page = """
-                <!DOCTYPE html>
-                <html lang="vi">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Thanh toán thất bại</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; background: #f7f7f7; text-align: center; padding: 50px; }
-                        .container { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: inline-block; }
-                        h2 { color: #f44336; }
-                        .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #2196F3; color: #fff; text-decoration: none; border-radius: 5px; }
-                        .btn:hover { background: #1976D2; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h2>Thanh toán thất bại!</h2>
-                        <p>Mã lỗi: %s</p>
-                        <a class="btn" href="http://localhost:3000/booking">Quay lại hệ thống</a>
-                    </div>
-                </body>
-                </html>
-                """.formatted(responseCode);
+                String responseCode = params.get("vnp_ResponseCode");
+                String txnRef = params.get("vnp_TxnRef");
+                Long bookingId = Long.parseLong(txnRef.substring(txnRef.indexOf("BID") + 3));
+                Booking booking = bookingService.findById(bookingId);
+
+                String bankCode = params.get("vnp_BankCode");
+                String transactionNo = params.get("vnp_TransactionNo");
+                String payDate = params.get("vnp_PayDate");
+                BigDecimal amount = new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100));
+
+                if ("00".equals(responseCode)) {
+                    
+                    String paymentType = (paymentService.getPaymentByBookingIdAndType(bookingId, "DEPOSIT") != null)
+                            ? "FINAL_PAYMENT" : "DEPOSIT";
+
+                  
+                    Payment payment = Payment.builder()
+                            .booking(booking)
+                            .paymentType(paymentType)
+                            .amount(amount)
+                            .referenceCode(transactionNo)
+                            .transactionDate(TimeUtils.parsePayDate(payDate))
+                            .build();
+                    paymentService.createPayment(payment);
+
+                  
+                    if ("DEPOSIT".equals(paymentType)) {
+                        booking.setStatus("BOOKING");
+                    } else {
+                        booking.setStatus("COMPLETED");
+                    }
+                    bookingService.updateBooking(booking);
+
+                   
+                    page = """
+                    <!DOCTYPE html>
+                    <html lang="vi">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Thanh toán thành công</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; background: #f7f7f7; text-align: center; padding: 50px; }
+                            .container { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: inline-block; }
+                            h2 { color: #4CAF50; }
+                            p { margin: 15px 0; font-size: 16px; }
+                            .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #2196F3; color: #fff; text-decoration: none; border-radius: 5px; }
+                            .btn:hover { background: #1976D2; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h2>Thanh toán thành công!</h2>
+                            <p><strong>Booking ID:</strong> %d</p>
+                            <p><strong>Số tiền:</strong> %s VND</p>
+                            <p><strong>Mã giao dịch:</strong> %s</p>
+                            <p><strong>Ngân hàng:</strong> %s</p>
+                            <p><strong>Loại thanh toán:</strong> %s</p>
+                            <a class="btn" href="http://localhost:3000/booking">Quay lại hệ thống</a>
+                        </div>
+                    </body>
+                    </html>
+                    """.formatted(bookingId, amount, transactionNo, bankCode, paymentType);
+
+                } else {
+                    
+                    page = """
+                    <!DOCTYPE html>
+                    <html lang="vi">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Thanh toán thất bại</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; background: #f7f7f7; text-align: center; padding: 50px; }
+                            .container { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: inline-block; }
+                            h2 { color: #f44336; }
+                            .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #2196F3; color: #fff; text-decoration: none; border-radius: 5px; }
+                            .btn:hover { background: #1976D2; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h2>Thanh toán thất bại!</h2>
+                            <p>Mã lỗi: %s</p>
+                            <a class="btn" href="http://localhost:3000/booking">Quay lại hệ thống</a>
+                        </div>
+                    </body>
+                    </html>
+                    """.formatted(responseCode);
+                }
             }
+        } catch (Exception e) {
+            page = """
+            <h2>Lỗi hệ thống: %s</h2>
+            <a href="http://localhost:3000/booking">Quay lại hệ thống</a>
+            """.formatted(e.getMessage());
         }
-    } catch (Exception e) {
-        page = """
-        <h2>Lỗi hệ thống: %s</h2>
-        <a href="http://localhost:3000/booking">Quay lại hệ thống</a>
-        """.formatted(e.getMessage());
+
+        response.getWriter().write(page);
     }
-
-    response.getWriter().write(page);
-}
-
 }

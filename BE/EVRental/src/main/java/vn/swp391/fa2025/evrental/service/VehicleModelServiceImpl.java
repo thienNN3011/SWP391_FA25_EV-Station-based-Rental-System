@@ -151,11 +151,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
             throw new BusinessException("Số lượng ảnh và màu không khớp");
         }
 
-        // Validate không có màu trùng lặp
-        long distinctColors = request.getColors().stream().distinct().count();
-        if (distinctColors != request.getColors().size()) {
-            throw new BusinessException("Không được có màu trùng lặp");
-        }
+
 
         // Tạo VehicleModel entity (không set imageUrls ở đây)
         VehicleModel vehicleModel = VehicleModel.builder()

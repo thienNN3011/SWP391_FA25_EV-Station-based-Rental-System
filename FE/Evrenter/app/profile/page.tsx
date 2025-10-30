@@ -1,19 +1,24 @@
-"use client"
+'use client'
 
 import { useEffect, useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { toast } from "@/components/ui/use-toast"
 import { api } from "@/lib/api"
+import { Header } from "@/components/header"
 
 interface UserProfile {
+  userId: number
+  username: string
   fullName: string
   email: string
   phone: string
+  idCard: string
+  driveLicense: string
   role: string
-  createdAt?: string
+  status: string
+  createdDate: string
 }
 
 export default function UserProfilePage() {
@@ -23,23 +28,21 @@ export default function UserProfilePage() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
- 
   useEffect(() => {
     const fetchUser = async () => {
+      setLoading(true)
       try {
-        setLoading(true)
-        const res = await api.get("/users/me")
+        const res = await api.get("/showuserinfo")
         if (res.data?.success) {
           setUser(res.data.data)
+        } else {
+          setError(res.data?.message || "Không có thông tin người dùng.")
         }
       } catch (err) {
-        console.error("Lỗi lấy thông tin:", err)
-        toast({
-          title: "Lỗi",
-          description: "Không thể tải thông tin người dùng.",
-          variant: "destructive",
-        })
+        setError("Không thể kết nối server")
       } finally {
         setLoading(false)
       }
@@ -47,19 +50,16 @@ export default function UserProfilePage() {
     fetchUser()
   }, [])
 
- 
   const handleUpdate = async () => {
+    setMessage(null)
+    setError(null)
     const payload: Record<string, string> = {}
     if (email) payload.email = email
     if (phone) payload.phone = phone
     if (password) payload.password = password
 
     if (Object.keys(payload).length === 0) {
-      toast({
-        title: "⚠️ Thiếu dữ liệu",
-        description: "Vui lòng nhập ít nhất một thông tin cần cập nhật.",
-        variant: "destructive",
-      })
+      setError("Vui lòng nhập ít nhất một thông tin cần cập nhật.")
       return
     }
 
@@ -67,26 +67,16 @@ export default function UserProfilePage() {
       setSaving(true)
       const res = await api.put("/updateuser", payload)
       if (res.data?.success) {
-        toast({
-          title: "Cập nhật thành công",
-          description: res.data?.message || "Thông tin của bạn đã được cập nhật.",
-        })
+        setMessage(res.data?.message || "Cập nhật thành công")
         setEmail("")
         setPhone("")
         setPassword("")
+        setUser((prev) => ({ ...prev!, ...res.data.data }))
       } else {
-        toast({
-          title: "Cập nhật thất bại",
-          description: res.data?.message || "Vui lòng thử lại.",
-          variant: "destructive",
-        })
+        setError(res.data?.message || "Cập nhật thất bại")
       }
     } catch (err) {
-      toast({
-        title: "Lỗi máy chủ",
-        description: "Không thể cập nhật thông tin, vui lòng thử lại sau.",
-        variant: "destructive",
-      })
+      setError("Không thể cập nhật thông tin, vui lòng thử lại sau.")
     } finally {
       setSaving(false)
     }
@@ -94,91 +84,109 @@ export default function UserProfilePage() {
 
   if (loading) {
     return (
-      <div className="max-w-md mx-auto mt-10 animate-pulse">
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle>Đang tải thông tin cá nhân...</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-4 bg-muted rounded mb-4"></div>
-            <div className="h-4 bg-muted rounded mb-4"></div>
-            <div className="h-4 bg-muted rounded"></div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background animate-pulse">
+        <Header />
+        <div className="max-w-5xl mx-auto mt-10 space-y-4">
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle>Đang tải thông tin cá nhân...</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-4 bg-muted rounded mb-4"></div>
+              <div className="h-4 bg-muted rounded mb-4"></div>
+              <div className="h-4 bg-muted rounded"></div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-md mx-auto mt-10">
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-center">
-            👤 Thông tin cá nhân
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {user && (
-            <>
-              <div className="space-y-1">
-                <p><strong>Họ tên:</strong> {user.fullName}</p>
-                <p><strong>Email hiện tại:</strong> {user.email}</p>
-                <p><strong>Số điện thoại:</strong> {user.phone}</p>
-                <p><strong>Vai trò:</strong> {user.role}</p>
-                {user.createdAt && (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-2 text-center">Thông tin cá nhân</h1>
+        <p className="text-muted-foreground text-center mb-4">Xem và cập nhật thông tin của bạn</p>
+
+        
+        {message && <div className="text-green-600 text-center mb-4">{message}</div>}
+        {error && <div className="text-red-600 text-center mb-4">{error}</div>}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+         
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-center">👤 Thông tin cá nhân</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {user ? (
+                <>
+                  <p><strong>Họ tên:</strong> {user.fullName}</p>
+                  <p><strong>Username:</strong> {user.username}</p>
+                  <p><strong>Email:</strong> {user.email}</p>
+                  <p><strong>Số điện thoại:</strong> {user.phone}</p>
+                  <p><strong>CMND/CCCD:</strong> {user.idCard}</p>
+                  <p><strong>Bằng lái:</strong> {user.driveLicense}</p>
+                  <p><strong>Vai trò:</strong> {user.role}</p>
+                  <p><strong>Trạng thái:</strong> {user.status}</p>
                   <p className="text-muted-foreground text-sm">
-                    Ngày tạo tài khoản: {new Date(user.createdAt).toLocaleDateString("vi-VN")}
+                    Ngày tạo: {new Date(user.createdDate).toLocaleDateString("vi-VN")}
                   </p>
-                )}
+                </>
+              ) : (
+                <p>Không có thông tin người dùng.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Form cập nhật */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-center">✏️ Cập nhật thông tin</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email mới</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Nhập email mới"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
-              <hr className="my-4" />
-            </>
-          )}
-
-          <h3 className="font-medium text-base">Cập nhật thông tin</h3>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email mới</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Nhập email mới"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Số điện thoại mới</Label>
-            <Input
-              id="phone"
-              type="text"
-              placeholder="Nhập số điện thoại mới"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Mật khẩu mới</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Nhập mật khẩu mới"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <Button
-            onClick={handleUpdate}
-            className="w-full mt-4"
-            disabled={saving}
-          >
-            {saving ? "Đang cập nhật..." : "Lưu thay đổi"}
-          </Button>
-        </CardContent>
-      </Card>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Số điện thoại mới</Label>
+                <Input
+                  id="phone"
+                  type="text"
+                  placeholder="Nhập số điện thoại mới"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Mật khẩu mới</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Nhập mật khẩu mới"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <Button
+                onClick={handleUpdate}
+                className="w-full mt-2"
+                disabled={saving}
+              >
+                {saving ? "Đang cập nhật..." : "Lưu thay đổi"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

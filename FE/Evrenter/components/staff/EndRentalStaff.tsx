@@ -5,8 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { api } from "@/lib/api"
 import { Car, FileText } from "lucide-react"
+import { api } from "@/lib/api"
 
 export default function EndRentalStaff() {
   const [bookingId, setBookingId] = useState("")
@@ -14,9 +14,11 @@ export default function EndRentalStaff() {
   const [vehicleStatus, setVehicleStatus] = useState("")
   const [endOdo, setEndOdo] = useState("")
   const [referenceCode, setReferenceCode] = useState("")
+  const [qrCode, setQrCode] = useState<string | null>(null)
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
 
+ 
   const handleFetchBooking = async () => {
     if (!bookingId) return
     setMessage("")
@@ -24,15 +26,17 @@ export default function EndRentalStaff() {
     try {
       const res = await api.post("/bookings/showdetailbooking", { bookingId })
       setBooking(res.data)
-      setMessage("Đã tải thông tin đặt xe.")
+      setMessage("Đã tải thông tin booking.")
     } catch (err: any) {
       console.error("Lỗi lấy booking:", err)
       setMessage("Không tìm thấy thông tin booking.")
+      setBooking(null)
     } finally {
       setLoading(false)
     }
   }
 
+  
   const handleEndRental = async () => {
     if (!bookingId || !vehicleStatus || !endOdo || !referenceCode) {
       setMessage("Vui lòng nhập đầy đủ thông tin trước khi kết thúc hợp đồng.")
@@ -41,18 +45,21 @@ export default function EndRentalStaff() {
 
     setLoading(true)
     setMessage("")
+    setQrCode(null)
+
     try {
       const body = {
         bookingId,
         vehicleStatus,
         endOdo,
         referenceCode,
-        transactionDate: new Date().toISOString(), 
+        transactionDate: new Date().toISOString(),
       }
 
       const res = await api.post("/bookings/endrental", body)
       if (res.status === 200 || res.status === 201) {
-        setMessage("Kết thúc hợp đồng thành công! Email đã được gửi đến khách hàng.")
+        setMessage("Quét mã dưới đây để thanh toán!")
+        setQrCode(res.data.data.qr) 
       } else {
         setMessage("Có lỗi xảy ra khi kết thúc hợp đồng.")
       }
@@ -78,6 +85,7 @@ export default function EndRentalStaff() {
         </CardHeader>
 
         <CardContent className="space-y-4">
+         
           <div>
             <Label>Mã Booking</Label>
             <div className="flex gap-2">
@@ -92,8 +100,9 @@ export default function EndRentalStaff() {
             </div>
           </div>
 
+         
           {booking && (
-            <div className="p-3 border rounded bg-secondary/10 text-sm">
+            <div className="p-3 border rounded bg-secondary/10 text-sm space-y-1">
               <p><strong>Trạm:</strong> {booking.stationName}</p>
               <p><strong>Xe:</strong> {booking.vehicleName}</p>
               <p><strong>Khách hàng:</strong> {booking.customerName}</p>
@@ -101,6 +110,7 @@ export default function EndRentalStaff() {
             </div>
           )}
 
+        
           <div>
             <Label>Tình trạng xe khi trả</Label>
             <Input
@@ -128,6 +138,7 @@ export default function EndRentalStaff() {
             />
           </div>
 
+          
           <Button
             onClick={handleEndRental}
             disabled={loading}
@@ -141,10 +152,23 @@ export default function EndRentalStaff() {
             )}
           </Button>
 
+     
           {message && (
             <p className="text-center text-sm mt-2 text-muted-foreground">
               {message}
             </p>
+          )}
+
+         
+          {qrCode && (
+            <div className="mt-4 text-center">
+              <p className="mb-2 font-medium">Mã QR thanh toán:</p>
+              <img
+                src={qrCode}
+                alt="QR code"
+                className="mx-auto w-48 h-48 border rounded"
+              />
+            </div>
           )}
         </CardContent>
       </Card>

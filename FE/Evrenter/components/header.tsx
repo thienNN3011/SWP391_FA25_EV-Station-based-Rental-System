@@ -8,6 +8,7 @@ import { AuthModal } from "./auth-modal"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { useAuth } from "./auth-context"
+
 import {
   DropdownMenu,
   DropdownMenuContent,

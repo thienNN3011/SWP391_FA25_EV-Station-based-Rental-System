@@ -28,11 +28,13 @@ public class IncidentReport {
     @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String description;
 
+    @Column(nullable = false, columnDefinition = "NVARCHAR(500)")
+    private String incidentImageUrl;
+
     @Column(nullable = false)
     private String status;
 
-    @Column(nullable = false)
-    private BigDecimal cost;
+
 
 }
 
