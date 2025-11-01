@@ -25,18 +25,21 @@ public class SystemConfigServiceImpl implements SystemConfigService{
     public SystemConfigResponse updateSystemConfig(String key, String value) {
         SystemConfig systemConfig = systemConfigRepository.findByKey(key);
         if (systemConfig==null) throw new RuntimeException("SystemConfig không hợp lệ");
-        if (systemConfig.getKey().equals("OVERTIME_EXTRA_RATE")) {
+        if (systemConfig.getKey().equals("OVERTIME_EXTRA_RATE") || systemConfig.getKey().equals("REFUND")) {
             try {
-                double overtimeExtraRate = Double.parseDouble(value);
+                int overtimeExtraRate = Integer.parseInt(value);
                 if (overtimeExtraRate < 0) {
                     throw new RuntimeException("Giá trị phải là số dương");
                 }
+                if (overtimeExtraRate > 100){
+                    throw new RuntimeException("Giá trị phải nhỏ hơn hoặc bằng 100");
+                }
                 systemConfig.setValue(String.valueOf(overtimeExtraRate));
             } catch (NumberFormatException e) {
-                throw new RuntimeException("Value không hợp lệ (phải là số thực)");
+                throw new RuntimeException("Value phải là số nguyên");
             }
         } else
-            if (systemConfig.getKey().equals("QR_EXPIRE")) {
+            if (systemConfig.getKey().equals("QR_EXPIRE") || systemConfig.getKey().equals("CHECK_IN_EXPIRE") || systemConfig.getKey().equals("CANCEL_BOOKING_REFUND_EXPIRE")) {
                 try {
                     Integer qrExpire = Integer.parseInt(value);
                     if (qrExpire<=0){

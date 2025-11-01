@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class SystemConfigResponse {
     private String key;
     private String value;
+    private String unit;
 }

@@ -7,4 +7,5 @@ import vn.swp391.fa2025.evrental.entity.Payment;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment,Long> {
     Payment findByBooking_BookingIdAndPaymentType(Long bookingId, String paymentType);
+    Payment findByReferenceCode(String referenceCode);
 }

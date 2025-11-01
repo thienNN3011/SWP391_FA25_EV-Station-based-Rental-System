@@ -20,4 +20,6 @@ public class SystemConfig {
     private String key;
     @Column(nullable = false)
     private String value;
+    @Column(nullable = false)
+    private String unit;
 }

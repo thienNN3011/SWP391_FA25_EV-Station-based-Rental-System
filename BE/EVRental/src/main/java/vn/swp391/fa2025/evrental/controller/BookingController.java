@@ -117,8 +117,8 @@ public void confirmBooking(@RequestParam("token") String token, HttpServletRespo
         ApiResponse<String> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Hủy booking thành công");
-        bookingService.cancelBooking(request.getBookingId());
-        response.setData("Hủy booking thành công. Đã hoàn lại 70% số tiền đặt cọc cho khách hàng!");
+        if (bookingService.cancelBooking(request.getBookingId())!=null) response.setData("Hủy booking thành công. Đã hoàn lại 70% số tiền đặt cọc cho khách hàng!");
+        else response.setData("Hủy booking thành công. Quý khách không được hoàn tiền vì hủy sau thời gian quy định");
         response.setCode(200);
         return response;
     }

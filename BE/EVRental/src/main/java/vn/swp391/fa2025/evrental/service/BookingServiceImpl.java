@@ -208,6 +208,7 @@ public class BookingServiceImpl implements  BookingService{
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String staffname = authentication.getName();
         User staff=userRepository.findByUsername(staffname);
+        if (startOdo<0) throw new RuntimeException("Odo bắt đầu phải lớn hơn hoặc bằng 0");
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
         if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Bạn không có quyền tương tác với booking này");
         if (!booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Booking không ở trạng thái BOOKING");
@@ -248,6 +249,8 @@ public class BookingServiceImpl implements  BookingService{
         ).multiply(booking.getTariff().getPrice());
         booking.setTotalAmount(totalAmount);
         data.put("totalAmount", booking.getTotalAmount() + " VND");
+        int pen= Integer.parseInt(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue());
+        data.put("penalty", String.valueOf(pen));
         byte[] pdfBytes=null;
         try {
             pdfBytes = contractGeneratorService.generatePdfContract(data);
@@ -315,11 +318,15 @@ public class BookingServiceImpl implements  BookingService{
 
         BigDecimal extraFee = BigDecimal.ZERO;
         if (overtime > 0) {
+            int extraRateInt = Integer.parseInt(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue());
+            BigDecimal extraRate = BigDecimal.valueOf(extraRateInt).divide(BigDecimal.valueOf(100));
+
             extraFee = BigDecimal.valueOf(overtime)
                     .multiply(
                             booking.getTariff().getPrice()
-                                    .add(booking.getTariff().getPrice().multiply(BigDecimal.valueOf(Double.parseDouble(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue()))))
+                                    .add(booking.getTariff().getPrice().multiply(extraRate))
                     );
+
             booking.setTotalAmount(booking.getTotalAmount().add(extraFee));
         }
 
@@ -341,7 +348,8 @@ public class BookingServiceImpl implements  BookingService{
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
+        if (paymentRepository.findByReferenceCode(referanceCode)!=null) throw new RuntimeException("Reference Code đã tồn tại");
+        if (!transactionDate.isAfter(LocalDateTime.now().minusMinutes(5))) throw new RuntimeException("Thời gian giao dịch không được quá 5p so với thời điểm hiện tại");
         paymentRepository.save(Payment.builder()
                 .transactionDate(transactionDate)
                 .booking(booking)
@@ -376,31 +384,37 @@ public class BookingServiceImpl implements  BookingService{
     }
 
     @Override
-    public void cancelBooking(Long bookingId) {
+    public Payment cancelBooking(Long bookingId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String rentername = authentication.getName();
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
         if (!booking.getUser().getUsername().equalsIgnoreCase(rentername)) throw new RuntimeException("Không có quyền thao tác trên booking này");
-        if (!booking.getStatus().equalsIgnoreCase("UNCONFIRMED") && !booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING/UNCONFIRMED");
+        if (!booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING");
         Vehicle vehicle = vehicleRepository
                 .findById(booking.getVehicle().getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle không tồn tại"));
         vehicle.setStatus("AVAILABLE");
-        Payment deposit=paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), "DEPOSIT");
-        Payment refund = Payment.builder()
-                .booking(booking)
-                .transactionDate(LocalDateTime.now())
-                .paymentType("REFUND_DEPOSIT")
-                .amount(deposit.getAmount().multiply(new BigDecimal("0.7")))
-                .referenceCode("REFUND_" + System.currentTimeMillis())
-                .build();
-        paymentRepository.save(refund);
+        int minute = Integer.parseInt(systemConfigService.getSystemConfigByKey("CANCEL_BOOKING_REFUND_EXPIRE").getValue());
+        if (booking.getStartTime().isAfter(LocalDateTime.now().plusMinutes(minute))) {
+            Payment deposit = paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), "DEPOSIT");
+            int extraRateInt = Integer.parseInt(systemConfigService.getSystemConfigByKey("REFUND").getValue());
+            BigDecimal extraRate = BigDecimal.valueOf(extraRateInt).divide(BigDecimal.valueOf(100));
+            Payment refund = Payment.builder()
+                    .booking(booking)
+                    .transactionDate(LocalDateTime.now())
+                    .paymentType("REFUND_DEPOSIT")
+                    .amount(deposit.getAmount().multiply(extraRate))
+                    .referenceCode("REFUND_" + System.currentTimeMillis())
+                    .build();
+            paymentRepository.save(refund);
+        }
         Tariff tariff = booking.getTariff();
         tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()-1);
         tariffRepository.save(tariff);
         vehicleRepository.save(vehicle);
         booking.setStatus("CANCELLED");
         bookingRepository.save(booking);
+        return paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), "REFUND_DEPOSIT");
     }
 
     @Override

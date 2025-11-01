@@ -8,6 +8,7 @@ import vn.swp391.fa2025.evrental.dto.response.AfterBookingResponse;
 import vn.swp391.fa2025.evrental.dto.response.BookingResponse;
 import vn.swp391.fa2025.evrental.dto.response.EndRentingResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
+import vn.swp391.fa2025.evrental.entity.Payment;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,6 +23,6 @@ public interface BookingService {
     EndRentingResponse endRental(HttpServletRequest request, Long bookingId, String vehicleStatus, Long endOdo, LocalDateTime transactionDate, String referanceCode);
     Booking findById(Long id);
     void updateBooking(Booking booking);
-    void cancelBooking(Long bookingId);
+    Payment cancelBooking(Long bookingId);
     void cancelBookingForSystem(Long bookingId);
 }
