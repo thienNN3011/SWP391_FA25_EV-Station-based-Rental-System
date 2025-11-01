@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ImageWithFallback } from "@/components/figma/ImageWithFallback"
-import { getAllVehicles, VehicleResponse, createVehicle, updateVehicle, deleteVehicle } from "@/lib/adminApi"
+import { createVehicle, getAllVehicles, VehicleResponse, updateVehicle, deleteVehicle } from "@/lib/adminApi"
 
 export function VehicleManagement() {
   const [search, setSearch] = useState("")
@@ -35,9 +35,9 @@ export function VehicleManagement() {
  useEffect(() => { loadVehicles() }, [])
 
   const filtered = useMemo(() => rows.filter(v =>
-    v.brand.toLowerCase().includes(search.toLowerCase()) ||
-    v.modelName.toLowerCase().includes(search.toLowerCase()) ||
-    v.plateNumber.toLowerCase().includes(search.toLowerCase())
+    (v.brand ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (v.modelName ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (v.plateNumber ?? '').toLowerCase().includes(search.toLowerCase())
   ), [rows, search])
 
   const toUiStatus = (s: string) => {
@@ -67,7 +67,7 @@ export function VehicleManagement() {
       setShowCreateForm(false)
       setForm({ modelId: '', stationId: '', color: '', plateNumber: '' })
     } catch (e: any) {
-      alert(e?.message ?? 'Tạo xe thất bại')
+      alert(e?.message ?? 'Thêm xe thất bại')
     } finally {
       setSubmitting(false)
     }
@@ -82,14 +82,14 @@ export function VehicleManagement() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl">Quản lý xe</h1>
-
           </div>
+
           <div className="flex items-center gap-3">
-              <button
-              className="btn btn-primary px-4 py-2 border-2 border-blue-500 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 hover:border-blue-600 transition"
+            <button
+              className="btn btn-primary flex items-center gap-2 px-4 py-2 border-2 border-blue-600 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               onClick={() => setShowCreateForm(s => !s)}
             >
-              {showCreateForm ? 'Đóng' : 'Thêm xe'}
+              {showCreateForm ? 'Đóng form' : 'Thêm xe'}
             </button>
 
             <div className="relative">
@@ -98,7 +98,6 @@ export function VehicleManagement() {
             </div>
           </div>
         </div>
-
         {showCreateForm && (
           <Card>
             <CardHeader>
@@ -126,17 +125,16 @@ export function VehicleManagement() {
               </div>
 
               <div className="flex items-center gap-2 mt-4">
-                <button className="btn btn-primary px-4 py-2 border-2 border-blue-500 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 hover:border-blue-600 transition" onClick={handleCreate} disabled={submitting}>
+                <button className="btn btn-primary flex items-center gap-2 px-4 py-2 border-2 border-blue-600 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" onClick={handleCreate} disabled={submitting}>
                   {submitting ? 'Đang lưu...' : 'Lưu'}
                 </button>
-                <button className="btn px-4 py-2 border-2 border-blue-500 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 hover:border-blue-600 transition" onClick={() => { setShowCreateForm(false); setForm({ modelId: '', stationId: '', color: '', plateNumber: '' }) }} disabled={submitting}>
+                <button className="btn flex items-center gap-2 px-4 py-2 border-2 border-blue-600 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" onClick={() => { setShowCreateForm(false); setForm({ modelId: '', stationId: '', color: '', plateNumber: '' }) }} disabled={submitting}>
                   Hủy
                 </button>
               </div>
             </CardContent>
           </Card>
         )}
-
         <Card>
           <CardHeader>
             <CardTitle>Danh sách xe</CardTitle>
@@ -160,27 +158,21 @@ export function VehicleManagement() {
                   return (
                     <TableRow key={v.vehicleId}>
                       <TableCell className="font-medium">{v.plateNumber}</TableCell>
-                          <TableCell>
-  <div className="flex items-center gap-3">
-    <img
-      src={
-        v.imageUrl?.[0]?.imageUrl
-          ? `http://localhost:8080/EVRental/${v.imageUrl[0].imageUrl.split("\\").pop()}`
-          : "/placeholder.jpg"
-      }
-      alt={v.modelName || v.brand}
-      className="w-16 h-10 object-cover rounded"
-    />
-    <div>
-      <div className="font-medium">{v.brand}</div>
-      <div className="text-sm text-muted-foreground">{v.modelName}</div>
-    </div>
-  </div>
-</TableCell>
-
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <ImageWithFallback src={'/placeholder.jpg'} alt={v.modelName} className="w-16 h-10 object-cover rounded" />
+                          <div>
+                            <div className="font-medium">{v.brand}</div>
+                            <div className="text-sm text-muted-foreground">{v.modelName}</div>
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell>{v.color}</TableCell>
                       <TableCell>{v.stationName}</TableCell>
                       <TableCell><Badge variant={st.variant}>{st.label}</Badge></TableCell>
+                      <TableCell className="text-right">
+                        
+                      </TableCell>
                       <TableCell className="text-right flex justify-end gap-2">
                         <button
                           className="btn btn-secondary"
@@ -206,7 +198,7 @@ export function VehicleManagement() {
                         <button
                           className="btn btn-destructive"
                           onClick={async () => {
-                            if (!confirm('Xác nhận xóa xe này?')) return
+                           if (!confirm('Xác nhận xóa xe này?')) return
                             try {
                               await deleteVehicle(v.vehicleId)
                               setRows(prev => prev.filter(r => r.vehicleId !== v.vehicleId))

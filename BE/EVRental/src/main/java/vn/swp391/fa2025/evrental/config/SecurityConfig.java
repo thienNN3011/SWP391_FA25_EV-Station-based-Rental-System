@@ -86,7 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/incidentreport/showbystation/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/incidentreport/update").hasAuthority("ADMIN")
 
-                        .requestMatchers("/systemconfig/**").asAuthority("ADMIN")
+                        .requestMatchers("/systemconfig/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

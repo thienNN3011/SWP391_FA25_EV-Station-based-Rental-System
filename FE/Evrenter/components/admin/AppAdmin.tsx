@@ -19,8 +19,7 @@ type ActivePage = "dashboard" | "users" | "staff" | "vehicles" | "locations" | "
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
-  { id: "users" as ActivePage, label: "Quản lý khách hàng", icon: Users },
-  { id: "staff" as ActivePage, label: "Quản lý nhân viên", icon: UserCheck },
+  { id: "users" as ActivePage, label: "Quản lý người dùng", icon: Users },
   { id: "vehicles" as ActivePage, label: "Quản lý xe", icon: Car },
   { id: "locations" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
   { id: "revenue" as ActivePage, label: "Doanh thu & Thống kê", icon: TrendingUp },
