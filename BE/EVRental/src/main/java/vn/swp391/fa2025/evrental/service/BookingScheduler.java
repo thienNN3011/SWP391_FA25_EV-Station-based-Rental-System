@@ -5,8 +5,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
+import vn.swp391.fa2025.evrental.entity.Vehicle;
 import vn.swp391.fa2025.evrental.repository.BookingRepository;
 import vn.swp391.fa2025.evrental.repository.PaymentRepository;
+import vn.swp391.fa2025.evrental.repository.VehicleRepository;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,6 +24,8 @@ public class BookingScheduler {
     private PaymentRepository paymentRepository;
     @Autowired
     private SystemConfigServiceImpl systemConfigService;
+    @Autowired
+    private VehicleRepository vehicleRepository;
 
     @Scheduled(fixedRate = 15 * 60 * 1000)
     public void cancelBooking() {
@@ -40,6 +44,26 @@ public class BookingScheduler {
                     bookingService.cancelBookingForSystem(booking.getBookingId());
                     System.out.println("⏰ Booking #" + booking.getBookingId() + " bị hủy do quá hạn thanh toán.");
                 }
+            }
+        }
+    }
+
+    @Scheduled(fixedRate =  5 * 60 * 1000)
+    public void checkLateBookings() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Booking> bookings = bookingRepository.findByStatus("BOOKING");
+
+        int minute=Integer.parseInt(systemConfigService.getSystemConfigByKey("CHECK_IN_EXPIRE").getValue());
+        for (Booking b : bookings) {
+            if (now.isAfter(b.getStartTime().plusMinutes(minute))) {
+
+                b.setStatus("NO_SHOW");
+                bookingRepository.save(b);
+
+                Vehicle vehicle=b.getVehicle();
+                vehicle.setStatus("AVAILABLE");
+                vehicleRepository.save(vehicle);
+                System.out.println("Booking " + b.getBookingId() + " đi trễ 30p so với thời gian nhận");
             }
         }
     }

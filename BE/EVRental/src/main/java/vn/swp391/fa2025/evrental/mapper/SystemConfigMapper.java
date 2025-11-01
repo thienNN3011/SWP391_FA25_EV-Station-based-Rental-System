@@ -9,7 +9,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface SystemConfigMapper {
-    SystemConfigMapper INSTANCE = Mappers.getMapper(SystemConfigMapper.class);
 
     SystemConfigResponse toDTO(SystemConfig entity);
 
