@@ -68,26 +68,30 @@ public class UserServiceImpl implements UserService {
         if (user == null)
             throw new RuntimeException("Không tìm thấy tài khoản cần thay đổi trạng thái");
 
-        if (!user.getStatus().equals("PENDING"))
-            throw new RuntimeException("Tài khoản không ở trạng thái Pending");
-
         status = status.toUpperCase();
         if (!status.equals("PENDING") && !status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("REJECTED"))
             throw new RuntimeException("Trạng thái tài khoản cần cập nhật không hợp lệ");
 
-        // Cập nhật trạng thái
-        if ((user.getStatus().equals("PENDING") || user.getStatus().equals("INACTIVE")) && status.equals("ACTIVE"))
+        String currentStatus = user.getStatus();
+
+        if ((currentStatus.equals("PENDING") || currentStatus.equals("INACTIVE")) && status.equals("ACTIVE")) {
             user.setStatus("ACTIVE");
-        else if (user.getStatus().equals("REJECTED") && status.equals("PENDING"))
+            emailUtils.sendActivatedEmail(user);
+
+        } else if (currentStatus.equals("REJECTED") && status.equals("PENDING")) {
             user.setStatus("PENDING");
-        else if (user.getStatus().equals("ACTIVE") && status.equals("INACTIVE"))
+            emailUtils.sendPendingEmail(user);
+
+        } else if (currentStatus.equals("ACTIVE") && status.equals("INACTIVE")) {
             user.setStatus("INACTIVE");
-        else if (user.getStatus().equals("PENDING") && status.equals("REJECTED")) {
+            emailUtils.sendDeactivatedEmail(user);
+
+        } else if (currentStatus.equals("PENDING") && status.equals("REJECTED")) {
             user.setStatus("REJECTED");
             emailUtils.sendRejectionEmail(user, reason);
         }
 
-        return (userRepository.save(user) != null);
+        return userRepository.save(user) != null;
     }
 
 
