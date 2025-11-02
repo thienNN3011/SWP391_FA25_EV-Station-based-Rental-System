@@ -81,7 +81,7 @@ public class BookingServiceImpl implements  BookingService{
             startDate = startDate.plusDays(1);
         }
         if (startDate.isAfter(currentDate.plusWeeks(1))) {
-            throw new RuntimeException("Ngày kết thúc không được vượt quá 1 tuần kể từ hôm nay.");
+            throw new RuntimeException("Ngày bắt đầu không được vượt quá 1 tuần kể từ hôm nay.");
         }
         booking.setStartTime(bookingRequest.getStartTime());
         if (bookingRequest.getEndTime().isBefore(booking.getStartTime())) throw new RuntimeException("Thời gian kết thúc phải sau thời gian bắt đầu");
@@ -197,7 +197,7 @@ public class BookingServiceImpl implements  BookingService{
         User user = userRepository.findByUsername(username);
         Booking booking= bookingRepository.findById(id).orElseThrow(()-> new RuntimeException("Booking không tồn tại"));
         if (user.getRole().equalsIgnoreCase("STAFF") && !user.getStation().getStationId().equals(booking.getVehicle().getStation().getStationId())) {
-            throw new RuntimeException("Booking này không thuộc station của bạn!");
+            throw new RuntimeException("Booking này không thuộc station của bạn!Booking thuộc station"+ booking.getVehicle().getStation().getStationName());
         }
         return bookingMapper.toBookingResponse(booking);
     }
@@ -210,7 +210,7 @@ public class BookingServiceImpl implements  BookingService{
         User staff=userRepository.findByUsername(staffname);
         if (startOdo<0) throw new RuntimeException("Odo bắt đầu phải lớn hơn hoặc bằng 0");
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
-        if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Bạn không có quyền tương tác với booking này");
+        if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc station của bạn!Booking thuộc station"+ booking.getVehicle().getStation().getStationName());
         if (!booking.getStatus().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Booking không ở trạng thái BOOKING");
         User customer = userRepository
                 .findById(booking.getUser().getUserId())
@@ -293,9 +293,14 @@ public class BookingServiceImpl implements  BookingService{
     @Override
     public EndRentingResponse endRental(HttpServletRequest request, Long bookingId, String vehicleStatus,
                                         Long endOdo, LocalDateTime transactionDate, String referanceCode) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String staffname = authentication.getName();
+        User staff=userRepository.findByUsername(staffname);
+
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
 
+        if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc station của bạn!Booking thuộc station"+ booking.getVehicle().getStation().getStationName());
         if (!booking.getStatus().equalsIgnoreCase("RENTING"))
             throw new RuntimeException("Booking không ở trạng thái RENTING");
 

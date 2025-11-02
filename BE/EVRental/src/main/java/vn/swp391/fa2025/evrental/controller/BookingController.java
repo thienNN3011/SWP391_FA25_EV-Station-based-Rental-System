@@ -79,28 +79,28 @@ public class BookingController {
     }
 
     @GetMapping("/confirm")
-public void confirmBooking(@RequestParam("token") String token, HttpServletResponse response) throws IOException {
-    response.setContentType("text/html;charset=UTF-8");
-    try {
-        String html = contractService.confirmContract(token); 
-        response.getWriter().write(html);
-    } catch (RuntimeException e) {
-        response.getWriter().write("<h2>Lỗi: " + e.getMessage() + "</h2>");
+    public void confirmBooking(@RequestParam("token") String token, HttpServletResponse response) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try {
+            String html = contractService.confirmContract(token);
+            response.getWriter().write(html);
+        } catch (RuntimeException e) {
+            response.getWriter().write("<h2>Lỗi: " + e.getMessage() + "</h2>");
+        }
     }
-}
 
 
 
     @GetMapping("/reject")
     public void rejectBooking(@RequestParam("token") String token, HttpServletResponse response) throws IOException {
-    response.setContentType("text/html;charset=UTF-8");
-    try {
-        String html = contractService.rejectContract(token);
-        response.getWriter().write(html);
-    } catch (RuntimeException e) {
-        response.getWriter().write("<h2>Lỗi: " + e.getMessage() + "</h2>");
+        response.setContentType("text/html;charset=UTF-8");
+        try {
+            String html = contractService.rejectContract(token);
+            response.getWriter().write(html);
+        } catch (RuntimeException e) {
+            response.getWriter().write("<h2>Lỗi: " + e.getMessage() + "</h2>");
+        }
     }
-}
 
     @PostMapping("/endrental")
     ApiResponse<EndRentingResponse> endRental(HttpServletRequest req, @RequestBody EndRentingRequest request) {

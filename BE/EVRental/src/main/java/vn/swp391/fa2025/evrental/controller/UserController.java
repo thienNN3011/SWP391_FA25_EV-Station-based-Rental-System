@@ -62,6 +62,8 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
     @PatchMapping("/changeaccountstatus")
     public ApiResponse<Boolean> changeAccountStatus(@RequestBody ChangeUserStatusRequest request) {
         ApiResponse<Boolean> response = new ApiResponse<>();
+        String reason="";
+        if (request.getReason()!=null) reason=request.getReason();
         response.setData(userService.changeAccountStatus(request.getUsername(), request.getStatus()));
         response.setSuccess(true);
         response.setMessage("Thay đổi trạng thái tài khoản thành công");
