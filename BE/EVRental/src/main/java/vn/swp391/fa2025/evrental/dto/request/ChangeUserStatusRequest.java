@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class ChangeUserStatusRequest {
     private String username;
     private String status;
+    private String reason;
 }

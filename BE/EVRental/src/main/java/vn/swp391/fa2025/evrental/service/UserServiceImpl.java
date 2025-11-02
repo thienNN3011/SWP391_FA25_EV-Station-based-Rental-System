@@ -1,6 +1,8 @@
 package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,7 @@ import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.mapper.UserMapper;
 import vn.swp391.fa2025.evrental.repository.UserRepository;
+import vn.swp391.fa2025.evrental.util.EmailUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +32,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailUtils emailUtils;
 
     @Override
     public User findByUsername(String username) {
@@ -51,19 +57,39 @@ public class UserServiceImpl implements UserService {
         CustomerResponse customerResponse= new CustomerResponse();
 //        User user=userRepository.findByUsernameAndStatus(username,"PENDING");
         User user=userRepository.findByUsername(username);
+        if (!user.getStatus().equals("PENDING")) throw new RuntimeException("Tài khoản không ở trạng thái Pending");
         if (user==null) throw new RuntimeException("Không tìm thấy tài khoản");
         return userMapper.toDto(user);
     }
 
     @Override
-    public boolean changeAccountStatus(String username, String status) {
-        User user= userRepository.findByUsername(username);
-        if (user==null) throw new RuntimeException("Không tìm thấy tài khoản cần thay đổi trạng thái");
-        status=status.toUpperCase();
-        if (!status.equals("PENDING") && !status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("REJECTED")) throw new RuntimeException("Trạng thái tài khoản cần cập nhật không hợp lệ");
-        user.setStatus(status);
-        return (userRepository.save(user)!=null);
+    public boolean changeAccountStatus(String username, String status, String reason) {
+        User user = userRepository.findByUsername(username);
+        if (user == null)
+            throw new RuntimeException("Không tìm thấy tài khoản cần thay đổi trạng thái");
+
+        if (!user.getStatus().equals("PENDING"))
+            throw new RuntimeException("Tài khoản không ở trạng thái Pending");
+
+        status = status.toUpperCase();
+        if (!status.equals("PENDING") && !status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("REJECTED"))
+            throw new RuntimeException("Trạng thái tài khoản cần cập nhật không hợp lệ");
+
+        // Cập nhật trạng thái
+        if ((user.getStatus().equals("PENDING") || user.getStatus().equals("INACTIVE")) && status.equals("ACTIVE"))
+            user.setStatus("ACTIVE");
+        else if (user.getStatus().equals("REJECTED") && status.equals("PENDING"))
+            user.setStatus("PENDING");
+        else if (user.getStatus().equals("ACTIVE") && status.equals("INACTIVE"))
+            user.setStatus("INACTIVE");
+        else if (user.getStatus().equals("PENDING") && status.equals("REJECTED")) {
+            user.setStatus("REJECTED");
+            emailUtils.sendRejectionEmail(user, reason);
+        }
+
+        return (userRepository.save(user) != null);
     }
+
 
     @Override
     public List<RenterListResponse> showAllRenters(String username) {

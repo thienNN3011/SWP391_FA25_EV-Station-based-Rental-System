@@ -15,7 +15,7 @@ public interface UserService {
     public User findByUsername(String username);
     public List<CustomerResponse> showPendingAccount();
     public CustomerResponse showDetailOfPendingAccount(String username);
-    public boolean changeAccountStatus(String username, String status);
+    public boolean changeAccountStatus(String username, String status, String reason);
     public List<RenterListResponse> showAllRenters(String username);
     public List<StaffListResponse> showAllStaffs(String username);
     public UserUpdateResponse updateUser(String currentUsername, UserUpdateRequest request);
