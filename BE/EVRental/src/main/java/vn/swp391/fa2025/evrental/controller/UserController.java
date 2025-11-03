@@ -7,10 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import vn.swp391.fa2025.evrental.dto.request.ChangeUserStatusRequest;
-import vn.swp391.fa2025.evrental.dto.request.RegisterCustomerRequest;
-import vn.swp391.fa2025.evrental.dto.request.ShowUserDetailRequest;
-import vn.swp391.fa2025.evrental.dto.request.UserUpdateRequest;
+import vn.swp391.fa2025.evrental.dto.request.*;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.service.RegistrationService;
 import vn.swp391.fa2025.evrental.service.UserServiceImpl;
@@ -151,5 +148,15 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         response.setCode(200);
         return response;
 }
+    @PutMapping("/updaterejecteduser")
+    public ApiResponse<String> updateRejectedUser(@RequestBody UserRejectedUpdateRequest request) {
+        userService.updateRejectedUser(request);
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setData(null);
+        response.setSuccess(true);
+        response.setMessage("Đã cập nhật thông tin và chuyển sang trạng thái chờ duyệt");
+        response.setCode(200);
+        return response;
+    }
     }
 

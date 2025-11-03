@@ -40,12 +40,14 @@ public class SecurityConfig {
                         .requestMatchers("/EVRental/**", "/**.jpg", "/**.jpeg", "/**.png").permitAll()
 
                                 .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/updaterejecteduser").permitAll()
                         .requestMatchers(HttpMethod.GET, "/showallrenters").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/showallstaffs").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/updateuser").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/deleteuser/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/me/stats").hasAuthority("RENTER")
-                        .requestMatchers(HttpMethod.GET,"/showuserinfo").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/showuserinfo").authenticated()
+
 
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
                         .hasAnyAuthority("STAFF", "ADMIN")
