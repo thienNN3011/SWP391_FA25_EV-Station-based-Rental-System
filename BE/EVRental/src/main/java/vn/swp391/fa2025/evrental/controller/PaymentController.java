@@ -12,6 +12,7 @@ import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 import vn.swp391.fa2025.evrental.service.PaymentServiceImpl;
 import vn.swp391.fa2025.evrental.service.VnPayService;
+import vn.swp391.fa2025.evrental.util.EmailUtils;
 import vn.swp391.fa2025.evrental.util.TimeUtils;
 
 import java.math.BigDecimal;
@@ -35,6 +36,8 @@ public class PaymentController {
     private PaymentServiceImpl paymentService;
     @Value("${vnpay.hashSecret}")
     private String vnp_HashSecret;
+    @Autowired
+    private EmailUtils emailUtils;
 
     @GetMapping("/vnpay-return")
     public void returnPayment(@RequestParam Map<String, String> params, HttpServletResponse response) throws IOException {
@@ -93,7 +96,13 @@ public class PaymentController {
                             .transactionDate(TimeUtils.parsePayDate(payDate))
                             .build();
                     paymentService.createPayment(payment);
-                    if (paymentType.equalsIgnoreCase("DEPOSIT")) booking.setStatus("BOOKING"); else booking.setStatus("COMPLETED");
+                    if (paymentType.equalsIgnoreCase("DEPOSIT")) {
+                        booking.setStatus("BOOKING");
+                        emailUtils.sendBookingSuccessEmail(booking);
+                    } else {
+                        booking.setStatus("COMPLETED");
+                        emailUtils.sendBookingCompletedEmail(booking, amount);
+                    }
                     bookingService.updateBooking(booking);
                     page = """
                     <!DOCTYPE html>

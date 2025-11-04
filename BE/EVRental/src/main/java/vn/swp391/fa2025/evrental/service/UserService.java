@@ -19,5 +19,8 @@ public interface UserService {
     public UserUpdateResponse updateUser(String currentUsername, UserUpdateRequest request);
     public boolean deleteUser(String username, String currentUsername);
     public CustomerResponse showUserInfo(String username);
+    User changeStaffStation(String stationName, Long id);
+    ChangeStaffStationResponse listStaffInStation(String stationName);
+    User getUserById(Long Id);
     public void updateRejectedUser(UserRejectedUpdateRequest request);
 }

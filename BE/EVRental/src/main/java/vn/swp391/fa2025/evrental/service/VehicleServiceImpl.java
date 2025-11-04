@@ -8,15 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
-import vn.swp391.fa2025.evrental.dto.response.ActiveVehicleResponse;
-import vn.swp391.fa2025.evrental.dto.response.TariffResponse;
-import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
+import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
 import vn.swp391.fa2025.evrental.entity.VehicleModel;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
+import vn.swp391.fa2025.evrental.mapper.StationMapper;
 import vn.swp391.fa2025.evrental.mapper.VehicleMapper;
 import vn.swp391.fa2025.evrental.repository.StationRepository;
 import vn.swp391.fa2025.evrental.repository.UserRepository;
@@ -45,6 +44,10 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private StationMapper stationMapper;
+
     @Override
     public List<VehicleResponse> showAllVehicle() {
         return vehicleRepository.findAll().stream()
@@ -231,5 +234,36 @@ public class VehicleServiceImpl implements VehicleService {
                     return response;
                 })
                 .toList();
+    }
+
+    @Override
+    public void changeVehicleStation(Long vehicleId, String stationName) {
+        Station station = stationRepository.findByStationName(stationName);
+        if (station == null) throw new RuntimeException("Station không tồn tại");
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new RuntimeException("Vehicle không tồn tại"));
+        vehicle.setStation(station);
+        vehicleRepository.save(vehicle);
+    }
+
+    @Override
+    public ChangeVehicleStationResponse showVehicleInStation(String stationName, Long modelId) {
+        Station currentStation = stationRepository.findByStationName(stationName);
+        if (currentStation == null) {
+            throw new RuntimeException("Station không tồn tại: " + stationName);
+        }
+        List<VehicleResponse> vehicles= vehicleMapper.toListShortResponse(vehicleRepository.findByStation_StationNameAndModel_ModelIdAndStatus(stationName, modelId, "AVAILABLE"));
+        List<StationResponse> activeStations = stationMapper.toStationResponseList(
+                stationRepository.findByStatus("OPEN")
+                        .stream()
+                        .filter(station -> !(station.getStationId() == currentStation.getStationId()))
+                        .toList()
+        );
+
+        ChangeVehicleStationResponse response= ChangeVehicleStationResponse.builder()
+                .stationList(activeStations)
+                .vehicleList(vehicles)
+                .build();
+        return response;
     }
 }

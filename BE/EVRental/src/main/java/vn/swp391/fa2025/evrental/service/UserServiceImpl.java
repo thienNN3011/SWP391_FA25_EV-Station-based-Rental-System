@@ -9,10 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.request.UserRejectedUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.request.UserUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
+import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
+import vn.swp391.fa2025.evrental.mapper.StationMapper;
 import vn.swp391.fa2025.evrental.mapper.UserMapper;
+import vn.swp391.fa2025.evrental.repository.StationRepository;
 import vn.swp391.fa2025.evrental.repository.UserRepository;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
 
@@ -33,6 +36,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private EmailUtils emailUtils;
+
+    @Autowired
+    private StationRepository stationRepository;
+
+    @Autowired
+    private StationMapper stationMapper;
 
     @Override
     public User findByUsername(String username) {
@@ -224,6 +233,46 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User changeStaffStation(String stationName, Long id) {
+        Station station = stationRepository.findByStationName(stationName);
+        if (station == null) throw new RuntimeException("Station không tồn tại");
+        User staff = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Staff không tồn tại"));
+        staff.setStation(station);
+        return userRepository.save(staff);
+    }
+
+    @Override
+    public ChangeStaffStationResponse listStaffInStation(String stationName) {
+        Station currentStation = stationRepository.findByStationName(stationName);
+        if (currentStation == null) {
+            throw new RuntimeException("Station không tồn tại: " + stationName);
+        }
+        List<StaffResponse> staffs = userMapper.toStaffResponseList(
+                userRepository.findByStation(currentStation)
+        );
+        List<StationResponse> activeStations = stationMapper.toStationResponseList(
+                stationRepository.findByStatus("OPEN")
+                        .stream()
+                        .filter(station -> !(station.getStationId() == currentStation.getStationId()))
+                        .toList()
+        );
+
+        ChangeStaffStationResponse response = ChangeStaffStationResponse.builder()
+                .staffList(staffs)
+                .stationList(activeStations)
+                .build();
+
+        return response;
+    }
+
+    @Override
+    public User getUserById(Long Id) {
+        return userRepository.findById(Id)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+    }
+
+
     @Transactional
     public void updateRejectedUser(UserRejectedUpdateRequest request) {
         User user = userRepository.findByUsername(request.getUsername());

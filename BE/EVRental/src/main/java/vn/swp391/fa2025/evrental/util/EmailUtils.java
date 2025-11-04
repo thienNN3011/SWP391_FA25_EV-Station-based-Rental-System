@@ -7,13 +7,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+import vn.swp391.fa2025.evrental.entity.Booking;
+import vn.swp391.fa2025.evrental.entity.SystemConfig;
 import vn.swp391.fa2025.evrental.entity.User;
+import vn.swp391.fa2025.evrental.service.SystemConfigServiceImpl;
+
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class EmailUtils {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private SystemConfigServiceImpl systemConfigService;
 
     public void sendEmailWithAttachment(String to, String subject, String htmlBody, byte[] attachment, String fileName) {
         try {
@@ -86,6 +95,25 @@ public class EmailUtils {
         sendEmailWithAttachment(user.getEmail(), subject, body, null, null);
     }
 
+    public void sendRegistrationSuccessEmail(User user) {
+        String subject = "Đăng ký tài khoản thành công - Đang chờ phê duyệt";
+        String body = buildBaseEmailTemplate(
+                "Đăng ký tài khoản thành công 🎉",
+                String.format(
+                        "Xin chào <b>%s</b>,<br>"
+                                + "Cảm ơn bạn đã đăng ký tài khoản tại <b>EV Rental</b>!<br>"
+                                + "Tài khoản của bạn đã được ghi nhận và hiện đang trong quá trình <b>phê duyệt</b>.<br><br>"
+                                + "Chúng tôi sẽ gửi email cho bạn ngay khi tài khoản được kích hoạt.<br>"
+                                + "Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ <a href='mailto:support@evrental.vn'>support@evrental.vn</a>.",
+                        user.getFullName() != null ? user.getFullName() : user.getUsername()
+                ),
+                null,
+                "#1976d2"
+        );
+        sendEmailWithAttachment(user.getEmail(), subject, body, null, null);
+    }
+
+
     private String buildBaseEmailTemplate(String title, String message, String reason, String color) {
         return String.format("""
     <html>
@@ -123,4 +151,126 @@ public class EmailUtils {
         );
     }
 
+    public void sendBookingSuccessEmail(Booking booking) {
+        String subject = "Xác nhận đặt xe thành công - EV Rental";
+
+        SystemConfig cancelBeforeConfig = systemConfigService.getSystemConfigByKey("CANCEL_BOOKING_REFUND_EXPIRE");
+        SystemConfig refundRateConfig = systemConfigService.getSystemConfigByKey("REFUND");
+        SystemConfig lateCheckinConfig = systemConfigService.getSystemConfigByKey("CHECK_IN_EXPIRE");
+
+        String cancelBefore = cancelBeforeConfig != null ? cancelBeforeConfig.getValue() : "30";
+        String refundRate = refundRateConfig != null ? refundRateConfig.getValue() : "70";
+        String lateCheckin = lateCheckinConfig != null ? lateCheckinConfig.getValue() : "30";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        String message = String.format("""
+            Xin chào <b>%s</b>,<br>
+            Cảm ơn bạn đã đặt xe tại <b>EV Rental</b>!<br><br>
+            <b>Thông tin đặt xe:</b><br>
+            • Xe: <b>%s</b><br>
+            • Bắt đầu: <b>%s</b><br>
+            • Kết thúc: <b>%s</b><br>
+            • Tổng tiền: <b>%s VND</b><br><br>
+            <b>Chính sách:</b><br>
+            - Bạn có thể hủy trước <b>%s phút</b> để được hoàn <b>%s%% tiền đặt cọc</b>.<br>
+            - Nếu đến muộn hơn <b>%s phút</b> kể từ thời gian bắt đầu, đơn sẽ bị hủy và không hoàn cọc.<br><br>
+            Hẹn gặp lại bạn tại EV Rental!
+        """,
+                booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
+                booking.getVehicle().getModel().getName(),
+                booking.getStartTime().format(formatter),
+                booking.getEndTime().format(formatter),
+                booking.getTariff().getDepositAmount(),
+                cancelBefore,
+                refundRate,
+                lateCheckin
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Đặt xe thành công 🎉",
+                message,
+                null,
+                "#2e7d32"
+        );
+
+        sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
+    }
+
+    public void sendBookingCompletedEmail(Booking booking, BigDecimal refundedAmount) {
+        String subject = "Hoàn tất chuyến thuê xe - EV Rental";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        String refundInfo;
+        if (refundedAmount != null && refundedAmount.compareTo(BigDecimal.ZERO) > 0) {
+            refundInfo = String.format("<p><b>Số tiền đặt cọc đã hoàn trả:</b> %,.0f VND</p>", refundedAmount);
+        } else {
+            refundInfo = "<p><b>Số tiền đặt cọc đã hoàn trả:</b> Không có (do không đáp ứng điều kiện hoàn tiền)</p>";
+        }
+
+        String message = String.format("""
+        Xin chào <b>%s</b>,<br>
+        Cảm ơn bạn đã sử dụng dịch vụ của <b>EV Rental</b>!<br><br>
+        Chuyến thuê xe của bạn đã được <b>hoàn tất</b> thành công.<br><br>
+
+        <b>Thông tin chuyến đi:</b><br>
+        • Xe: <b>%s</b><br>
+        • Bắt đầu: <b>%s</b><br>
+        • Kết thúc: <b>%s</b><br>
+        • Tổng chi phí: <b>%,.0f VND</b><br>
+        • Số km sử dụng: <b>%s km</b><br>
+        %s
+        <br>
+        <b>Trạng thái:</b> Đơn hàng đã hoàn tất ✅<br><br>
+
+        Hy vọng bạn hài lòng với trải nghiệm cùng EV Rental.<br>
+    """,
+                booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
+                booking.getVehicle().getModel().getName(),
+                booking.getActualStartTime().format(formatter),
+                booking.getActualEndTime().isAfter(booking.getEndTime())?booking.getActualEndTime().format(formatter):booking.getEndTime(),
+                booking.getTotalAmount(),
+                (booking.getStartOdo() != null && booking.getEndOdo() != null)
+                        ? (booking.getEndOdo() - booking.getStartOdo())
+                        : "Không xác định",
+                refundInfo
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Hoàn tất chuyến đi 🚗",
+                message,
+                null,
+                "#2e7d32"
+        );
+
+        sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
+    }
+
+    public void sendStaffStationChangedEmail(User staff, String newStation, String newStationAddress) {
+        String subject = "Thông báo trạm làm việc mới - EV Rental";
+
+        String message = String.format("""
+        Xin chào <b>%s</b>,<br>
+        Chúng tôi xin thông báo rằng bạn đã được phân công làm việc tại trạm mới:<br><br>
+        <b>Trạm:</b> %s<br>
+        <b>Địa chỉ:</b> %s<br><br>
+        Vui lòng đến trạm mới để nhận lịch làm việc và phân công công việc cụ thể.<br><br>
+        Nếu có bất kỳ thắc mắc nào, bạn có thể liên hệ bộ phận quản lý để được hỗ trợ.<br><br>
+        Chúc bạn có một ngày làm việc hiệu quả cùng EV Rental!
+    """,
+                staff.getFullName() != null ? staff.getFullName() : staff.getUsername(),
+                newStation,
+                newStationAddress != null ? newStationAddress : "(chưa cập nhật)"
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Thông báo trạm làm việc mới 📍",
+                message,
+                null,
+                "#1976d2"
+        );
+
+        sendEmailWithAttachment(staff.getEmail(), subject, body, null, null);
+    }
 }

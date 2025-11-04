@@ -9,9 +9,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vn.swp391.fa2025.evrental.dto.request.*;
 import vn.swp391.fa2025.evrental.dto.response.*;
+import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.service.RegistrationService;
 import vn.swp391.fa2025.evrental.service.UserServiceImpl;
 import vn.swp391.fa2025.evrental.service.UserStatsService;
+import vn.swp391.fa2025.evrental.util.EmailUtils;
 
 import java.net.URI;
 import java.util.List;
@@ -27,6 +29,9 @@ public class UserController {
 
     @Autowired
     private UserStatsService userStatsService;
+
+    @Autowired
+    private EmailUtils emailUtils;
 
     @PostMapping(value = "/users", consumes = MediaType.APPLICATION_JSON_VALUE) //fix de nhan json
 public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomerRequest req) {
@@ -147,7 +152,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         response.setMessage("Lấy thông tin user thành công");
         response.setCode(200);
         return response;
-}
+    }
     @PutMapping("/updaterejecteduser")
     public ApiResponse<String> updateRejectedUser(@RequestBody UserRejectedUpdateRequest request) {
         userService.updateRejectedUser(request);
@@ -158,5 +163,35 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         response.setCode(200);
         return response;
     }
+
+    @PostMapping("/changestaffstationreq")
+    public ApiResponse<ChangeStaffStationResponse> changeStaffStation(@RequestBody StationRequest request){
+        ApiResponse<ChangeStaffStationResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(userService.listStaffInStation(request.getStationName()));
+        response.setMessage("Lấy thông tin staff ở station thành công");
+        response.setCode(200);
+        return response;
     }
+
+    @PostMapping("/dochangestaffstation")
+    public ApiResponse<String> doChangeStaffStation(@RequestBody ChangeStaffStationRequest request) {
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setCode(200);
+        String stationName = userService.getUserById(request.getStaffId()).getStation().getStationName();
+        User staff = userService.changeStaffStation(request.getStationName(), request.getStaffId());
+        response.setMessage("Thay đổi thành công");
+        String dataMessage = String.format(
+                "Đã thay đổi nhân viên '%s' (ID: %d) từ trạm '%s' sang trạm '%s'.",
+                staff.getFullName(),
+                staff.getUserId(),
+                stationName,
+                staff.getStation().getStationName()
+        );
+        emailUtils.sendStaffStationChangedEmail(staff, staff.getStation().getStationName(), staff.getStation().getAddress());
+        response.setData(dataMessage);
+        return response;
+    }
+}
 
