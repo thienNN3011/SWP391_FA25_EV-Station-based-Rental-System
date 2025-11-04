@@ -59,4 +59,14 @@ public interface VehicleMapper {
     @Mapping(target = "imageUrls", source = "model.imageUrls")
     @Mapping(target = "tariffs", ignore = true)
     ActiveVehicleResponse toActiveVehicleResponse(Vehicle vehicle);
+
+    @Named("toShortResponse")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "plateNumber", source = "plateNumber")
+    @Mapping(target = "color", source = "color")
+    @Mapping(target = "modelName", source = "model.name")
+    @Mapping(target = "brand", source = "model.brand")
+    VehicleResponse toShortReponse(Vehicle vehicle);
+
+    List<VehicleResponse> toListShortResponse(List<Vehicle> vehicles);
 }

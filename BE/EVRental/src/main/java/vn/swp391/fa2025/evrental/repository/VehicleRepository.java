@@ -22,4 +22,5 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     List<Vehicle> findByStation_StationIdAndStatus(Long stationId, String status);
     List<Vehicle> findByStation_StationNameAndStatus(String stationName, String status);
+    List<Vehicle> findByStation_StationNameAndModel_ModelIdAndStatus(String stationName, Long modelId, String status);
 }

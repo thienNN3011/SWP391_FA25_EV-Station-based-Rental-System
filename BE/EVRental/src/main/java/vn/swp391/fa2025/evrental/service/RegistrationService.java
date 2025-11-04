@@ -10,6 +10,7 @@ import vn.swp391.fa2025.evrental.dto.response.CustomerResponse;
 import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.mapper.UserMapper;
 import vn.swp391.fa2025.evrental.repository.UserRepository;
+import vn.swp391.fa2025.evrental.util.EmailUtils;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +27,9 @@ public class RegistrationService {
     private UserMapper userMapper;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailUtils emailUtils;
 
     public CustomerResponse registerCustomer(RegisterCustomerRequest req) {
         // Validate duplicates (409 Conflict)
@@ -55,7 +59,7 @@ public class RegistrationService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         user = userRepository.save(user);
-
+        emailUtils.sendRegistrationSuccessEmail(user);
         // Map entity -> response DTO via MapStruct
         return userMapper.toDto(user);
     }
