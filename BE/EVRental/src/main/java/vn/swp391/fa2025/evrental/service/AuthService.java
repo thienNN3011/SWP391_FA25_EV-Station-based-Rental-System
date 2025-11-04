@@ -31,14 +31,17 @@ public class AuthService {
     public LoginResponse authenticateUser(String username, String password) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new RuntimeException("username is not exits");
+            throw new RuntimeException("Tên tài khoản không tồn tại");
         }
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
+            throw new RuntimeException("Sai tên tài khoản hoặc mật khẩu");
+        }
+        if("REJECTED".equalsIgnoreCase(user.getStatus())){
+            throw new RuntimeException("Thông tin tài khoản của quý khách không phù hợp xin vui lòng cập nhật lại");
         }
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
-            throw new RuntimeException("User account is not active");
+            throw new RuntimeException("Tài khoản quý khách chưa được duyệt");
         }
         
 

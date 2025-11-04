@@ -153,6 +153,16 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         response.setCode(200);
         return response;
     }
+    @PutMapping("/updaterejecteduser")
+    public ApiResponse<String> updateRejectedUser(@RequestBody UserRejectedUpdateRequest request) {
+        userService.updateRejectedUser(request);
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setData(null);
+        response.setSuccess(true);
+        response.setMessage("Đã cập nhật thông tin và chuyển sang trạng thái chờ duyệt");
+        response.setCode(200);
+        return response;
+    }
 
     @PostMapping("/changestaffstationreq")
     public ApiResponse<ChangeStaffStationResponse> changeStaffStation(@RequestBody StationRequest request){

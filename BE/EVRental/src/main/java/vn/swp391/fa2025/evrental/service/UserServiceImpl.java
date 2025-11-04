@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.swp391.fa2025.evrental.dto.request.UserRejectedUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.request.UserUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Station;
@@ -272,4 +273,59 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Transactional
+    public void updateRejectedUser(UserRejectedUpdateRequest request) {
+        User user = userRepository.findByUsername(request.getUsername());
+        if (user == null) {
+            throw new ResourceNotFoundException("Không tìm thấy tài khoản với username: " + request.getUsername());
+        }
+
+        if (!"REJECTED".equals(user.getStatus())) {
+            throw new BusinessException("Tài khoản không ở trạng thái REJECTED");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BusinessException("Mật khẩu không chính xác");
+        }
+
+        boolean isUpdated = false;
+
+        if (request.getIdCard() != null && !request.getIdCard().isBlank()) {
+            if (!request.getIdCard().equals(user.getIdCard())) {
+                if (userRepository.existsByIdCard(request.getIdCard())) {
+                    throw new BusinessException("Số CMND/CCCD đã tồn tại: " + request.getIdCard());
+                }
+                user.setIdCard(request.getIdCard());
+                isUpdated = true;
+            }
+        }
+
+        if (request.getDriveLicense() != null && !request.getDriveLicense().isBlank()) {
+            if (!request.getDriveLicense().equals(user.getDriveLicense())) {
+                if (userRepository.existsByDriveLicense(request.getDriveLicense())) {
+                    throw new BusinessException("Số bằng lái đã tồn tại: " + request.getDriveLicense());
+                }
+                user.setDriveLicense(request.getDriveLicense());
+                isUpdated = true;
+            }
+        }
+
+        if (request.getIdCardPhoto() != null && !request.getIdCardPhoto().isBlank()) {
+            user.setIdCardPhoto(request.getIdCardPhoto());
+            isUpdated = true;
+        }
+
+        if (request.getDriveLicensePhoto() != null && !request.getDriveLicensePhoto().isBlank()) {
+            user.setDriveLicensePhoto(request.getDriveLicensePhoto());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            throw new BusinessException("Không có thông tin nào được thay đổi, vui lòng cập nhật lại");
+        }
+
+        user.setStatus("PENDING");
+        user.setUpdatedDate(LocalDateTime.now());
+        userRepository.save(user);
+    }
 }

@@ -1,6 +1,7 @@
 package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.stereotype.Service;
+import vn.swp391.fa2025.evrental.dto.request.UserRejectedUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.request.UserUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.User;
@@ -21,4 +22,5 @@ public interface UserService {
     User changeStaffStation(String stationName, Long id);
     ChangeStaffStationResponse listStaffInStation(String stationName);
     User getUserById(Long Id);
+    public void updateRejectedUser(UserRejectedUpdateRequest request);
 }
