@@ -1,6 +1,5 @@
 package vn.swp391.fa2025.evrental.controller;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -191,6 +190,16 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         );
         emailUtils.sendStaffStationChangedEmail(staff, staff.getStation().getStationName(), staff.getStation().getAddress());
         response.setData(dataMessage);
+        return response;
+    }
+
+    @PostMapping("/showstaffstats")
+    public ApiResponse<List<StaffStatsResponse>> showStaffStats(@RequestBody ShowStaffStatsRequest request){
+        ApiResponse<List<StaffStatsResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(userService.getStaffStatsByStation(request.getStationId(), request.getMonth(), request.getYear()));
+        response.setMessage("Lấy thống kê staff theo trạm thành công");
+        response.setCode(200);
         return response;
     }
 }

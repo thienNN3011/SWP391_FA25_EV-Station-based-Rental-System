@@ -1,8 +1,6 @@
 package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,13 +13,13 @@ import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.mapper.StationMapper;
 import vn.swp391.fa2025.evrental.mapper.UserMapper;
+import vn.swp391.fa2025.evrental.repository.ContractRepository;
 import vn.swp391.fa2025.evrental.repository.StationRepository;
 import vn.swp391.fa2025.evrental.repository.UserRepository;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -42,6 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private StationMapper stationMapper;
+
 
     @Override
     public User findByUsername(String username) {
@@ -328,4 +327,14 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedDate(LocalDateTime.now());
         userRepository.save(user);
     }
+
+    @Override
+    public List<StaffStatsResponse> getStaffStatsByStation(Long stationId, Long month, Long year) {
+        int m = month.intValue();
+        int y = year.intValue();
+        LocalDateTime startDate = LocalDateTime.of(y, m, 1, 0, 0);
+        LocalDateTime endDate = startDate.plusMonths(1);
+        return userRepository.getStaffStatsByStationAndMonth(stationId, startDate, endDate);
+    }
+
 }
