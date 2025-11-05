@@ -4,10 +4,7 @@
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.MediaType;
     import org.springframework.web.bind.annotation.*;
-    import vn.swp391.fa2025.evrental.dto.request.ShowModelByStaionRequest;
-    import vn.swp391.fa2025.evrental.dto.request.VehicleModelCreateRequest;
-    import vn.swp391.fa2025.evrental.dto.request.VehicleModelDetailRequest;
-    import vn.swp391.fa2025.evrental.dto.request.VehicleModelUpdateRequest;
+    import vn.swp391.fa2025.evrental.dto.request.*;
     import vn.swp391.fa2025.evrental.dto.response.VehicleModelResponse;
     import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
     import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
@@ -58,9 +55,10 @@
             response.setCode(200);
             return response;
         }
-        @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+        @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
         ApiResponse<VehicleModelResponse> createVehicleModel(
-                @Valid @ModelAttribute VehicleModelCreateRequest request) {
+                @Valid @RequestBody VehicleModelCreateRequest request) {
             ApiResponse<VehicleModelResponse> response = new ApiResponse<>();
             response.setSuccess(true);
             response.setMessage("Tạo mẫu xe thành công");
@@ -68,14 +66,50 @@
             response.setCode(201);
             return response;
         }
-        @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+        @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
         ApiResponse<VehicleModelResponse> updateVehicleModel(
                 @PathVariable Long id,
-                @Valid @ModelAttribute VehicleModelUpdateRequest request) {
+                @Valid @RequestBody VehicleModelUpdateRequest request) {
             ApiResponse<VehicleModelResponse> response = new ApiResponse<>();
             response.setSuccess(true);
             response.setMessage("Cập nhật mẫu xe thành công");
             response.setData(vehicleModelService.updateVehicleModel(id, request));
+            response.setCode(200);
+            return response;
+        }
+
+        @PostMapping(value = "/addimages/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+        ApiResponse<VehicleModelResponse> addImagesToVehicleModel(
+                @PathVariable Long id,
+                @Valid @RequestBody VehicleModelAddImageRequest request) {
+            ApiResponse<VehicleModelResponse> response = new ApiResponse<>();
+            response.setSuccess(true);
+            response.setMessage("Thêm hình ảnh cho mẫu xe thành công");
+            response.setData(vehicleModelService.addImagesToVehicleModel(id, request));
+            response.setCode(200);
+            return response;
+        }
+
+        @DeleteMapping("/delete/{id}")
+        ApiResponse<Void> deleteVehicleModel(@PathVariable Long id) {
+            ApiResponse<Void> response = new ApiResponse<>();
+            vehicleModelService.deleteVehicleModel(id);
+            response.setSuccess(true);
+            response.setMessage("Xóa mẫu xe thành công");
+            response.setData(null);
+            response.setCode(200);
+            return response;
+        }
+        @DeleteMapping(value = "/deleteimage/{modelId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+        ApiResponse<Void> deleteImageFromVehicleModel(
+                @PathVariable Long modelId,
+                @Valid @RequestBody VehicleModelDeleteImageRequest request) {
+            ApiResponse<Void> response = new ApiResponse<>();
+            vehicleModelService.deleteImageFromVehicleModel(modelId, request);
+            response.setSuccess(true);
+            response.setMessage("Xóa hình ảnh thành công");
+            response.setData(null);
             response.setCode(200);
             return response;
         }

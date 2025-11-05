@@ -65,14 +65,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/station/me").hasAnyAuthority("STAFF", "ADMIN")
                         //CRUD VEHICLE MODEL
                         .requestMatchers(HttpMethod.GET, "/vehiclemodel/showall", "/vehiclemodel/showbyid/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/vehiclemodel/create").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/vehiclemodel/update/**").hasAuthority("ADMIN")
+                            .requestMatchers(HttpMethod.POST, "/vehiclemodel/create").hasAuthority("ADMIN")
+                            .requestMatchers(HttpMethod.PUT, "/vehiclemodel/update/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/vehiclemodel/addimages/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vehiclemodel/delete/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/vehiclemodel/deleteimage/**").hasAuthority("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/vehiclemodel/*/images").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/vehiclemodel/*/images").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/vehiclemodel/images/*").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/vehiclemodel/*/images/*").hasAuthority("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/station/create").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/station/update/**").hasAuthority("ADMIN")

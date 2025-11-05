@@ -3,9 +3,6 @@ package vn.swp391.fa2025.evrental.dto.request;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,10 +24,4 @@ public class VehicleModelUpdateRequest {
     private Integer seat;
 
     private String description;
-
-
-    private List<MultipartFile> images;
-
-
-    private List<String> colors;
 }

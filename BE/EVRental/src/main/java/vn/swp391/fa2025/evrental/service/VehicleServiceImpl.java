@@ -9,10 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
-import vn.swp391.fa2025.evrental.entity.Station;
-import vn.swp391.fa2025.evrental.entity.User;
-import vn.swp391.fa2025.evrental.entity.Vehicle;
-import vn.swp391.fa2025.evrental.entity.VehicleModel;
+import vn.swp391.fa2025.evrental.entity.*;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.mapper.StationMapper;
@@ -24,6 +21,7 @@ import vn.swp391.fa2025.evrental.repository.VehicleRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,6 +78,21 @@ public class VehicleServiceImpl implements VehicleService {
             throw new BusinessException("Biển số xe đã tồn tại: " + request.getPlateNumber());
         }
 
+
+        Set<String> availableColors = model.getImageUrls().stream()
+                .map(ModelImageUrl::getColor)
+                .collect(Collectors.toSet());
+
+        if (availableColors.isEmpty()) {
+            throw new BusinessException("Model xe chưa có danh sách màu khả dụng");
+        }
+
+        if (!availableColors.contains(request.getColor())) {
+            throw new BusinessException("Màu '" + request.getColor() +
+                    "' không có sẵn cho model xe này. Các màu khả dụng: " +
+                    String.join(", ", availableColors));
+        }
+
         Vehicle vehicle = vehicleMapper.toVehicleFromCreateRequest(request);
         vehicle.setModel(model);
         vehicle.setStation(station);
@@ -97,12 +110,36 @@ public class VehicleServiceImpl implements VehicleService {
 
         boolean isUpdated = false;
 
-
+        // Nếu thay đổi model, cần validate lại màu
+        VehicleModel targetModel = vehicle.getModel();
         if (request.getModelId() != null) {
             if (!vehicle.getModel().getModelId().equals(request.getModelId())) {
-                VehicleModel model = vehicleModelRepository.findById(request.getModelId())
+                targetModel = vehicleModelRepository.findById(request.getModelId())
                         .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy model xe với ID: " + request.getModelId()));
-                vehicle.setModel(model);
+                vehicle.setModel(targetModel);
+                isUpdated = true;
+            }
+        }
+
+
+        if (request.getColor() != null && !request.getColor().isBlank()) {
+            if (!vehicle.getColor().equals(request.getColor()) || isUpdated) {
+
+                Set<String> availableColors = targetModel.getImageUrls().stream()
+                        .map(ModelImageUrl::getColor)
+                        .collect(Collectors.toSet());
+
+                if (availableColors.isEmpty()) {
+                    throw new BusinessException("Model xe chưa có danh sách màu khả dụng");
+                }
+
+                if (!availableColors.contains(request.getColor())) {
+                    throw new BusinessException("Màu '" + request.getColor() +
+                            "' không có sẵn cho model xe này. Các màu khả dụng: " +
+                            String.join(", ", availableColors));
+                }
+
+                vehicle.setColor(request.getColor());
                 isUpdated = true;
             }
         }
@@ -131,22 +168,12 @@ public class VehicleServiceImpl implements VehicleService {
             }
         }
 
-
-        if (request.getColor() != null && !request.getColor().isBlank()) {
-            if (!vehicle.getColor().equals(request.getColor())) {
-                vehicle.setColor(request.getColor());
-                isUpdated = true;
-            }
-        }
-
-
         if (request.getStatus() != null && !request.getStatus().isBlank()) {
             if (!vehicle.getStatus().equals(request.getStatus())) {
                 vehicle.setStatus(request.getStatus());
                 isUpdated = true;
             }
         }
-
 
         if (!isUpdated) {
             throw new BusinessException("Không có thông tin nào được thay đổi");

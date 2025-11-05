@@ -1,11 +1,11 @@
 package vn.swp391.fa2025.evrental.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -37,9 +37,18 @@ public class VehicleModelCreateRequest {
     private String description;
 
     @NotEmpty(message = "Danh sách hình ảnh không được để trống")
-    private List<@NotNull(message = "Tệp hình ảnh không được null") MultipartFile> images;
+    @Size(min = 1, message = "Phải có ít nhất một hình ảnh")
+    private List<@Valid ModelImageData> images;
 
-    @NotEmpty(message = "Danh sách màu không được để trống")
-    @Size(min = 1, message = "Phải có ít nhất một màu")
-    private List<@NotBlank(message = "Màu không được để trống") String> colors;
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ModelImageData {
+        @NotBlank(message = "URL hình ảnh không được để trống")
+        private String imageUrl;
+
+        @NotBlank(message = "Màu không được để trống")
+        private String color;
+    }
 }
