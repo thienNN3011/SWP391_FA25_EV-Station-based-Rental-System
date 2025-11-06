@@ -114,7 +114,7 @@ public class EmailUtils {
     }
 
 
-    private String buildBaseEmailTemplate(String title, String message, String reason, String color) {
+    public String buildBaseEmailTemplate(String title, String message, String reason, String color) {
         return String.format("""
     <html>
     <body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f7fa; margin: 0; padding: 20px;">
@@ -168,16 +168,19 @@ public class EmailUtils {
             Xin chào <b>%s</b>,<br>
             Cảm ơn bạn đã đặt xe tại <b>EV Rental</b>!<br><br>
             <b>Thông tin đặt xe:</b><br>
+            • Mã đơn thuê: <b>#%d</b><br>
             • Xe: <b>%s</b><br>
             • Bắt đầu: <b>%s</b><br>
             • Kết thúc: <b>%s</b><br>
             • Tổng tiền: <b>%s VND</b><br><br>
             <b>Chính sách:</b><br>
             - Bạn có thể hủy trước <b>%s phút</b> để được hoàn <b>%s%% tiền đặt cọc</b>.<br>
-            - Nếu đến muộn hơn <b>%s phút</b> kể từ thời gian bắt đầu, đơn sẽ bị hủy và không hoàn cọc.<br><br>
+            - Nếu đến muộn hơn <b>%s phút</b> kể từ thời gian bắt đầu, đơn sẽ bị hủy và không hoàn cọc.<br>
+            - Khi đến nhận xe quý khách vui lòng đem theo căn cước công dân và giấy phép lái xe để chứng minh.<br><br>
             Hẹn gặp lại bạn tại EV Rental!
         """,
                 booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
+                booking.getBookingId(),
                 booking.getVehicle().getModel().getName(),
                 booking.getStartTime().format(formatter),
                 booking.getEndTime().format(formatter),
@@ -229,7 +232,7 @@ public class EmailUtils {
                 booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
                 booking.getVehicle().getModel().getName(),
                 booking.getActualStartTime().format(formatter),
-                booking.getActualEndTime().isAfter(booking.getEndTime())?booking.getActualEndTime().format(formatter):booking.getEndTime(),
+                booking.getActualEndTime().isAfter(booking.getEndTime())?booking.getActualEndTime().format(formatter):booking.getEndTime().format(formatter),
                 booking.getTotalAmount(),
                 (booking.getStartOdo() != null && booking.getEndOdo() != null)
                         ? (booking.getEndOdo() - booking.getStartOdo())

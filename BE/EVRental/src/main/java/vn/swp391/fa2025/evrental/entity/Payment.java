@@ -33,4 +33,6 @@ public class Payment {
 
     @Column(nullable = false)
     private LocalDateTime transactionDate;
+
+    private String method;
 }
