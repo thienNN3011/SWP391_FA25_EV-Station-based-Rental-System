@@ -96,6 +96,7 @@ public class PaymentController {
                             .amount(amount)
                             .referenceCode(transactionNo)
                             .transactionDate(TimeUtils.parsePayDate(payDate))
+                            .method("VN_PAY")
                             .build();
                     paymentService.createPayment(payment);
                     if (paymentType.equalsIgnoreCase("DEPOSIT")) {

@@ -112,6 +112,14 @@ public class BookingServiceImpl implements  BookingService{
                 tariff.getDepositAmount()
         );
 
+        if (bookingRepository.save(booking)!=null) {
+            Vehicle vehicle= booking.getVehicle();
+            vehicle.setStatus("IN_USE");
+            vehicleRepository.save(vehicle);
+            tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()+1);
+            tariffRepository.save(tariff);
+        }
+
         BookingResponse bookingResponse= BookingResponse.builder()
                 .bookingId(booking.getBookingId())
                 .username(username)
@@ -122,14 +130,6 @@ public class BookingServiceImpl implements  BookingService{
                 .endTime(booking.getEndTime())
                 .status(booking.getStatus())
                 .build();
-        if (bookingRepository.save(booking)!=null) {
-            Vehicle vehicle= booking.getVehicle();
-            vehicle.setStatus("IN_USE");
-            vehicleRepository.save(vehicle);
-            tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()+1);
-            tariffRepository.save(tariff);
-        }
-        bookingRepository.save(booking);
         String paymentUrl="";
         try {
             paymentUrl= vnPayService.createPaymentUrl(req, booking.getTariff().getDepositAmount(), "Thanh toán đặt cọc cho Booking ID: "+booking.getBookingId(), booking.getBookingId());
@@ -265,28 +265,53 @@ public class BookingServiceImpl implements  BookingService{
 
         String confirmUrl = "http://localhost:8080/EVRental/bookings/confirm?token=" + token;
         String rejectUrl = "http://localhost:8080/EVRental/bookings/reject?token=" + token;
-   
-   
 
-        String emailBody = """
-        <p>Xin chào %s,</p>
-        <p>Vui lòng xem xét hợp đồng thuê xe đính kèm.</p>
-        <p>Nhấn vào nút bên dưới để xác nhận hoặc từ chối hợp đồng:</p>
-        <p>
-            <a href="%s" style="background:green;color:white;padding:10px 15px;text-decoration:none;">Đồng ý</a>
-            &nbsp;&nbsp;
-            <a href="%s" style="background:red;color:white;padding:10px 15px;text-decoration:none;">Từ chối</a>
-        </p>
-        <p>Trân trọng,<br>Đội ngũ EVRental</p>
-    """.formatted(customer.getFullName(), confirmUrl, rejectUrl);
+
+
+        String subject = "Xác nhận hợp đồng thuê xe #" + booking.getBookingId();
+
+        String message = String.format("""
+    Xin chào <b>%s</b>,<br>
+    Hệ thống EV Rental đã tạo hợp đồng thuê xe của bạn. Vui lòng xem tệp hợp đồng đính kèm để kiểm tra thông tin.<br><br>
+    <b>Thông tin chi tiết:</b><br>
+    • Xe: <b>%s - %s</b><br>
+    • Màu sắc: <b>%s</b><br>
+    • Bắt đầu: <b>%s</b><br>
+    • Kết thúc: <b>%s</b><br>
+    • Giá thuê: <b>%,.0f VND</b><br>
+    • Đặt cọc: <b>%,.0f VND</b><br><br>
+    Nhấn vào một trong các nút bên dưới để xác nhận hoặc từ chối hợp đồng:<br><br>
+    <a href="%s" style="background-color: #2e7d32; color: white; padding: 10px 15px; border-radius: 6px; text-decoration: none;">✅ Đồng ý</a>
+    &nbsp;&nbsp;
+    <a href="%s" style="background-color: #d32f2f; color: white; padding: 10px 15px; border-radius: 6px; text-decoration: none;">❌ Từ chối</a><br><br>
+    Sau khi xác nhận, quá trình thuê xe sẽ được bắt đầu.
+""",
+                customer.getFullName(),
+                vehicle.getModel().getName(),
+                vehicle.getPlateNumber(),
+                vehicle.getColor(),
+                booking.getActualStartTime().format(formatter),
+                booking.getEndTime().format(formatter),
+                booking.getTariff().getPrice(),
+                booking.getTariff().getDepositAmount(),
+                confirmUrl,
+                rejectUrl
+        );
+        String body = emailUtils.buildBaseEmailTemplate(
+                "Xác nhận hợp đồng thuê xe",
+                message,
+                null,
+                "#1976d2"
+        );
 
         emailUtils.sendEmailWithAttachment(
                 customer.getEmail(),
-                "Xác nhận hợp đồng thuê xe #" + booking.getBookingId(),
-                emailBody,
+                subject,
+                body,
                 pdfBytes,
                 "contract.pdf"
         );
+
         return "Bạn đã bắt đầu thuê xe thành công. Hợp đồng đã được gửi đến email của khách hàng để xác nhận.";
     }
 
@@ -301,6 +326,7 @@ public class BookingServiceImpl implements  BookingService{
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
 
         if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc station của bạn!Booking thuộc station"+ booking.getVehicle().getStation().getStationName());
+        if (booking.getContract().getStaff().getUserId()!=staff.getUserId()) throw new RuntimeException("Bạn không phải nhân viên thụ lí booking này");
         if (!booking.getStatus().equalsIgnoreCase("RENTING"))
             throw new RuntimeException("Booking không ở trạng thái RENTING");
 
@@ -354,13 +380,14 @@ public class BookingServiceImpl implements  BookingService{
             throw new RuntimeException(e);
         }
         if (paymentRepository.findByReferenceCode(referanceCode)!=null) throw new RuntimeException("Reference Code đã tồn tại");
-        if (!transactionDate.isAfter(LocalDateTime.now().minusMinutes(5))) throw new RuntimeException("Thời gian giao dịch không được quá 5p so với thời điểm hiện tại");
+        if (!transactionDate.isAfter(LocalDateTime.now().minusMinutes(10))) throw new RuntimeException("Thời gian giao dịch không được quá 10p so với thời điểm hiện tại");
         paymentRepository.save(Payment.builder()
                 .transactionDate(transactionDate)
                 .booking(booking)
                 .paymentType("REFUND_DEPOSIT")
                 .amount(paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), "DEPOSIT").getAmount())
                 .referenceCode(referanceCode)
+                .method("VIETCOMBANK")
                 .build());
 
         EndRentingResponse response = EndRentingResponse.builder()
@@ -410,6 +437,7 @@ public class BookingServiceImpl implements  BookingService{
                     .paymentType("REFUND_DEPOSIT")
                     .amount(deposit.getAmount().multiply(extraRate))
                     .referenceCode("REFUND_" + System.currentTimeMillis())
+                    .method("VN_PAY")
                     .build();
             paymentRepository.save(refund);
         }
