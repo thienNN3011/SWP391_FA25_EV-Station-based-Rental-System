@@ -346,5 +346,12 @@ public class UserServiceImpl implements UserService {
         List<User> staffs=userRepository.findByStation(station);
         return userMapper.toStaffResponseList(staffs);
     }
-
+    @Override
+    public List<UserRiskResponse> getUsersAtRisk() {
+        List<UserRiskResponse> usersAtRisk = userRepository.getUsersWithIncidents();
+        if (usersAtRisk.isEmpty()) {
+            throw new ResourceNotFoundException("Không có người dùng nào có rủi ro cao");
+        }
+        return usersAtRisk;
+    }
 }

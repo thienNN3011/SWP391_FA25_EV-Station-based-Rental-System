@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import vn.swp391.fa2025.evrental.dto.response.StaffStatsResponse;
+import vn.swp391.fa2025.evrental.dto.response.UserRiskResponse;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -58,4 +59,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+    @Query("""
+    SELECT new vn.swp391.fa2025.evrental.dto.response.UserRiskResponse(
+        u.userId,
+        u.username,
+        u.fullName,
+        COUNT(ir.reportId),
+        MAX(ir.incidentDate)
+    )
+    FROM User u
+    INNER JOIN u.bookings b
+    INNER JOIN b.incidentReports ir
+    WHERE u.role = 'RENTER'
+    GROUP BY u.userId, u.username, u.fullName
+    HAVING COUNT(ir.reportId) > 0
+    ORDER BY COUNT(ir.reportId) DESC, MAX(ir.incidentDate) DESC
+    """)
+    List<UserRiskResponse> getUsersWithIncidents();
 }
+

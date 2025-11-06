@@ -25,4 +25,5 @@ public interface UserService {
     public void updateRejectedUser(UserRejectedUpdateRequest request);
     List<StaffStatsResponse> getStaffStatsByStation(String stationName, Long month, Long year);
     List<StaffResponse> showStaffStation(String stationName);
+    List<UserRiskResponse> getUsersAtRisk();
 }

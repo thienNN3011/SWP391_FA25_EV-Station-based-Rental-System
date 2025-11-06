@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/deleteuser/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/me/stats").hasAuthority("RENTER")
                         .requestMatchers(HttpMethod.GET,"/showuserinfo").authenticated()
-
+                        .requestMatchers(HttpMethod.GET, "/usersrisk").hasAuthority("ADMIN")
 
                         .requestMatchers("/showpendingaccount", "/changeaccountstatus", "/showdetailofpendingaccount")
                         .hasAnyAuthority("STAFF", "ADMIN")

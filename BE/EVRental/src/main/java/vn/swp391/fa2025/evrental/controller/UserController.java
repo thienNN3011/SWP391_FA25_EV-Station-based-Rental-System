@@ -212,5 +212,15 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         response.setData(userService.showStaffStation(request.getStationName()));
         return response;
     }
+
+    @GetMapping("/usersrisk")
+    public ApiResponse<List<UserRiskResponse>> getUsersAtRisk() {
+        ApiResponse<List<UserRiskResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy danh sách người dùng có rủi ro cao thành công");
+        response.setCode(200);
+        response.setData(userService.getUsersAtRisk());
+        return response;
+    }
 }
 
