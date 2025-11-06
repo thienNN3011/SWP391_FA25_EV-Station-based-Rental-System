@@ -6,12 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.request.StationCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.StationUpdateRequest;
-import vn.swp391.fa2025.evrental.dto.response.StationResponse;
-import vn.swp391.fa2025.evrental.dto.response.MyStationResponse;
-import vn.swp391.fa2025.evrental.dto.response.StationUpdateResponse;
-import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
+import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
+import vn.swp391.fa2025.evrental.entity.Vehicle;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.mapper.StationMapper;
@@ -169,4 +167,40 @@ public class StationServiceImpl implements StationService {
         station.setStatus("CLOSED");
         stationRepository.save(station);
     }
+
+    @Override
+    public StationVehicleStatsResponse getStationVehicleStats(Long stationId) {
+        Station station = stationRepository.findById(stationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + stationId));
+
+        List<Vehicle> allVehicles = vehicleRepository.findByStation_StationId(stationId);
+
+        List<VehicleResponse> availableList = allVehicles.stream()
+                .filter(v -> "AVAILABLE".equals(v.getStatus()))
+                .map(vehicleMapper::toShortVehicleResponse)
+                .toList();
+
+        List<VehicleResponse> inUseList = allVehicles.stream()
+                .filter(v -> "IN_USE".equals(v.getStatus()))
+                .map(vehicleMapper::toShortVehicleResponse)
+                .toList();
+
+        List<VehicleResponse> maintenanceList = allVehicles.stream()
+                .filter(v -> "MAINTENANCE".equals(v.getStatus()))
+                .map(vehicleMapper::toShortVehicleResponse)
+                .toList();
+
+        return StationVehicleStatsResponse.builder()
+                .stationId(station.getStationId())
+                .stationName(station.getStationName())
+                .totalVehicles(allVehicles.size())
+                .availableVehicles(availableList.size())
+                .inUseVehicles(inUseList.size())
+                .maintenanceVehicles(maintenanceList.size())
+                .availableVehicleList(availableList)
+                .inUseVehicleList(inUseList)
+                .maintenanceVehicleList(maintenanceList)
+                .build();
+    }
+
 }

@@ -7,6 +7,7 @@ import vn.swp391.fa2025.evrental.dto.request.StationUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.MyStationResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationUpdateResponse;
+import vn.swp391.fa2025.evrental.dto.response.StationVehicleStatsResponse;
 import vn.swp391.fa2025.evrental.entity.Station;
 
 @Service
@@ -16,4 +17,5 @@ public interface StationService {
     public StationResponse createStation(StationCreateRequest request);
     public StationUpdateResponse updateStation(Long stationId, StationUpdateRequest request);
     public void deleteStation(Long stationId);
+    public StationVehicleStatsResponse getStationVehicleStats(Long stationId);
 }

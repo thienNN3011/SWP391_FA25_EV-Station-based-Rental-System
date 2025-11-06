@@ -9,10 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vn.swp391.fa2025.evrental.dto.request.StationCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.StationUpdateRequest;
-import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
-import vn.swp391.fa2025.evrental.dto.response.StationResponse;
-import vn.swp391.fa2025.evrental.dto.response.MyStationResponse;
-import vn.swp391.fa2025.evrental.dto.response.StationUpdateResponse;
+import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.service.StationService;
 
 @RestController
@@ -79,4 +76,14 @@ public class StationController {
         response.setCode(200);
         return response;
     }
+    @GetMapping("/station/vehiclestats/{stationId}")
+    public ApiResponse<StationVehicleStatsResponse> getStationVehicleStats(@PathVariable Long stationId) {
+        ApiResponse<StationVehicleStatsResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy thống kê xe của trạm thành công");
+        response.setData(stationService.getStationVehicleStats(stationId));
+        response.setCode(200);
+        return response;
+    }
+
 }

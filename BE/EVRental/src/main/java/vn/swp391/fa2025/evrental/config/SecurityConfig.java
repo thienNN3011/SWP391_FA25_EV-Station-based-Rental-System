@@ -75,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/station/create").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/station/update/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/station/delete/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/station/station/vehiclestats/**").hasAnyAuthority( "ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/tariff/showall","/tariff/showbyid/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/tariff/create").hasAuthority("ADMIN")
