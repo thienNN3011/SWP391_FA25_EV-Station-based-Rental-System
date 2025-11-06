@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ShowStaffStatsRequest {
-    private Long stationId;
+    private String stationName;
     private Long month;
     private Long year;
 }

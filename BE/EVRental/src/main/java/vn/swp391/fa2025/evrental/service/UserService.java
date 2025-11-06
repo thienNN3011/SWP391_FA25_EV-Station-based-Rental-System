@@ -23,5 +23,6 @@ public interface UserService {
     ChangeStaffStationResponse listStaffInStation(String stationName);
     User getUserById(Long Id);
     public void updateRejectedUser(UserRejectedUpdateRequest request);
-    List<StaffStatsResponse> getStaffStatsByStation(Long stationId, Long month, Long year);
+    List<StaffStatsResponse> getStaffStatsByStation(String stationName, Long month, Long year);
+    List<StaffResponse> showStaffStation(String stationName);
 }

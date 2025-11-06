@@ -197,9 +197,19 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
     public ApiResponse<List<StaffStatsResponse>> showStaffStats(@RequestBody ShowStaffStatsRequest request){
         ApiResponse<List<StaffStatsResponse>> response = new ApiResponse<>();
         response.setSuccess(true);
-        response.setData(userService.getStaffStatsByStation(request.getStationId(), request.getMonth(), request.getYear()));
+        response.setData(userService.getStaffStatsByStation(request.getStationName(), request.getMonth(), request.getYear()));
         response.setMessage("Lấy thống kê staff theo trạm thành công");
         response.setCode(200);
+        return response;
+    }
+
+    @PostMapping("/showstaffstation")
+    public ApiResponse<List<StaffResponse>> showStaffStation(@RequestBody StationRequest request){
+        ApiResponse<List<StaffResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin staff theo trạm thành công");
+        response.setCode(200);
+        response.setData(userService.showStaffStation(request.getStationName()));
         return response;
     }
 }

@@ -329,12 +329,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<StaffStatsResponse> getStaffStatsByStation(Long stationId, Long month, Long year) {
+    public List<StaffStatsResponse> getStaffStatsByStation(String stationName, Long month, Long year) {
+        Station station=stationRepository.findByStationName(stationName);
+        if (station == null) {throw new RuntimeException("Station không tồn tại");}
         int m = month.intValue();
         int y = year.intValue();
         LocalDateTime startDate = LocalDateTime.of(y, m, 1, 0, 0);
         LocalDateTime endDate = startDate.plusMonths(1);
-        return userRepository.getStaffStatsByStationAndMonth(stationId, startDate, endDate);
+        return userRepository.getStaffStatsByStationAndMonth(station.getStationId(), startDate, endDate);
+    }
+
+    @Override
+    public List<StaffResponse> showStaffStation(String stationName) {
+        Station station=stationRepository.findByStationName(stationName);
+        if (station == null) {throw new RuntimeException("Station không tồn tại");}
+        List<User> staffs=userRepository.findByStation(station);
+        return userMapper.toStaffResponseList(staffs);
     }
 
 }
