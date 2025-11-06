@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
+import vn.swp391.fa2025.evrental.dto.request.StationRevenueRequest;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
 import vn.swp391.fa2025.evrental.dto.response.PaymentReturnResponse;
+import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
@@ -167,5 +169,15 @@ public class PaymentController {
         }
 
         response.getWriter().write(page);
+    }
+
+    @PostMapping("/revenue")
+    public ApiResponse<List<StationRevenueResponse>> showRevenue(@RequestBody StationRevenueRequest request) {
+        ApiResponse<List<StationRevenueResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(paymentService.getYearlyRevenueByStation(request.getStationName(), request.getYear()));
+        response.setCode(200);
+        response.setMessage("Thống kê theo năm thành công");
+        return response;
     }
 }
