@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @JsonInclude (JsonInclude.Include.NON_NULL)
 public class BookingResponse {
     private Long bookingId;
-    private String username;
+    private CustomerResponse user;
     private VehicleResponse vehicle;
     private StationResponse station;
     private TariffResponse tariff;

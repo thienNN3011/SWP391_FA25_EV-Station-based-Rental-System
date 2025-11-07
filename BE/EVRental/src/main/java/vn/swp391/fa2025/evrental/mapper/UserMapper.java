@@ -1,9 +1,6 @@
 package vn.swp391.fa2025.evrental.mapper;
 
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 import org.springframework.context.annotation.Bean;
 import vn.swp391.fa2025.evrental.dto.request.RegisterCustomerRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
@@ -68,4 +65,12 @@ public interface  UserMapper {
     StaffResponse toStaffResponse(User user);
 
     List<StaffResponse> toStaffResponseList(List<User> users);
+
+    @Named("toBookingCustomerResponse")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "phone", source = "phone")
+    @Mapping(target = "idCardPhoto", source = "idCardPhoto")
+    @Mapping(target = "driveLicensePhoto", source = "driveLicensePhoto")
+    CustomerResponse toBookingCustomerResponse(User user);
 }
