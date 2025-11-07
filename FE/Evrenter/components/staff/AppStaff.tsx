@@ -1,22 +1,29 @@
 "use client"
 
 import { useState } from "react"
-import { Car, Users, UserCheck, MapPin, TrendingUp, FileText, Home, Menu } from "lucide-react"
+import { Car, Users, MapPin, Home, Menu, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider } from "@/components/ui/sidebar"
-import { Dashboard } from "@/components/admin/Dashboard"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider
+} from "@/components/ui/sidebar"
+
 import { UserManagementStaff } from "@/components/staff/UserManagementStaff"
-import { Header } from "@/components/header"
 import { LocationManagementStaff } from "./LocationManagementStaff"
-import {BookingStaff} from "./BookingStaff"
+import { BookingStaff } from "./BookingStaff"
 import StartRentalStaff from "./StartRental"
 import EndRentalStaff from "./EndRentalStaff"
+import { useAuth } from "@/components/auth-context"
+import { AuthModal } from "@/components/auth-modal"
+import { Dashboard } from "./DashboardStaff"
 
-
-
-
-type ActivePage = "dashboard" | "users" | "station" | "booking" |"rental" | "endrental"
+type ActivePage = "dashboard" | "users" | "station" | "booking" | "rental" | "endrental"
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
@@ -34,7 +41,7 @@ function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; s
         <div className="flex items-center gap-2 px-4 py-2">
           <Car className="size-8 text-primary" />
           <div>
-            <h2 className="text-lg">RentCar Staff</h2>
+            <h2 className="text-lg">Nhân Viên</h2>
             <p className="text-sm text-muted-foreground">Hệ thống quản lý của nhân viên</p>
           </div>
         </div>
@@ -43,7 +50,11 @@ function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; s
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.id}>
-              <SidebarMenuButton onClick={() => setActivePage(item.id)} isActive={activePage === item.id} className="w-full justify-start">
+              <SidebarMenuButton
+                onClick={() => setActivePage(item.id)}
+                isActive={activePage === item.id}
+                className="w-full justify-start"
+              >
                 <item.icon className="size-4" />
                 <span>{item.label}</span>
               </SidebarMenuButton>
@@ -78,7 +89,12 @@ function MobileSidebar({ activePage, setActivePage }: { activePage: ActivePage; 
         </div>
         <div className="p-4">
           {menuItems.map((item) => (
-            <Button key={item.id} variant={activePage === item.id ? "default" : "ghost"} className="w-full justify-start mb-2" onClick={() => handlePageChange(item.id)}>
+            <Button
+              key={item.id}
+              variant={activePage === item.id ? "default" : "ghost"}
+              className="w-full justify-start mb-2"
+              onClick={() => handlePageChange(item.id)}
+            >
               <item.icon className="size-4 mr-2" />
               {item.label}
             </Button>
@@ -110,29 +126,60 @@ function renderActivePage(activePage: ActivePage) {
 
 export default function AppStaff() {
   const [activePage, setActivePage] = useState<ActivePage>("dashboard")
+  const [isAuthOpen, setIsAuthOpen] = useState(false)
+  const { user, logout } = useAuth()
+
   return (
-    
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <div className="hidden md:block w-64 border-r bg-card">
           <AdminSidebar activePage={activePage} setActivePage={setActivePage} />
         </div>
+
         <div className="flex-1 flex flex-col min-h-screen">
-            <Header />
-          <header className="border-b bg-card px-4 py-3 md:hidden shrink-0">
-            <div className="flex items-center justify-between">
-              <h1 className="text-lg">App nhân viên</h1>
+          {/* header riêng, dùng cho admin và staff */}
+          <header className="border-b bg-card px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <MobileSidebar activePage={activePage} setActivePage={setActivePage} />
+              <h1 className="text-lg font-semibold">Ứng dụng nhân viên</h1>
+            </div>
+
+          
+            <div className="flex items-center gap-3">
+              {user ? (
+                <>
+                  <span className="text-sm font-medium">{user.fullName}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={logout}
+                    className="flex items-center gap-2 text-red-600"
+                  >
+                    <LogOut className="h-4 w-4" /> Đăng xuất
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setIsAuthOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" /> Đăng nhập
+                </Button>
+              )}
             </div>
           </header>
-          <main className="flex-1 w-full overflow-visible relative z-0">
-  {renderActivePage(activePage)}
-</main>
 
+         
+          <AuthModal isOpen={isAuthOpen} onOpenChange={setIsAuthOpen} initialTab="signin" />
+
+       
+          <main className="flex-1 w-full overflow-visible relative z-0">
+            {renderActivePage(activePage)}
+          </main>
         </div>
       </div>
     </SidebarProvider>
   )
-
 }
-

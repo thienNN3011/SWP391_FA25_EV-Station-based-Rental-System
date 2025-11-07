@@ -18,14 +18,14 @@ export default function EndRentalStaff() {
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
 
- 
+  
   const handleFetchBooking = async () => {
     if (!bookingId) return
     setMessage("")
     setLoading(true)
     try {
       const res = await api.post("/bookings/showdetailbooking", { bookingId })
-      setBooking(res.data)
+      setBooking(res.data.data) 
       setMessage("Đã tải thông tin booking.")
     } catch (err: any) {
       console.error("Lỗi lấy booking:", err)
@@ -59,7 +59,7 @@ export default function EndRentalStaff() {
       const res = await api.post("/bookings/endrental", body)
       if (res.status === 200 || res.status === 201) {
         setMessage("Quét mã dưới đây để thanh toán!")
-        setQrCode(res.data.data.qr) 
+        setQrCode(res.data.data.qr)
       } else {
         setMessage("Có lỗi xảy ra khi kết thúc hợp đồng.")
       }
@@ -75,7 +75,7 @@ export default function EndRentalStaff() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-6">
       <Card className="border border-secondary/30 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export default function EndRentalStaff() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-         
+      
           <div>
             <Label>Mã Booking</Label>
             <div className="flex gap-2">
@@ -100,13 +100,21 @@ export default function EndRentalStaff() {
             </div>
           </div>
 
-         
           {booking && (
             <div className="p-3 border rounded bg-secondary/10 text-sm space-y-1">
-              <p><strong>Trạm:</strong> {booking.stationName}</p>
-              <p><strong>Xe:</strong> {booking.vehicleName}</p>
-              <p><strong>Khách hàng:</strong> {booking.customerName}</p>
-              <p><strong>Thời gian thuê:</strong> {booking.startTime} → {booking.endTime}</p>
+              <p><strong>Trạm:</strong> {booking.station?.stationName}</p>
+              <p><strong>Địa chỉ:</strong> {booking.station?.address}</p>
+              <p>
+                <strong>Xe:</strong> {booking.vehicle?.brand}{" "}
+                {booking.vehicle?.modelName} ({booking.vehicle?.color})
+              </p>
+              <p><strong>Biển số:</strong> {booking.vehicle?.plateNumber}</p>
+              <p><strong>Khách hàng:</strong> {booking.user?.fullName}</p>
+              <p><strong>SĐT:</strong> {booking.user?.phone}</p>
+              <p>
+                <strong>Thời gian thuê:</strong> {booking.startTime} → {booking.endTime}
+              </p>
+           
             </div>
           )}
 
@@ -114,7 +122,7 @@ export default function EndRentalStaff() {
           <div>
             <Label>Tình trạng xe khi trả</Label>
             <Input
-              placeholder="VD: Có vết xước nhẹ bên cạnh phải"
+              placeholder="VD: Có vết xước nhẹ bên phải"
               value={vehicleStatus}
               onChange={(e) => setVehicleStatus(e.target.value)}
             />
@@ -132,13 +140,12 @@ export default function EndRentalStaff() {
           <div>
             <Label>Mã tham chiếu</Label>
             <Input
-              placeholder="Nhập mã tham chiếu"
+              placeholder="Nhập mã tham chiếu thanh toán"
               value={referenceCode}
               onChange={(e) => setReferenceCode(e.target.value)}
             />
           </div>
 
-          
           <Button
             onClick={handleEndRental}
             disabled={loading}
@@ -152,7 +159,7 @@ export default function EndRentalStaff() {
             )}
           </Button>
 
-     
+        
           {message && (
             <p className="text-center text-sm mt-2 text-muted-foreground">
               {message}

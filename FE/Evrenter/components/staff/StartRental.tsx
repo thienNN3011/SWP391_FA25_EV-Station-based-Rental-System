@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { api } from "@/lib/api"
-import { Car, FileText, Mail } from "lucide-react"
+import { Car, FileText, Calendar, DollarSign, User } from "lucide-react"
 
 export default function StartRentalStaff() {
   const [bookingId, setBookingId] = useState("")
@@ -16,14 +16,14 @@ export default function StartRentalStaff() {
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
 
-  
+ 
   const handleFetchBooking = async () => {
     if (!bookingId) return
     setMessage("")
     setLoading(true)
     try {
       const res = await api.post("/bookings/showdetailbooking", { bookingId })
-      setBooking(res.data)
+      setBooking(res.data.data)
       setMessage("Đã tải thông tin đặt xe.")
     } catch (err: any) {
       console.error("Lỗi lấy booking:", err)
@@ -33,7 +33,7 @@ export default function StartRentalStaff() {
     }
   }
 
- 
+  
   const handleStartRental = async () => {
     if (!bookingId || !vehicleStatus || !startOdo) {
       setMessage("Vui lòng nhập đầy đủ thông tin trước khi xác nhận.")
@@ -43,15 +43,14 @@ export default function StartRentalStaff() {
     setLoading(true)
     setMessage("")
     try {
-      const body = {
+      const res = await api.post("/bookings/startrental", {
         bookingId,
         vehicleStatus,
         startOdo,
-      }
+      })
 
-      const res = await api.post("/bookings/startrental", body)
       if (res.status === 200 || res.status === 201) {
-        setMessage("Nhận xe thành công! Hợp đồng đã được gửi qua email.")
+        setMessage(" Nhận xe thành công! Hợp đồng đã được gửi qua email.")
       } else {
         setMessage("Có lỗi xảy ra khi nhận xe.")
       }
@@ -67,7 +66,7 @@ export default function StartRentalStaff() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-6">
       <Card className="border border-secondary/30 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -76,8 +75,8 @@ export default function StartRentalStaff() {
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4">
-       
+        <CardContent className="space-y-6">
+         
           <div>
             <Label>Mã Booking</Label>
             <div className="flex gap-2">
@@ -92,17 +91,68 @@ export default function StartRentalStaff() {
             </div>
           </div>
 
-        
+          
           {booking && (
-            <div className="p-3 border rounded bg-secondary/10 text-sm">
-              <p><strong>Trạm:</strong> {booking.stationName}</p>
-              <p><strong>Xe:</strong> {booking.vehicleName}</p>
-              <p><strong>Khách hàng:</strong> {booking.customerName}</p>
+            <div className="p-4 border rounded bg-secondary/10 space-y-3 text-sm">
+              <h2 className="font-semibold text-base flex items-center gap-2">
+                <User className="size-4 text-primary" /> Thông tin khách hàng
+              </h2>
+              <p><strong>Họ tên:</strong> {booking.user.fullName}</p>
+              <p><strong>Số điện thoại:</strong> {booking.user.phone}</p>
+
+              <div className="flex gap-4 mt-2">
+                <div>
+                  <p className="font-semibold text-sm mb-1">CCCD</p>
+                  <img
+                    src={booking.user.idCardPhoto}
+                    alt="CCCD"
+                    className="w-40 h-28 object-cover rounded border"
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm mb-1">GPLX</p>
+                  <img
+                    src={booking.user.driveLicensePhoto}
+                    alt="GPLX"
+                    className="w-40 h-28 object-cover rounded border"
+                  />
+                </div>
+              </div>
+
+              <hr className="my-2" />
+
+              <h2 className="font-semibold text-base flex items-center gap-2">
+                <Car className="size-4 text-blue-500" /> Thông tin xe
+              </h2>
+              <p><strong>Xe:</strong> {booking.vehicle.modelName} ({booking.vehicle.brand})</p>
+              <p><strong>Màu:</strong> {booking.vehicle.color}</p>
+              <p><strong>Biển số:</strong> {booking.vehicle.plateNumber}</p>
+            
+
+              <hr className="my-2" />
+
+              <h2 className="font-semibold text-base flex items-center gap-2">
+                <Calendar className="size-4 text-green-500" /> Thông tin thuê
+              </h2>
               <p><strong>Thời gian thuê:</strong> {booking.startTime} → {booking.endTime}</p>
+           
+              <p><strong>Tổng tiền:</strong> {booking.totalAmount.toLocaleString()} VND</p>
+
+              <hr className="my-2" />
+
+              <h2 className="font-semibold text-base flex items-center gap-2">
+                <DollarSign className="size-4 text-amber-500" /> Gói thuê & Trạm
+              </h2>
+           
+              <p><strong>Giá thuê:</strong> {booking.tariff.price.toLocaleString()} VND</p>
+              <p><strong>Tiền cọc:</strong> {booking.tariff.depositAmount.toLocaleString()} VND</p>
+              <p><strong>Trạm:</strong> {booking.station.stationName}</p>
+        
+            
             </div>
           )}
 
-     
+        
           <div>
             <Label>Tình trạng xe khi nhận</Label>
             <Input
@@ -121,7 +171,7 @@ export default function StartRentalStaff() {
             />
           </div>
 
-
+          
           <Button
             onClick={handleStartRental}
             disabled={loading}
@@ -134,7 +184,6 @@ export default function StartRentalStaff() {
               </>
             )}
           </Button>
-
 
           {message && (
             <p className="text-center text-sm mt-2 text-muted-foreground">

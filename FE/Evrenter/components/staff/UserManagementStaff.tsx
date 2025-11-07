@@ -128,9 +128,7 @@ export function UserManagementStaff() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <UserPlus className="size-4 mr-2" /> Thêm người dùng
-            </Button>
+       
           </div>
         </div>
 

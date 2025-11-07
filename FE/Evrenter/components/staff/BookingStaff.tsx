@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { api } from "@/lib/api"
-import {Search,Eye,MoreHorizontal,Clock,Car,Calendar,User,DollarSign,FileText,
+import {Search,Eye,MoreHorizontal,Clock,Car,Calendar,User,DollarSign,FileText, Phone
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,8 @@ import {DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle,
 } from "@/components/ui/dialog"
+
+
 
 export function BookingStaff() {
   const [search, setSearch] = useState("")
@@ -50,7 +52,8 @@ export function BookingStaff() {
       if (res.data?.data) {
         const mapped = res.data.data.map((b: any) => ({
           bookingId: b.bookingId,
-          customerName: b.username,            
+          customerName: b.user.fullName,  
+          customerPhone: b.user.phone,          
           modelName: b.vehicle?.modelName,     
           stationName: b.station?.stationName, 
           startTime: b.startTime,
@@ -84,6 +87,7 @@ export function BookingStaff() {
     return (
       b.customerName?.toLowerCase().includes(text) ||
       b.modelName?.toLowerCase().includes(text) ||
+      b.customerPhone?.toLowerCase().includes(text) ||
       b.stationName?.toLowerCase().includes(text)
     )
   })
@@ -129,6 +133,7 @@ export function BookingStaff() {
                   <TableRow>
                     <TableHead>Mã Booking</TableHead>
                     <TableHead>Khách hàng</TableHead>
+                    <TableHead>Số điện thoại</TableHead> 
                     <TableHead>Xe</TableHead>
                     <TableHead>Trạm</TableHead>
                     <TableHead>Thời gian</TableHead>
@@ -146,6 +151,12 @@ export function BookingStaff() {
   <div className="flex items-center gap-2">
     <User className="size-4 text-primary" />
     <div>{bk.customerName || "Ẩn danh"}</div>
+  </div>
+</TableCell>
+<TableCell>
+  <div className="flex items-center gap-2">
+    <User className="size-4 text-primary" />
+    <div>{bk.customerPhone || "Ẩn danh"}</div>
   </div>
 </TableCell>
 
