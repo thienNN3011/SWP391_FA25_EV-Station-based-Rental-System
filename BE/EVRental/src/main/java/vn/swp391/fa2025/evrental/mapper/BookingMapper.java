@@ -9,12 +9,12 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        uses = {VehicleMapper.class, TariffMapper.class, StationMapper.class},
+        uses = {VehicleMapper.class, TariffMapper.class, StationMapper.class, UserMapper.class},
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
 public interface BookingMapper {
 
-    @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "user", qualifiedByName = "toBookingCustomerResponse")
     @Mapping(target = "vehicle", qualifiedByName = "toShortVehicleResponse")
     @Mapping(target = "tariff", qualifiedByName = "toTariffResponse")
     @Mapping(target = "station", source = "vehicle.station", qualifiedByName = "toStationResponse")

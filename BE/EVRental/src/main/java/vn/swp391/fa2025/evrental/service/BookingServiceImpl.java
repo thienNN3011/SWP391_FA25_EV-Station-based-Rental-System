@@ -111,6 +111,13 @@ public class BookingServiceImpl implements  BookingService{
                 tariff.getPrice(),
                 tariff.getDepositAmount()
         );
+        User renter=booking.getUser();
+        CustomerResponse customerResponse= CustomerResponse.builder()
+                .fullName(renter.getFullName())
+                .phone(renter.getPhone())
+                .idCardPhoto(renter.getIdCardPhoto())
+                .driveLicensePhoto(renter.getDriveLicensePhoto())
+                .build();
 
         if (bookingRepository.save(booking)!=null) {
             Vehicle vehicle= booking.getVehicle();
@@ -122,7 +129,7 @@ public class BookingServiceImpl implements  BookingService{
 
         BookingResponse bookingResponse= BookingResponse.builder()
                 .bookingId(booking.getBookingId())
-                .username(username)
+                .user(customerResponse)
                 .vehicle(vehicleResponse)
                 .station(stationResponse)
                 .tariff(tariffResponse)
