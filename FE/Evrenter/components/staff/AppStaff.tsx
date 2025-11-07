@@ -24,7 +24,7 @@ const menuItems = [
   { id: "station" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
   { id: "booking" as ActivePage, label: "Quản lý booking", icon: MapPin },
   { id: "rental" as ActivePage, label: "Bắt đầu hợp đồng", icon: MapPin },
-  { id: "endrental" as ActivePage, label: "Kết thúc", icon: MapPin },
+  { id: "endrental" as ActivePage, label: "Khách hàng trả xe", icon: MapPin },
 ]
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {

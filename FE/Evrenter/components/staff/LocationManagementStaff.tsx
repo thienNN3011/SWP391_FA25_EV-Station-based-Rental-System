@@ -86,9 +86,6 @@ export function LocationManagementStaff() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Plus className="size-4 mr-2" /> Thêm xe
-          </Button>
         </div>
       </div>
 
@@ -164,10 +161,6 @@ export function LocationManagementStaff() {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Thêm xe</DialogTitle>
-            <DialogDescription>Nhập thông tin để thêm xe mới</DialogDescription>
-          </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="modelName">Tên xe</Label>

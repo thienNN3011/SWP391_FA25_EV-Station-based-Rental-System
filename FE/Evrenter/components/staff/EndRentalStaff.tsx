@@ -132,7 +132,7 @@ export default function EndRentalStaff() {
           <div>
             <Label>Mã tham chiếu</Label>
             <Input
-              placeholder="Nhập mã tham chiếu (reference code)"
+              placeholder="Nhập mã tham chiếu"
               value={referenceCode}
               onChange={(e) => setReferenceCode(e.target.value)}
             />

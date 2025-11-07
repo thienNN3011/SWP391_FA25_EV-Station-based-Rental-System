@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Car, Clock, MapPin } from "lucide-react"
 import toast, { Toaster } from "react-hot-toast"
+import { Header } from "@/components/header"
+
 
 type Booking = {
   bookingId: number
@@ -87,6 +89,7 @@ export default function BookingHistoryPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
+       <Header />
       {/* Toaster */}
       <Toaster position="top-right" />
 

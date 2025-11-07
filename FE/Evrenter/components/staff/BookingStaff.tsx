@@ -22,6 +22,26 @@ export function BookingStaff() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
+  const translateStatus = (status: string) => {
+  switch (status?.toUpperCase()) {
+    case "BOOKING":
+      return "Đã đặt"
+    case "RENTING":
+      return "Đang thuê"
+    case "CANCELLED":
+      return "Đã hủy"
+    case "NO_SHOW":
+      return "Không đến"
+    case "COMPLETED":
+      return "Hoàn thành"
+    case "UNCONFIRMED":
+      return "Chưa xác nhận"
+    default:
+      return status
+  }
+}
+
+
   const fetchBookings = async () => {
     setLoading(true)
     setError("")
@@ -159,18 +179,27 @@ export function BookingStaff() {
 
                       
                       <TableCell>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            bk.status === "BOOKING"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : bk.status === "RENTING"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {bk.status}
-                        </span>
-                      </TableCell>
+  <span
+    className={`px-2 py-1 rounded-full text-xs font-medium ${
+      bk.status === "BOOKING"
+        ? "bg-yellow-100 text-yellow-700"
+        : bk.status === "RENTING"
+        ? "bg-blue-100 text-blue-700"
+        : bk.status === "CANCELLED"
+        ? "bg-red-100 text-red-700"
+        : bk.status === "COMPLETED"
+        ? "bg-green-100 text-green-700"
+        : bk.status === "NO_SHOW"
+        ? "bg-orange-100 text-orange-700"
+        : bk.status === "UNCONFIRMED"
+        ? "bg-gray-200 text-gray-700"
+        : "bg-gray-100 text-gray-600"
+    }`}
+  >
+    {translateStatus(bk.status)}
+  </span>
+</TableCell>
+
 
     
                       <TableCell className="text-right">
