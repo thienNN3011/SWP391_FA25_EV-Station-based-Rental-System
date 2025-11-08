@@ -44,17 +44,57 @@ public class EmailUtils {
     }
 
     public void sendRejectionEmail(User user, String reason) {
-        String subject = "Tài khoản của bạn đã bị từ chối duyệt";
+        String subject = "Tài khoản của bạn đã bị từ chối duyệt - EV Rental";
+
+
+        String updateLink = "http://localhost:3000/update-rejected-account?username=" + user.getUsername();
+
+        String message = String.format("""
+            Xin chào <b>%s</b>,<br><br>
+            Rất tiếc, tài khoản của bạn đã bị <b style='color:red;'>từ chối duyệt</b>.<br><br>
+            
+            <div style='background-color:#fff3cd; padding:15px; border-left:4px solid #ffc107; margin: 15px 0;'>
+                <b>📋 Lý do từ chối:</b><br>
+                <span style='color:#856404;'>%s</span>
+            </div>
+            
+            <p>Để tiếp tục sử dụng dịch vụ, bạn cần cập nhật lại thông tin theo yêu cầu.</p>
+            
+            <div style='text-align: center; margin: 25px 0;'>
+                <a href="%s" style="background-color: #2196F3; color: white; padding: 14px 28px; 
+                text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                🔄 Cập nhật thông tin ngay
+                </a>
+            </div>
+            
+            <div style='background-color:#f9f9f9; padding:12px; border-radius:6px; margin-top:20px;'>
+                <p style='margin:5px 0; font-size:13px; color:#666;'>
+                    <b>Lưu ý quan trọng:</b><br>
+                    • Sau khi cập nhật, tài khoản sẽ được chuyển sang trạng thái <b>chờ duyệt lại</b><br>
+                    • Vui lòng cung cấp thông tin chính xác và đầy đủ<br>
+                    • Đảm bảo hình ảnh CMND/CCCD và giấy phép lái xe rõ ràng
+                </p>
+            </div>
+            
+            <p style='margin-top:20px; font-size:13px; color:#999;'>
+                Nếu bạn cần hỗ trợ, vui lòng liên hệ: 
+                <a href='mailto:support@evrental.vn' style='color:#2196F3;'>support@evrental.vn</a>
+            </p>
+        """,
+                user.getFullName() != null ? user.getFullName() : user.getUsername(),
+                reason != null && !reason.isBlank() ? reason : "Thông tin không đầy đủ hoặc không chính xác",
+                updateLink
+        );
+
         String body = buildBaseEmailTemplate(
-                "Tài khoản bị từ chối duyệt",
-                String.format("Xin chào <b>%s</b>,<br>Rất tiếc, tài khoản của bạn đã bị <b style='color:red;'>từ chối duyệt</b>. Vui lòng kiểm tra lại thông tin đăng ký.",
-                        user.getFullName() != null ? user.getFullName() : user.getUsername()
-                ),
-                reason,
+                "Tài khoản bị từ chối duyệt ⚠️",
+                message,
+                null,
                 "#d32f2f"
         );
         sendEmailWithAttachment(user.getEmail(), subject, body, null, null);
     }
+
 
     public void sendActivatedEmail(User user) {
         String subject = "Tài khoản của bạn đã được kích hoạt";
