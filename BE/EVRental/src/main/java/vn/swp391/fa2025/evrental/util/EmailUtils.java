@@ -333,4 +333,64 @@ public class EmailUtils {
 
         sendEmailWithAttachment(user.getEmail(), subject, body, null, null);
     }
+
+    public void sendBookingCancelledEmail(Booking booking, BigDecimal refundAmount) {
+        String subject = "Xác nhận hủy đặt xe - EV Rental";
+
+        SystemConfig refundRateConfig = systemConfigService.getSystemConfigByKey("REFUND");
+        int refundRate = refundRateConfig != null ? Integer.parseInt(refundRateConfig.getValue()) : 0;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        String bookingInfo = String.format("""
+        <b>Thông tin đơn đặt xe:</b><br>
+        • Mã đơn thuê: <b>#%d</b><br>
+        • Xe: <b>%s</b><br>
+        • Bắt đầu: <b>%s</b><br>
+        • Kết thúc: <b>%s</b><br><br>
+    """,
+                booking.getBookingId(),
+                booking.getVehicle().getModel().getName(),
+                booking.getStartTime().format(formatter),
+                booking.getEndTime().format(formatter)
+        );
+
+        String refundInfo;
+        if (refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+            refundInfo = String.format("""
+            <p><b>Số tiền đặt cọc đã được hoàn:</b> %,.0f VND 
+            (<b>%d%%</b> giá trị tiền đặt cọc ban đầu).</p>
+            <p style="color:#388e3c;">Khoản hoàn đã được xử lý thành công.</p>
+        """, refundAmount, refundRate);
+        } else {
+            refundInfo = """
+            <p><b>Đơn đặt xe đã bị hủy nhưng do hủy trễ nên bạn sẽ 
+            <span style='color:red;'>không được hoàn lại tiền đặt cọc</span>.</b></p>
+        """;
+        }
+
+        String message = String.format("""
+        Xin chào <b>%s</b>,<br><br>
+        Đơn đặt xe của bạn đã được <b>hủy thành công</b>.<br><br>
+        %s
+        %s
+        <br>
+        Cảm ơn bạn đã đồng hành cùng <b>EV Rental</b>.<br>
+        Hẹn gặp lại bạn trong những chuyến đi sắp tới!
+    """,
+                booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
+                bookingInfo,
+                refundInfo
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Xác nhận hủy đơn đặt xe 🚫",
+                message,
+                null,
+                "#d32f2f"
+        );
+
+        sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
+    }
+
 }

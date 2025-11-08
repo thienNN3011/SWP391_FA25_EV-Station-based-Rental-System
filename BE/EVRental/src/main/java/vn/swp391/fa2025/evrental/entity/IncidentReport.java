@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.swp391.fa2025.evrental.enums.IncidentReportStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,7 +33,8 @@ public class IncidentReport {
     private String incidentImageUrl;
 
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private IncidentReportStatus status;
 
 
 

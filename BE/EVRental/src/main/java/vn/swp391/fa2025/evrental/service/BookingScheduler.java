@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
+import vn.swp391.fa2025.evrental.enums.BookingStatus;
+import vn.swp391.fa2025.evrental.enums.PaymentType;
+import vn.swp391.fa2025.evrental.enums.VehicleStatus;
 import vn.swp391.fa2025.evrental.repository.BookingRepository;
 import vn.swp391.fa2025.evrental.repository.PaymentRepository;
 import vn.swp391.fa2025.evrental.repository.VehicleRepository;
@@ -27,15 +30,15 @@ public class BookingScheduler {
     @Autowired
     private VehicleRepository vehicleRepository;
 
-    @Scheduled(fixedRate = 15 * 60 * 1000)
+    @Scheduled(fixedRate = 4 * 60 * 1000)
     public void cancelBooking() {
-        List<Booking> bookings = bookingRepository.findByStatus("UNCONFIRMED");
+        List<Booking> bookings = bookingRepository.findByStatus(BookingStatus.fromString("UNCONFIRMED"));
         if (bookings.isEmpty()) {
             return;
         }
         for (Booking booking : bookings) {
             Payment payment = paymentRepository.findByBooking_BookingIdAndPaymentType(
-                    booking.getBookingId(), "DEPOSIT");
+                    booking.getBookingId(), PaymentType.fromString("DEPOSIT"));
             if (payment == null) {
                 LocalDateTime createdTime = booking.getCreatedDate();
                 LocalDateTime now = LocalDateTime.now();
@@ -51,17 +54,17 @@ public class BookingScheduler {
     @Scheduled(fixedRate =  5 * 60 * 1000)
     public void checkLateBookings() {
         LocalDateTime now = LocalDateTime.now();
-        List<Booking> bookings = bookingRepository.findByStatus("BOOKING");
+        List<Booking> bookings = bookingRepository.findByStatus(BookingStatus.fromString("BOOKING"));
 
         int minute=Integer.parseInt(systemConfigService.getSystemConfigByKey("CHECK_IN_EXPIRE").getValue());
         for (Booking b : bookings) {
             if (now.isAfter(b.getStartTime().plusMinutes(minute))) {
 
-                b.setStatus("NO_SHOW");
+                b.setStatus(BookingStatus.fromString("NO_SHOW"));
                 bookingRepository.save(b);
 
                 Vehicle vehicle=b.getVehicle();
-                vehicle.setStatus("AVAILABLE");
+                vehicle.setStatus(VehicleStatus.fromString("AVAILABLE"));
                 vehicleRepository.save(vehicle);
                 System.out.println("Booking " + b.getBookingId() + " đi trễ 30p so với thời gian nhận");
             }

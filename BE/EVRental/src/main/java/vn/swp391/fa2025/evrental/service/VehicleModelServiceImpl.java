@@ -14,6 +14,7 @@ import vn.swp391.fa2025.evrental.dto.response.VehicleModelResponse;
 import vn.swp391.fa2025.evrental.entity.ModelImageUrl;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
 import vn.swp391.fa2025.evrental.entity.VehicleModel;
+import vn.swp391.fa2025.evrental.enums.VehicleStatus;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.mapper.ModelVehicleMapper;
@@ -47,11 +48,11 @@ public class VehicleModelServiceImpl implements VehicleModelService {
 
     @Override
     public List<VehicleModelResponse> getVihecleModelsByStationWithActiveTariffs(String stationName) {
-        if (stationRepository.findByStationName(stationName) == null || !stationRepository.findByStationName(stationName).getStatus().equals("OPEN")) throw new IllegalArgumentException("Station is inactive or does not exist");
-        List<VehicleModel> models= vehicleModelRepository.findDistinctByVehiclesStationStationNameAndVehiclesStatus(stationName, "AVAILABLE");
+        if (stationRepository.findByStationName(stationName) == null || !stationRepository.findByStationName(stationName).getStatus().toString().equals("OPEN")) throw new IllegalArgumentException("Station is inactive or does not exist");
+        List<VehicleModel> models= vehicleModelRepository.findDistinctByVehiclesStationStationNameAndVehiclesStatus(stationName, VehicleStatus.fromString("AVAILABLE"));
         return models.stream().map(model -> {
             List<TariffResponse> activeTariffs = model.getTariffs().stream()
-                    .filter(t -> "active".equalsIgnoreCase(t.getStatus()))
+                    .filter(t -> "active".equalsIgnoreCase(t.getStatus().toString()))
                     .map(t -> new TariffResponse(
                             t.getTariffId(),
                             t.getType(),
@@ -61,7 +62,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
                     .toList();
 
             Set<String> availableColors = model.getVehicles().stream()
-                    .filter(vehicle -> "available".equalsIgnoreCase(vehicle.getStatus()))
+                    .filter(vehicle -> "available".equalsIgnoreCase(vehicle.getStatus().toString()))
                     .filter(vehicle -> stationName.equalsIgnoreCase(vehicle.getStation().getStationName()))
                     .map(Vehicle::getColor)
                     .collect(Collectors.toSet());
@@ -88,12 +89,12 @@ public class VehicleModelServiceImpl implements VehicleModelService {
 
     @Override
     public VehicleModelResponse getVihecleModelByVehicleModelIdAndStationName(String stationName, Long modelId) {
-        if (stationRepository.findByStationName(stationName) == null || !stationRepository.findByStationName(stationName).getStatus().equals("OPEN")) throw new IllegalArgumentException("Station is inactive or does not exist");
+        if (stationRepository.findByStationName(stationName) == null || !stationRepository.findByStationName(stationName).getStatus().toString().equals("OPEN")) throw new IllegalArgumentException("Station is inactive or does not exist");
         if (vehicleModelRepository.findByModelId(modelId) == null) throw new RuntimeException("Model xe bạn chọn không tồn tại");
         if (vehicleRepository.findFirstByModel_ModelIdAndStation_StationName(modelId, stationName)==null) throw new RuntimeException("Model này hiện tại không có xe trong Station được chọn");
         VehicleModel model = vehicleModelRepository.findFirstByModelIdAndVehiclesStationStationName(modelId, stationName);
         List<TariffResponse> activeTariffs = model.getTariffs().stream()
-                .filter(t -> "active".equalsIgnoreCase(t.getStatus()))
+                .filter(t -> "active".equalsIgnoreCase(t.getStatus().toString()))
                 .map(t -> new TariffResponse(
                         t.getTariffId(),
                         t.getType(),
@@ -103,7 +104,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
                 .toList();
 
         Set<String> availableColors = model.getVehicles().stream()
-                .filter(vehicle -> "available".equalsIgnoreCase(vehicle.getStatus()))
+                .filter(vehicle -> "available".equalsIgnoreCase(vehicle.getStatus().toString()))
                 .map(Vehicle::getColor)
                 .collect(Collectors.toSet());
 

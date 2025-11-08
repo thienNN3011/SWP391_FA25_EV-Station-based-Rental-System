@@ -10,6 +10,8 @@ import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.*;
+import vn.swp391.fa2025.evrental.enums.StationStatus;
+import vn.swp391.fa2025.evrental.enums.VehicleStatus;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.mapper.StationMapper;
@@ -70,7 +72,7 @@ public class VehicleServiceImpl implements VehicleService {
         Station station = stationRepository.findById(request.getStationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + request.getStationId()));
 
-        if (!"OPEN".equals(station.getStatus())) {
+        if (!"OPEN".equals(station.getStatus().toString())) {
             throw new BusinessException("Trạm hiện không hoạt động");
         }
 
@@ -96,7 +98,7 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = vehicleMapper.toVehicleFromCreateRequest(request);
         vehicle.setModel(model);
         vehicle.setStation(station);
-        vehicle.setStatus("AVAILABLE");
+        vehicle.setStatus(VehicleStatus.fromString("AVAILABLE"));
 
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
         return vehicleMapper.toVehicleResponse(savedVehicle);
@@ -150,7 +152,7 @@ public class VehicleServiceImpl implements VehicleService {
                 Station station = stationRepository.findById(request.getStationId())
                         .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + request.getStationId()));
 
-                if (!"OPEN".equals(station.getStatus())) {
+                if (!"OPEN".equals(station.getStatus().toString())) {
                     throw new BusinessException("Trạm hiện không hoạt động");
                 }
                 vehicle.setStation(station);
@@ -169,8 +171,8 @@ public class VehicleServiceImpl implements VehicleService {
         }
 
         if (request.getStatus() != null && !request.getStatus().isBlank()) {
-            if (!vehicle.getStatus().equals(request.getStatus())) {
-                vehicle.setStatus(request.getStatus());
+            if (!vehicle.getStatus().toString().equals(request.getStatus())) {
+                vehicle.setStatus(VehicleStatus.fromString(request.getStatus()));
                 isUpdated = true;
             }
         }
@@ -189,16 +191,16 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + id));
 
-        if ("INACTIVE".equals(vehicle.getStatus())) {
+        if ("INACTIVE".equals(vehicle.getStatus().toString())) {
             throw new BusinessException("Xe đã ở trạng thái INACTIVE");
         }
 
 
-        if ("IN_USE".equalsIgnoreCase(vehicle.getStatus())) {
+        if ("IN_USE".equalsIgnoreCase(vehicle.getStatus().toString())) {
             throw new BusinessException("Không thể xóa xe đang được sử dụng");
         }
 
-        vehicle.setStatus("INACTIVE");
+        vehicle.setStatus(VehicleStatus.fromString("INACTIVE"));
         vehicleRepository.save(vehicle);
     }
 
@@ -219,7 +221,7 @@ public class VehicleServiceImpl implements VehicleService {
         if (!ok) throw new RuntimeException("Status không hợp lệ");
         List<Vehicle> vehicles=new ArrayList<>();
         if (status.equals("ALL")) vehicles=vehicleRepository.findByStation_StationId(staff.getStation().getStationId());
-        else vehicles=vehicleRepository.findByStation_StationIdAndStatus(staff.getStation().getStationId(), status);
+        else vehicles=vehicleRepository.findByStation_StationIdAndStatus(staff.getStation().getStationId(), VehicleStatus.fromString(status));
         return vehicleMapper.toShortVehicleResponseList(vehicles);
     }
 
@@ -230,14 +232,14 @@ public class VehicleServiceImpl implements VehicleService {
         if (station == null) {
             throw new ResourceNotFoundException("Không tìm thấy trạm: " + stationName);
         }
-        if (!"OPEN".equals(station.getStatus())) {
+        if (!"OPEN".equals(station.getStatus().toString())) {
             throw new BusinessException("Trạm hiện không hoạt động");
         }
 
 
         List<Vehicle> vehicles = vehicleRepository.findByStation_StationNameAndStatus(
                 stationName,
-                "AVAILABLE"
+                VehicleStatus.fromString("AVAILABLE")
         );
 
 
@@ -248,7 +250,7 @@ public class VehicleServiceImpl implements VehicleService {
 
 
                     List<TariffResponse> activeTariffs = vehicle.getModel().getTariffs().stream()
-                            .filter(t -> "active".equalsIgnoreCase(t.getStatus()))
+                            .filter(t -> "active".equalsIgnoreCase(t.getStatus().toString()))
                             .map(t -> new TariffResponse(
                                     t.getTariffId(),
                                     t.getType(),
@@ -279,9 +281,9 @@ public class VehicleServiceImpl implements VehicleService {
         if (currentStation == null) {
             throw new RuntimeException("Station không tồn tại: " + stationName);
         }
-        List<VehicleResponse> vehicles= vehicleMapper.toListShortResponse(vehicleRepository.findByStation_StationNameAndModel_ModelIdAndStatus(stationName, modelId, "AVAILABLE"));
+        List<VehicleResponse> vehicles= vehicleMapper.toListShortResponse(vehicleRepository.findByStation_StationNameAndModel_ModelIdAndStatus(stationName, modelId, VehicleStatus.fromString("AVAILABLE")));
         List<StationResponse> activeStations = stationMapper.toStationResponseList(
-                stationRepository.findByStatus("OPEN")
+                stationRepository.findByStatus(StationStatus.fromString("OPEN"))
                         .stream()
                         .filter(station -> !(station.getStationId() == currentStation.getStationId()))
                         .toList()

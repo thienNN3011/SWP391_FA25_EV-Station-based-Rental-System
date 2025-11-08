@@ -8,6 +8,8 @@ import org.springframework.web.server.ResponseStatusException;
 import vn.swp391.fa2025.evrental.dto.request.RegisterCustomerRequest;
 import vn.swp391.fa2025.evrental.dto.response.CustomerResponse;
 import vn.swp391.fa2025.evrental.entity.User;
+import vn.swp391.fa2025.evrental.enums.UserRole;
+import vn.swp391.fa2025.evrental.enums.UserStatus;
 import vn.swp391.fa2025.evrental.mapper.UserMapper;
 import vn.swp391.fa2025.evrental.repository.UserRepository;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
@@ -53,8 +55,8 @@ public class RegistrationService {
 
         // Map request -> entity via MapStruct
         User user = userMapper.toEntity(req, idCardPath, driveLicensePath);
-        user.setRole("RENTER");
-        user.setStatus("PENDING");
+        user.setRole(UserRole.fromString("RENTER"));
+        user.setStatus(UserStatus.fromString("PENDING"));
         user.setCreatedDate(LocalDateTime.now());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 

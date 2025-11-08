@@ -9,6 +9,8 @@ import vn.swp391.fa2025.evrental.dto.request.UserUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
+import vn.swp391.fa2025.evrental.enums.StationStatus;
+import vn.swp391.fa2025.evrental.enums.UserStatus;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.mapper.StationMapper;
@@ -51,7 +53,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<CustomerResponse> showPendingAccount() {
-        List<User> pendingList= userRepository.findByStatusOrderByCreatedDateAsc("PENDING");
+        List<User> pendingList= userRepository.findByStatusOrderByCreatedDateAsc(UserStatus.fromString("PENDING"));
         if (pendingList.isEmpty()) {throw new RuntimeException("Khong co tai khoan can duoc duyet");}
         return pendingList.stream().
                 map(user -> userMapper.toShortResponse(user)).
@@ -63,7 +65,7 @@ public class UserServiceImpl implements UserService {
         CustomerResponse customerResponse= new CustomerResponse();
 //        User user=userRepository.findByUsernameAndStatus(username,"PENDING");
         User user=userRepository.findByUsername(username);
-        if (!user.getStatus().equals("PENDING")) throw new RuntimeException("Tài khoản không ở trạng thái Pending");
+        if (!user.getStatus().toString().equals("PENDING")) throw new RuntimeException("Tài khoản không ở trạng thái Pending");
         if (user==null) throw new RuntimeException("Không tìm thấy tài khoản");
         return userMapper.toDto(user);
     }
@@ -78,22 +80,22 @@ public class UserServiceImpl implements UserService {
         if (!status.equals("PENDING") && !status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("REJECTED"))
             throw new RuntimeException("Trạng thái tài khoản cần cập nhật không hợp lệ");
 
-        String currentStatus = user.getStatus();
+        String currentStatus = user.getStatus().toString();
 
         if ((currentStatus.equals("PENDING") || currentStatus.equals("INACTIVE")) && status.equals("ACTIVE")) {
-            user.setStatus("ACTIVE");
+            user.setStatus(UserStatus.fromString("ACTIVE"));
             emailUtils.sendActivatedEmail(user);
 
         } else if (currentStatus.equals("REJECTED") && status.equals("PENDING")) {
-            user.setStatus("PENDING");
+            user.setStatus(UserStatus.fromString("PENDING"));
             emailUtils.sendPendingEmail(user);
 
         } else if (currentStatus.equals("ACTIVE") && status.equals("INACTIVE")) {
-            user.setStatus("INACTIVE");
+            user.setStatus(UserStatus.fromString("INACTIVE"));
             emailUtils.sendDeactivatedEmail(user);
 
         } else if (currentStatus.equals("PENDING") && status.equals("REJECTED")) {
-            user.setStatus("REJECTED");
+            user.setStatus(UserStatus.fromString("REJECTED"));
             emailUtils.sendRejectionEmail(user, reason);
         }
 
@@ -105,8 +107,8 @@ public class UserServiceImpl implements UserService {
     public List<RenterListResponse> showAllRenters(String username) {
         User requestUser = findByUsername(username);
         List<User> rentersList;
-        if ("ADMIN".equals(requestUser.getRole())||"STAFF".equals(requestUser.getRole())) {
-            rentersList = userRepository.findAll().stream().filter(user -> "RENTER".equals(user.getRole())).toList();
+        if ("ADMIN".equals(requestUser.getRole().toString())||"STAFF".equals(requestUser.getRole().toString())) {
+            rentersList = userRepository.findAll().stream().filter(user -> "RENTER".equals(user.getRole().toString())).toList();
         }else{
             throw new BusinessException("Không có quyền truy cập");
         }
@@ -121,8 +123,8 @@ public class UserServiceImpl implements UserService {
     public List<StaffListResponse> showAllStaffs(String username) {
        User requestUser = findByUsername(username);
        List<User> staffsList;
-       if ("ADMIN".equals(requestUser.getRole())) {
-           staffsList = userRepository.findAll().stream().filter(user -> "STAFF".equals(user.getRole())).toList();
+       if ("ADMIN".equals(requestUser.getRole().toString())) {
+           staffsList = userRepository.findAll().stream().filter(user -> "STAFF".equals(user.getRole().toString())).toList();
        }
        else{
            throw new BusinessException("Không có quyền truy cập");
@@ -190,7 +192,7 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("Không tìm thấy tài khoản với username: " + username);
         }
 
-        if ("INACTIVE".equals(targetUser.getStatus())) {
+        if ("INACTIVE".equals(targetUser.getStatus().toString())) {
             throw new BusinessException("Tài khoản đã ở trạng thái INACTIVE");
         }
 
@@ -200,8 +202,8 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("Không tìm thấy thông tin người dùng hiện tại");
         }
 
-        String currentRole = currentUser.getRole();
-        String targetRole = targetUser.getRole();
+        String currentRole = currentUser.getRole().toString();
+        String targetRole = targetUser.getRole().toString();
 
         if ("STAFF".equals(currentRole)) {
 
@@ -215,7 +217,7 @@ public class UserServiceImpl implements UserService {
         }
 
 
-        targetUser.setStatus("INACTIVE");
+        targetUser.setStatus(UserStatus.fromString("INACTIVE"));
         targetUser.setUpdatedDate(LocalDateTime.now());
         userRepository.save(targetUser);
         return true;
@@ -251,7 +253,7 @@ public class UserServiceImpl implements UserService {
                 userRepository.findByStation(currentStation)
         );
         List<StationResponse> activeStations = stationMapper.toStationResponseList(
-                stationRepository.findByStatus("OPEN")
+                stationRepository.findByStatus(StationStatus.fromString("OPEN"))
                         .stream()
                         .filter(station -> !(station.getStationId() == currentStation.getStationId()))
                         .toList()
@@ -279,7 +281,7 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("Không tìm thấy tài khoản với username: " + request.getUsername());
         }
 
-        if (!"REJECTED".equals(user.getStatus())) {
+        if (!"REJECTED".equals(user.getStatus().toString())) {
             throw new BusinessException("Tài khoản không ở trạng thái REJECTED");
         }
 
@@ -323,7 +325,7 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("Không có thông tin nào được thay đổi, vui lòng cập nhật lại");
         }
 
-        user.setStatus("PENDING");
+        user.setStatus(UserStatus.fromString("PENDING"));
         user.setUpdatedDate(LocalDateTime.now());
         userRepository.save(user);
     }

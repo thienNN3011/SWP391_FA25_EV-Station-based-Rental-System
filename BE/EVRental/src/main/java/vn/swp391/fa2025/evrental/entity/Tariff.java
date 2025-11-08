@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.swp391.fa2025.evrental.enums.TariffStatus;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,7 +36,8 @@ public class Tariff {
     private BigDecimal depositAmount;
 
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TariffStatus status;
 
     @OneToMany(mappedBy = "tariff")
     private List<Booking> bookings;

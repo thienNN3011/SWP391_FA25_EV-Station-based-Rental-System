@@ -40,15 +40,15 @@ public class AuthService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Sai tên tài khoản hoặc mật khẩu");
         }
-        if("REJECTED".equalsIgnoreCase(user.getStatus())){
+        if("REJECTED".equalsIgnoreCase(user.getStatus().toString())){
             throw new RuntimeException("Thông tin tài khoản của quý khách không phù hợp xin vui lòng cập nhật lại");
         }
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus().toString())) {
             throw new RuntimeException("Tài khoản quý khách chưa được duyệt");
         }
         
 
-        String token = jwtService.generateToken(username, user.getRole(), user.getFullName());
+        String token = jwtService.generateToken(username, user.getRole().toString(), user.getFullName());
         return new LoginResponse(token);
     }
 

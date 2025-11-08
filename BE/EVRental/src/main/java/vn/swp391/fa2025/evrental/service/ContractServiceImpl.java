@@ -7,6 +7,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vn.swp391.fa2025.evrental.entity.*;
+import vn.swp391.fa2025.evrental.enums.BookingStatus;
+import vn.swp391.fa2025.evrental.enums.ContractStatus;
+import vn.swp391.fa2025.evrental.enums.PaymentType;
+import vn.swp391.fa2025.evrental.enums.VehicleStatus;
 import vn.swp391.fa2025.evrental.repository.*;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
 
@@ -51,7 +55,7 @@ public class ContractServiceImpl implements ContractService {
                     .user(customer)
                     .staff(staff)
                     .contractUrl(filePath.toAbsolutePath().toString())
-                    .status("PENDING")
+                    .status(ContractStatus.fromString("PENDING"))
                     .token(token)
                     .build();
             return contractRepository.save(contract);
@@ -72,11 +76,11 @@ public String confirmContract(String token) {
     if (contract == null) {
         throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
     }
-    if (!"PENDING".equals(contract.getStatus())) {
+    if (!"PENDING".equals(contract.getStatus().toString())) {
         throw new RuntimeException("Hợp đồng đã được xác nhận hoặc không hợp lệ.");
     }
-    contract.setStatus("CONFIRMED");
-    contract.getBooking().setStatus("RENTING");
+    contract.setStatus(ContractStatus.fromString("CONFIRMED"));
+    contract.getBooking().setStatus(BookingStatus.fromString("RENTING"));
     contractRepository.save(contract);
     bookingRepository.save(contract.getBooking());
 
@@ -94,26 +98,26 @@ public String confirmContract(String token) {
         if (contract == null) {
             throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
         }
-        if (!contract.getStatus().equals("PENDING")) {
+        if (!contract.getStatus().toString().equals("PENDING")) {
             throw new RuntimeException("Hợp đồng đã được hủy hoặc không hợp lệ.");
         }
-        contract.setStatus("CANCELLED");
+        contract.setStatus(ContractStatus.fromString("CANCELLED"));
         Booking booking=contract.getBooking();
-        booking.setStatus("CANCELLED");
+        booking.setStatus(BookingStatus.fromString("CANCELLED"));
         bookingRepository.save(booking);
-        Payment deposit = paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), "DEPOSIT");
+        Payment deposit = paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), PaymentType.fromString("DEPOSIT"));
         int extraRateInt = Integer.parseInt(systemConfigService.getSystemConfigByKey("REFUND").getValue());
         BigDecimal extraRate = BigDecimal.valueOf(extraRateInt).divide(BigDecimal.valueOf(100));
         Payment refund = Payment.builder()
                 .booking(booking)
                 .transactionDate(LocalDateTime.now())
-                .paymentType("REFUND_DEPOSIT")
+                .paymentType(PaymentType.fromString("REFUND_DEPOSIT"))
                 .amount(deposit.getAmount().multiply(extraRate))
                 .referenceCode("REFUND_" + System.currentTimeMillis())
                 .build();
         paymentRepository.save(refund);
         Vehicle vehicle=booking.getVehicle();
-        vehicle.setStatus("AVAILABLE");
+        vehicle.setStatus(VehicleStatus.fromString("AVAILABLE"));
         vehicleRepository.save(vehicle);
         Tariff tariff = booking.getTariff();
         tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()-1);

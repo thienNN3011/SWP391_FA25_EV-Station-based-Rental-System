@@ -9,6 +9,7 @@ import vn.swp391.fa2025.evrental.dto.response.TariffResponse;
 import vn.swp391.fa2025.evrental.dto.response.TariffUpdateResponse;
 import vn.swp391.fa2025.evrental.entity.Tariff;
 import vn.swp391.fa2025.evrental.entity.VehicleModel;
+import vn.swp391.fa2025.evrental.enums.TariffStatus;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.mapper.TariffMapper;
@@ -57,7 +58,7 @@ public class TariffServiceImpl implements TariffService {
                 .price(request.getPrice())
                 .depositAmount(request.getDepositAmount())
                 .numberOfContractAppling(0L)
-                .status("ACTIVE")
+                .status(TariffStatus.fromString("ACTIVE"))
                 .build();
 
         Tariff savedTariff = tariffRepository.save(tariff);
@@ -98,8 +99,8 @@ public class TariffServiceImpl implements TariffService {
 
         // Update status
         if (request.getStatus() != null && !request.getStatus().isBlank()) {
-            if (!tariff.getStatus().equals(request.getStatus())) {
-                tariff.setStatus(request.getStatus());
+            if (!tariff.getStatus().toString().equals(request.getStatus())) {
+                tariff.setStatus(TariffStatus.fromString(request.getStatus()));
                 isUpdated = true;
             }
         }
@@ -119,7 +120,7 @@ public class TariffServiceImpl implements TariffService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tariff với ID: " + id));
 
 
-        if ("INACTIVE".equals(tariff.getStatus())) {
+        if ("INACTIVE".equals(tariff.getStatus().toString())) {
             throw new BusinessException("Tariff đã ở trạng thái INACTIVE");
         }
 
@@ -129,7 +130,7 @@ public class TariffServiceImpl implements TariffService {
         }
 
         // Xóa mềm: chuyển status thành INACTIVE
-        tariff.setStatus("INACTIVE");
+        tariff.setStatus(TariffStatus.fromString("INACTIVE"));
         tariffRepository.save(tariff);
     }
 }
