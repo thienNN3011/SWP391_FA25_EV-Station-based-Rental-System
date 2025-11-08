@@ -276,4 +276,61 @@ public class EmailUtils {
 
         sendEmailWithAttachment(staff.getEmail(), subject, body, null, null);
     }
+    public void sendPasswordResetEmail(User user, String resetLink) {
+        String subject = "Yêu cầu đặt lại mật khẩu - EV Rental";
+
+        String message = String.format("""
+        Xin chào <b>%s</b>,<br><br>
+        Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.<br><br>
+        Vui lòng nhấn vào nút bên dưới để đặt lại mật khẩu:<br><br>
+        <a href="%s" style="background-color: #1976d2; color: white; padding: 12px 24px; 
+        text-decoration: none; border-radius: 6px; display: inline-block;">
+        🔑 Đặt lại mật khẩu
+        </a><br><br>
+        <p style="color: #d32f2f;"><b>Lưu ý:</b> Link này sẽ hết hạn sau 15 phút.</p>
+        <p style="font-size: 13px; color: #666;">
+        Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
+        </p>
+    """,
+                user.getFullName() != null ? user.getFullName() : user.getUsername(),
+                resetLink
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Đặt lại mật khẩu 🔐",
+                message,
+                null,
+                "#1976d2"
+        );
+
+        sendEmailWithAttachment(user.getEmail(), subject, body, null, null);
+    }
+    public void sendPasswordChangedConfirmationEmail(User user) {
+        String subject = "Mật khẩu đã được thay đổi - EV Rental";
+
+        String message = String.format("""
+        Xin chào <b>%s</b>,<br><br>
+        Mật khẩu tài khoản của bạn vừa được thay đổi thành công.<br><br>
+        <p style="color: #388e3c;">✅ Thời gian thay đổi: <b>%s</b></p>
+        <p style="font-size: 13px; color: #d32f2f;">
+        <b>Lưu ý:</b> Nếu bạn không thực hiện thay đổi này, 
+        vui lòng liên hệ ngay với bộ phận hỗ trợ: 
+        <a href="mailto:support@evrental.vn">support@evrental.vn</a>
+        </p>
+    """,
+                user.getFullName() != null ? user.getFullName() : user.getUsername(),
+                java.time.LocalDateTime.now().format(
+                        java.time.format.DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+                )
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Mật khẩu đã thay đổi ✅",
+                message,
+                null,
+                "#388e3c"
+        );
+
+        sendEmailWithAttachment(user.getEmail(), subject, body, null, null);
+    }
 }

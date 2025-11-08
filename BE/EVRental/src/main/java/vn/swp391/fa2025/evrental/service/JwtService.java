@@ -67,4 +67,38 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+    public String generatePasswordResetToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("purpose", "PASSWORD_RESET")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 900000))
+                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
+                .compact();
+    }
+
+    public String validatePasswordResetToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            // Check if token is for password reset
+            String purpose = claims.get("purpose", String.class);
+            if (!"PASSWORD_RESET".equals(purpose)) {
+                return null;
+            }
+
+            // Check if token is expired
+            if (claims.getExpiration().before(new Date())) {
+                return null;
+            }
+
+            return claims.getSubject(); // Return email
+        } catch (JwtException | IllegalArgumentException e) {
+            return null;
+        }
+    }
 }
