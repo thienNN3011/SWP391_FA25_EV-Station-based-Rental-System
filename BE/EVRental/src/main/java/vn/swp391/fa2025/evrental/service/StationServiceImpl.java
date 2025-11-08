@@ -10,6 +10,7 @@ import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
+import vn.swp391.fa2025.evrental.enums.StationStatus;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.mapper.StationMapper;
@@ -39,7 +40,7 @@ public class StationServiceImpl implements StationService {
 
     @Override
     public List<StationResponse> showActiveStation() {
-        List<Station> stations = stationRepository.findByStatus("OPEN");
+        List<Station> stations = stationRepository.findByStatus(StationStatus.fromString("OPEN"));
         return stations
             .stream()
             .map(station ->
@@ -59,7 +60,7 @@ public class StationServiceImpl implements StationService {
             throw new ResourceNotFoundException("Không tìm thấy người dùng: " + username);
         }
         // Cho phép STAFF và ADMIN theo rule Security
-        if (!"STAFF".equals(user.getRole()) && !"ADMIN".equals(user.getRole())) {
+        if (!"STAFF".equals(user.getRole().toString()) && !"ADMIN".equals(user.getRole().toString())) {
             throw new BusinessException("User không có quyền xem trạm: " + username);
         }
 
@@ -93,7 +94,7 @@ public class StationServiceImpl implements StationService {
                 .stationName(request.getStationName())
                 .address(request.getAddress())
                 .openingHours(request.getOpeningHours())
-                .status("OPEN") // Mặc định OPEN khi tạo mới
+                .status(StationStatus.fromString("OPEN"))// Mặc định OPEN khi tạo mới
                 .build();
 
         Station savedStation = stationRepository.save(station);
@@ -139,8 +140,8 @@ public class StationServiceImpl implements StationService {
 
         // Update status
         if (request.getStatus() != null && !request.getStatus().isBlank()) {
-            if (!station.getStatus().equals(request.getStatus())) {
-                station.setStatus(request.getStatus());
+            if (!station.getStatus().toString().equals(request.getStatus())) {
+                station.setStatus(StationStatus.fromString(request.getStatus()));
                 isUpdated = true;
             }
         }
@@ -159,12 +160,12 @@ public class StationServiceImpl implements StationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + stationId));
 
 
-        if ("CLOSED".equals(station.getStatus())) {
+        if ("CLOSED".equals(station.getStatus().toString())) {
             throw new BusinessException("Trạm này đã bị đóng trước đó");
         }
 
 
-        station.setStatus("CLOSED");
+        station.setStatus(StationStatus.fromString("CLOSED"));
         stationRepository.save(station);
     }
 
@@ -176,17 +177,17 @@ public class StationServiceImpl implements StationService {
         List<Vehicle> allVehicles = vehicleRepository.findByStation_StationId(stationId);
 
         List<VehicleResponse> availableList = allVehicles.stream()
-                .filter(v -> "AVAILABLE".equals(v.getStatus()))
+                .filter(v -> "AVAILABLE".equals(v.getStatus().toString()))
                 .map(vehicleMapper::toShortVehicleResponse)
                 .toList();
 
         List<VehicleResponse> inUseList = allVehicles.stream()
-                .filter(v -> "IN_USE".equals(v.getStatus()))
+                .filter(v -> "IN_USE".equals(v.getStatus().toString()))
                 .map(vehicleMapper::toShortVehicleResponse)
                 .toList();
 
         List<VehicleResponse> maintenanceList = allVehicles.stream()
-                .filter(v -> "MAINTENANCE".equals(v.getStatus()))
+                .filter(v -> "MAINTENANCE".equals(v.getStatus().toString()))
                 .map(vehicleMapper::toShortVehicleResponse)
                 .toList();
 

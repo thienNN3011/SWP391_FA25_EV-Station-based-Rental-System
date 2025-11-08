@@ -8,6 +8,7 @@ import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import vn.swp391.fa2025.evrental.enums.UserStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,11 +27,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByDriveLicense(String driveLicense);
 
-    List<User> findFirstByStatusOrderByCreatedDateAsc(String status);
+    List<User> findFirstByStatusOrderByCreatedDateAsc(UserStatus status);
 
-    User findByUsernameAndStatus(String username, String status);
+    User findByUsernameAndStatus(String username, UserStatus status);
 
-    List<User> findByStatusOrderByCreatedDateAsc(String status);
+    List<User> findByStatusOrderByCreatedDateAsc(UserStatus status);
 
     List<User> findByStation(Station station);
 

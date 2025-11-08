@@ -2,6 +2,8 @@ package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.swp391.fa2025.evrental.enums.UserRole;
+import vn.swp391.fa2025.evrental.enums.UserStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +30,8 @@ public class User {
     private String fullName;
 
     @Column(nullable = false)
-    private String role; // USER / STAFF / ADMIN
+    @Enumerated(EnumType.STRING)
+    private UserRole role; // USER / STAFF / ADMIN
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -43,7 +46,8 @@ public class User {
     private String driveLicense;
 
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
 
     private String idCardPhoto;
 

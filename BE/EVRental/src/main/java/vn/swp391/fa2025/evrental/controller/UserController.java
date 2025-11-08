@@ -65,7 +65,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         ApiResponse<Boolean> response = new ApiResponse<>();
         String reason="";
         if (request.getReason()!=null) reason=request.getReason();
-        response.setData(userService.changeAccountStatus(request.getUsername(), request.getStatus(), request.getReason()));
+        response.setData(userService.changeAccountStatus(request.getUsername(), request.getStatus(), reason));
         response.setSuccess(true);
         response.setMessage("Thay đổi trạng thái tài khoản thành công");
         response.setCode(200);

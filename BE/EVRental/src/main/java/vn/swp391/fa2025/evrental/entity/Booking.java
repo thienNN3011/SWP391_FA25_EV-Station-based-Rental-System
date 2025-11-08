@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.swp391.fa2025.evrental.enums.BookingStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -53,7 +54,8 @@ public class Booking {
     private LocalDateTime createdDate;
 
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private BookingStatus status;
 
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
     private Contract contract;

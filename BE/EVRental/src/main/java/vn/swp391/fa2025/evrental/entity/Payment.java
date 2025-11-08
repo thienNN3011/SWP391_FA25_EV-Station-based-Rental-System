@@ -2,6 +2,8 @@ package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.swp391.fa2025.evrental.enums.PaymentMethod;
+import vn.swp391.fa2025.evrental.enums.PaymentType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,7 +25,8 @@ public class Payment {
     private Booking booking;
 
     @Column(nullable = false)
-    private String paymentType;
+    @Enumerated(EnumType.STRING)
+    private PaymentType paymentType;
 
     @Column(nullable = false)
     private BigDecimal amount;
@@ -34,5 +37,6 @@ public class Payment {
     @Column(nullable = false)
     private LocalDateTime transactionDate;
 
-    private String method;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod method;
 }

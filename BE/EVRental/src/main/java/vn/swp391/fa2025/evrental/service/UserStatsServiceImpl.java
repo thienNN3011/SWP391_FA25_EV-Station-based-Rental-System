@@ -14,6 +14,7 @@ import vn.swp391.fa2025.evrental.dto.response.UserStatsResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleStatsResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
+import vn.swp391.fa2025.evrental.enums.BookingStatus;
 import vn.swp391.fa2025.evrental.repository.BookingRepository;
 
 @Service
@@ -25,7 +26,7 @@ public class UserStatsServiceImpl implements UserStatsService {
     @Override
     @Transactional(readOnly = true)
     public UserStatsResponse getCurrentUserStats(String username) {
-        List<Booking> bookings = bookingRepository.findByStatusAndUser_Username("COMPLETED", username);
+        List<Booking> bookings = bookingRepository.findByStatusAndUser_Username(BookingStatus.fromString("COMPLETED"), username);
 
         long totalCompleted = bookings.size();
         double totalDistanceKm = 0.0;

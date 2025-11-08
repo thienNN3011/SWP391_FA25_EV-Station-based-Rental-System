@@ -11,6 +11,8 @@ import vn.swp391.fa2025.evrental.dto.response.PaymentReturnResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
+import vn.swp391.fa2025.evrental.enums.BookingStatus;
+import vn.swp391.fa2025.evrental.enums.PaymentType;
 import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 import vn.swp391.fa2025.evrental.service.PaymentServiceImpl;
 import vn.swp391.fa2025.evrental.service.VnPayService;
@@ -92,7 +94,7 @@ public class PaymentController {
                     String paymentType= (paymentService.getPaymentByBookingIdAndType(bookingId, "DEPOSIT") != null) ? "FINAL_PAYMENT" : "DEPOSIT";
                     Payment payment = Payment.builder()
                             .booking(booking)
-                            .paymentType(paymentType)
+                            .paymentType(PaymentType.fromString(paymentType))
                             .amount(amount)
                             .referenceCode(transactionNo)
                             .transactionDate(TimeUtils.parsePayDate(payDate))
@@ -100,10 +102,10 @@ public class PaymentController {
                             .build();
                     paymentService.createPayment(payment);
                     if (paymentType.equalsIgnoreCase("DEPOSIT")) {
-                        booking.setStatus("BOOKING");
+                        booking.setStatus(BookingStatus.fromString("BOOKING"));
                         emailUtils.sendBookingSuccessEmail(booking);
                     } else {
-                        booking.setStatus("COMPLETED");
+                        booking.setStatus(BookingStatus.fromString("COMPLETED"));
                         emailUtils.sendBookingCompletedEmail(booking, amount);
                     }
                     bookingService.updateBooking(booking);

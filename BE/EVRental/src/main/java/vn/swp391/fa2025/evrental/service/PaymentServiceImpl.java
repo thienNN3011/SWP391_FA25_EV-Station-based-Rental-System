@@ -6,6 +6,7 @@ import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.entity.Station;
+import vn.swp391.fa2025.evrental.enums.PaymentType;
 import vn.swp391.fa2025.evrental.repository.PaymentRepository;
 import vn.swp391.fa2025.evrental.repository.StationRepository;
 
@@ -30,7 +31,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment getPaymentByBookingIdAndType(Long bookingId, String paymentType) {
-        return paymentRepository.findByBooking_BookingIdAndPaymentType(bookingId, paymentType);
+        return paymentRepository.findByBooking_BookingIdAndPaymentType(bookingId, PaymentType.fromString(paymentType));
     }
 
     @Override
@@ -43,23 +44,18 @@ public class PaymentServiceImpl implements PaymentService {
         Set<Long> bookingIds = monthlyPayments.stream()
                 .map(p -> p.getBooking().getBookingId())
                 .collect(Collectors.toSet());
-
         List<Payment> allPaymentsOfBookings = paymentRepository.findAllByBooking_BookingIdIn(bookingIds);
-
         List<Payment> validPayments = allPaymentsOfBookings.stream()
                 .filter(p -> {
                     Booking b = p.getBooking();
-                    String status = b.getStatus();
+                    String status = b.getStatus().toString();
                     return "COMPLETED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status) || "NO_SHOW".equalsIgnoreCase(status);
                 })
                 .collect(Collectors.toList());
-
-        // 5️⃣ Gom theo stationId
         Map<Station, BigDecimal> revenueByStation = new HashMap<>();
-
         for (Payment p : validPayments) {
             Station station = p.getBooking().getVehicle().getStation();
-            BigDecimal amount = switch (p.getPaymentType()) {
+            BigDecimal amount = switch (p.getPaymentType().toString()) {
                 case "DEPOSIT", "FINAL_PAYMENT" -> p.getAmount();
                 case "REFUND_DEPOSIT" -> p.getAmount().negate();
                 default -> BigDecimal.ZERO;
@@ -82,9 +78,7 @@ public class PaymentServiceImpl implements PaymentService {
     public List<StationRevenueResponse> getYearlyRevenueByStation(String stationName, int year) {
         Station station=stationRepository.findByStationName(stationName);
         if (station == null) {throw new RuntimeException("Station không tồn tại");}
-
         List<StationRevenueResponse> result = new ArrayList<>();
-
         for (int month = 1; month <= 12; month++) {
             List<StationRevenueResponse> monthlyList = getMonthlyRevenueByStation(month, year);
             BigDecimal revenue = monthlyList.stream()
@@ -92,7 +86,6 @@ public class PaymentServiceImpl implements PaymentService {
                     .map(StationRevenueResponse::getRevenue)
                     .findFirst()
                     .orElse(BigDecimal.ZERO);
-
             result.add(new StationRevenueResponse(
                     station.getStationId(),
                     station.getStationName(),

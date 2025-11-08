@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.swp391.fa2025.evrental.enums.ContractStatus;
 
 @Entity
 @Table(name = "contracts")
@@ -31,7 +32,8 @@ public class Contract {
     private String contractUrl;
 
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ContractStatus status;
 
     @Column(nullable = false, unique = true)
     private String token;

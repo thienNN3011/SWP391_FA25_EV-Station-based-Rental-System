@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.swp391.fa2025.evrental.enums.VehicleStatus;
 
 @Entity
 @Table(name = "vehicles")
@@ -27,7 +28,8 @@ public class Vehicle {
     private String color;
 
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private VehicleStatus status;
 
     @Column(nullable = false, unique = true)
     private String plateNumber;

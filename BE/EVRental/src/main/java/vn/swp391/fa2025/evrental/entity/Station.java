@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.swp391.fa2025.evrental.enums.StationStatus;
 
 import java.util.List;
 
@@ -27,7 +28,8 @@ public class Station {
     private String openingHours;
 
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private StationStatus status;
 
     @OneToMany(mappedBy = "station")
     private List<User> users;

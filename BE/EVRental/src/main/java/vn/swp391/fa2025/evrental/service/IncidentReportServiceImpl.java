@@ -12,6 +12,7 @@ import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.IncidentReport;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
+import vn.swp391.fa2025.evrental.enums.IncidentReportStatus;
 import vn.swp391.fa2025.evrental.mapper.IncidentReportMapper;
 import vn.swp391.fa2025.evrental.repository.BookingRepository;
 import vn.swp391.fa2025.evrental.repository.IncidentReportRepository;
@@ -57,12 +58,12 @@ public class IncidentReportServiceImpl implements IncidentReportService {
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
 
         // 3. Validate booking status is COMPLETED
-        if (!booking.getStatus().equalsIgnoreCase("COMPLETED")) {
+        if (!booking.getStatus().toString().equalsIgnoreCase("COMPLETED")) {
             throw new RuntimeException("Chỉ có thể tạo báo cáo sự cố cho booking đã hoàn thành (COMPLETED)");
         }
 
         // 4. Validate staff belongs to same station as vehicle (for STAFF role)
-        if (user.getRole().equalsIgnoreCase("STAFF")) {
+        if (user.getRole().toString().equalsIgnoreCase("STAFF")) {
             if (user.getStation() == null) {
                 throw new RuntimeException("Staff chưa được gán trạm");
             }
@@ -84,7 +85,7 @@ public class IncidentReportServiceImpl implements IncidentReportService {
                 .description(request.getDescription())
                 .incidentImageUrl(request.getIncidentImageUrl())
                 .incidentDate(LocalDateTime.now())
-                .status("PENDING")
+                .status(IncidentReportStatus.fromString("PENDING"))
                 .build();
 
         // 7. Save incident report
@@ -119,7 +120,7 @@ public class IncidentReportServiceImpl implements IncidentReportService {
                 .orElseThrow(() -> new RuntimeException("Trạm không tồn tại"));
 
         // If STAFF, validate they can only view reports from their station
-        if (user.getRole().equalsIgnoreCase("STAFF")) {
+        if (user.getRole().toString().equalsIgnoreCase("STAFF")) {
             if (user.getStation() == null) {
                 throw new RuntimeException("Staff chưa được gán trạm");
             }
@@ -157,7 +158,7 @@ public class IncidentReportServiceImpl implements IncidentReportService {
         }
 
         // Update report
-        report.setStatus(newStatus);
+        report.setStatus(IncidentReportStatus.fromString(newStatus));
 
         // Save and return
         IncidentReport updatedReport = incidentReportRepository.save(report);
