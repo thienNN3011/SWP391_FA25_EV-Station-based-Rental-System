@@ -17,24 +17,34 @@ export default function EndRentalStaff() {
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
+  const [transactionDate, setTransactionDate] = useState<string>(new Date().toISOString().slice(0, 16)) 
+
+
 
   
-  const handleFetchBooking = async () => {
-    if (!bookingId) return
-    setMessage("")
-    setLoading(true)
-    try {
-      const res = await api.post("/bookings/showdetailbooking", { bookingId })
-      setBooking(res.data.data) 
-      setMessage("Đã tải thông tin booking.")
-    } catch (err: any) {
-      console.error("Lỗi lấy booking:", err)
-      setMessage("Không tìm thấy thông tin booking.")
-      setBooking(null)
-    } finally {
-      setLoading(false)
-    }
+ const handleFetchBooking = async () => {
+  if (!bookingId) return
+  setMessage("")
+  setLoading(true)
+  setQrCode(null) 
+
+  try {
+
+    await api.post("/bookings/stoprentingtime", { bookingId })
+
+    
+    const res = await api.post("/bookings/showdetailbooking", { bookingId })
+    setBooking(res.data.data)
+    setMessage("Đã tải thông tin booking và cập nhật thời gian trả xe.")
+  } catch (err: any) {
+    console.error("Lỗi lấy booking / stop renting time:", err)
+    setMessage("Không tìm thấy thông tin booking hoặc không thể cập nhật thời gian trả xe.")
+    setBooking(null)
+  } finally {
+    setLoading(false)
   }
+}
+
 
   
   const handleEndRental = async () => {
@@ -53,7 +63,7 @@ export default function EndRentalStaff() {
         vehicleStatus,
         endOdo,
         referenceCode,
-        transactionDate: new Date().toISOString(),
+        transactionDate,
       }
 
       const res = await api.post("/bookings/endrental", body)
@@ -112,11 +122,11 @@ export default function EndRentalStaff() {
               <p><strong>Khách hàng:</strong> {booking.user?.fullName}</p>
               <p><strong>SĐT:</strong> {booking.user?.phone}</p>
               <p>
-                <strong>Thời gian thuê:</strong> {booking.startTime} → {booking.endTime}
+                <strong>Thời gian thuê dự định:</strong> {booking.startTime} → {booking.endTime}
               </p>
               <p><strong>Tình trạng xe trước khi nhận:</strong> {booking.beforeRentingStatus}</p>
               <p><strong>Odo lúc nhận xe:</strong> {booking.startOdo} Km</p>
-           
+              
             </div>
           )}
 
@@ -147,6 +157,15 @@ export default function EndRentalStaff() {
               onChange={(e) => setReferenceCode(e.target.value)}
             />
           </div>
+          <div>
+  <Label>Thời gian hoàn trả tiền đặt cọc</Label>
+  <Input
+    type="datetime-local"
+    value={transactionDate}
+    onChange={(e) => setTransactionDate(e.target.value)}
+  />
+</div>
+
 
           <Button
             onClick={handleEndRental}

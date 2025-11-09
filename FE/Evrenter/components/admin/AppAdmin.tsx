@@ -14,8 +14,9 @@ import { LocationManagement } from "@/components/admin/LocationManagement"
 import { RevenueManagement } from "@/components/admin/RevenueManagement"
 import { OrderManagement } from "@/components/admin/OrderManagement"
 import { Header } from "@/components/header"
+import  IncidentReportManagement  from "@/components/admin/IncidentReportAdmin"
 
-type ActivePage = "dashboard" | "users" | "staff" | "vehicles" | "locations" | "revenue" | "orders"
+type ActivePage = "dashboard" | "users" | "staff" | "vehicles" | "locations" | "revenue" | "orders" | "incident"
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
@@ -24,6 +25,7 @@ const menuItems = [
   { id: "locations" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
   { id: "revenue" as ActivePage, label: "Doanh thu & Thống kê", icon: TrendingUp },
   { id: "orders" as ActivePage, label: "Quản lý đơn thuê", icon: FileText },
+  { id: "incident" as ActivePage, label: "Báo cáo tai nạn", icon: FileText },
 ]
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {
@@ -104,6 +106,8 @@ function renderActivePage(activePage: ActivePage) {
       return <RevenueManagement />
     case "orders":
       return <OrderManagement />
+    case "incident":
+      return < IncidentReportManagement/>
     default:
       return <Dashboard />
   }

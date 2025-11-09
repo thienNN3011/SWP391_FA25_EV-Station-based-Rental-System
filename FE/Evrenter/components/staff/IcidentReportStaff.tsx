@@ -98,29 +98,19 @@ export default function IncidentReportStaff() {
       const result = await response.json()
 
       if (result.success) {
-        toast({
-          title: "Thành công",
-          description: "Báo cáo vi phạm đã được gửi thành công!",
-        })
-        setBookingId("")
-        setDescription("")
-        setIncidentImage(null)
-        setPreviewUrl(null)
-      } else {
-        toast({
-          title: "Thất bại",
-          description: result.message || "Không thể gửi báo cáo.",
-          variant: "destructive",
-        })
-      }
+  alert("Báo cáo vi phạm đã được gửi thành công!") 
+  setBookingId("")
+  setDescription("")
+  setIncidentImage(null)
+  setPreviewUrl(null)
+} else {
+  alert(result.message || "Không thể gửi báo cáo.") 
+}
+
     } catch (err) {
-      console.error("Lỗi khi gửi báo cáo:", err)
-      toast({
-        title: "Lỗi",
-        description: "Không thể kết nối đến máy chủ.",
-        variant: "destructive",
-      })
-    } finally {
+  console.error("Lỗi khi gửi báo cáo:", err)
+  alert("Không thể kết nối đến máy chủ.") 
+}finally {
       setLoading(false)
     }
   }

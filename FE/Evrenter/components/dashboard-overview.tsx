@@ -96,7 +96,7 @@ export function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalDistanceKm.toFixed(1)} km</div>
-            <p className="text-xs text-muted-foreground">+km so với tháng trước, chưa có data chỗ này</p>
+  
           </CardContent>
         </Card>
 

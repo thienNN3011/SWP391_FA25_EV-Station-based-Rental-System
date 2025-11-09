@@ -97,13 +97,15 @@ export default function BookingHistoryPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Car className="h-5 w-5 text-secondary" />
-            Danh sách booking hiện tại
+            Xe bạn đang booking
           </CardTitle>
-          <CardDescription>Danh sách các booking mà bạn có thể hủy</CardDescription>
+          <CardDescription>Đợi 1 chút để nhân viên gửi hợp đồng thuê xe cho bạn nhé!</CardDescription>
+          <CardDescription>Hoặc bạn có thể hủy xe nếu không còn nhu cầu</CardDescription>
+         
         </CardHeader>
         <CardContent>
           {bookings.length === 0 ? (
-            <div className="text-center text-muted-foreground py-4">Hiện không có booking nào</div>
+            <div className="text-center text-muted-foreground py-4">Hiện bạn đang không booking xe nào</div>
           ) : (
             <div className="space-y-4">
               {bookings.map((b) => (

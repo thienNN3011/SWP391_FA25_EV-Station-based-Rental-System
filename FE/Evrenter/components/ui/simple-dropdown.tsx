@@ -8,17 +8,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 interface SimpleDropdownProps {
-  onActivate: () => void
-  onDeactivate: (reason: string) => void
+  onChangeStatus: (status: "ACTIVE" | "INACTIVE" | "REJECTED", reason?: string) => void
 }
 
-export function SimpleDropdown({ onActivate, onDeactivate }: SimpleDropdownProps) {
+export function SimpleDropdown({ onChangeStatus }: SimpleDropdownProps) {
   const [open, setOpen] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [reason, setReason] = useState("")
   const ref = useRef<HTMLDivElement>(null)
 
-  
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -50,22 +48,31 @@ export function SimpleDropdown({ onActivate, onDeactivate }: SimpleDropdownProps
             className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border rounded-md shadow-lg z-[9999]"
           >
             <button
-              className="block w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="block w-full text-left px-4 py-2 text-green-600 hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => {
-                onActivate()
+                onChangeStatus("ACTIVE")
                 setOpen(false)
               }}
             >
-              Kích hoạt tài khoản
+              Đang hoạt động
             </button>
             <button
-              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="block w-full text-left px-4 py-2 text-yellow-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                onChangeStatus("INACTIVE")
+                setOpen(false)
+              }}
+            >
+              Bị chặn
+            </button>
+            <button
+              className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => {
                 setShowModal(true)
                 setOpen(false)
               }}
             >
-              Hủy tài khoản
+              Từ chối
             </button>
           </motion.div>
         )}
@@ -86,7 +93,7 @@ export function SimpleDropdown({ onActivate, onDeactivate }: SimpleDropdownProps
               exit={{ scale: 0.9 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-96"
             >
-              <h3 className="text-lg font-semibold mb-3">Nhập lý do hủy tài khoản</h3>
+              <h3 className="text-lg font-semibold mb-3">Nhập lý do từ chối tài khoản</h3>
               <Label htmlFor="reason" className="text-sm mb-1 block">Lý do</Label>
               <Input
                 id="reason"
@@ -109,7 +116,7 @@ export function SimpleDropdown({ onActivate, onDeactivate }: SimpleDropdownProps
                 <Button
                   variant="destructive"
                   onClick={() => {
-                    onDeactivate(reason)
+                    onChangeStatus("REJECTED", reason)
                     setShowModal(false)
                     setReason("")
                   }}

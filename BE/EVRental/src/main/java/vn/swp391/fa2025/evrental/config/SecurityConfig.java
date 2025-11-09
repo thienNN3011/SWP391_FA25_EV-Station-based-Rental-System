@@ -83,7 +83,7 @@ public class SecurityConfig {
                          .requestMatchers(HttpMethod.DELETE, "/tariff/delete/**").hasAuthority("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/incidentreport/create").hasAnyAuthority("ADMIN", "STAFF")
-                        .requestMatchers(HttpMethod.GET, "/incidentreport/showall").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/incidentreport/showall").permitAll()              //.hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET,"/incidentreport/showbystation/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/incidentreport/update").hasAuthority("ADMIN")
                         .requestMatchers("/changestaffstationreq", "/dochangestaffstation", "/showstaffstats", "/payments/revenue").hasAuthority("ADMIN")
@@ -102,7 +102,8 @@ public class SecurityConfig {
         config.setAllowedMethods(
             Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         );
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+       // config.setAllowedHeaders(List.of("Authorization", "Content-Type")); thien fix admin cors
+        config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
 
