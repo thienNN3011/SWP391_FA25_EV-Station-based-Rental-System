@@ -97,7 +97,11 @@ public class UserServiceImpl implements UserService {
         } else if (currentStatus.equals("PENDING") && status.equals("REJECTED")) {
             user.setStatus(UserStatus.fromString("REJECTED"));
             emailUtils.sendRejectionEmail(user, reason);
+        } else {
+            throw new RuntimeException("Không thể chuyển trạng thái từ " + currentStatus + " sang " + status +
+                    ". Chuyển đổi trạng thái không được hỗ trợ.");
         }
+
 
         return userRepository.save(user) != null;
     }

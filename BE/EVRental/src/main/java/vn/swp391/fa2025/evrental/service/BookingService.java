@@ -25,4 +25,5 @@ public interface BookingService {
     void updateBooking(Booking booking);
     Payment cancelBooking(Long bookingId);
     void cancelBookingForSystem(Long bookingId);
+    void endTimeRenting(Long bookingId);
 }

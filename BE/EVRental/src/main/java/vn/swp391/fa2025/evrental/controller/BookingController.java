@@ -122,4 +122,15 @@ public class BookingController {
         response.setCode(200);
         return response;
     }
+
+    @PostMapping("/stoprentingtime")
+    ApiResponse<String> stopRentingTime(@RequestBody CancelBookingRequest request) {
+        ApiResponse<String> response = new ApiResponse<>();
+        bookingService.endTimeRenting(request.getBookingId());
+        response.setSuccess(true);
+        response.setMessage("Dừng thời gian thuê thành công");
+        response.setData("Dừng thời gian thuê thành công");
+        response.setCode(200);
+        return response;
+    }
 }
