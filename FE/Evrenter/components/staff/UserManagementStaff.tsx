@@ -52,40 +52,45 @@ export function UserManagementStaff() {
   }, [])
 
   
-  const changeAccountStatus = async (username: string, status: string) => {
-    try {
-      const token = localStorage.getItem("token")
-      const response = await fetch(
-        "http://localhost:8080/EVRental/changeaccountstatus",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ username, status }),
-        }
-      )
+  const changeAccountStatus = async (username: string, status: string, reason?: string) => {
+  try {
+    const token = localStorage.getItem("token")
 
-      const result = await response.json()
+    const bodyData: any = { username, status }
+    if (reason) bodyData.reason = reason // them li do hoac khong can cung dc
 
-      if (result.success) {
-        alert(
-          ` ${status === "ACTIVE" ? "Kích hoạt" : "Hủy"} tài khoản thành công!`
-        )
-        setUsers((prev) =>
-          prev.map((u) =>
-            u.username === username ? { ...u, status } : u
-          )
-        )
-      } else {
-        alert("Thao tác thất bại: " + (result.message || "Lỗi không xác định"))
+    const response = await fetch(
+      "http://localhost:8080/EVRental/changeaccountstatus",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(bodyData),
       }
-    } catch (err) {
-      console.error("Lỗi khi đổi trạng thái:", err)
-      alert("Không thể kết nối đến server!")
+    )
+
+    const result = await response.json()
+
+    if (result.success) {
+      alert(
+        `${status === "ACTIVE" ? "Kích hoạt" : "Hủy"} tài khoản thành công!`
+      )
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.username === username ? { ...u, status } : u
+        )
+      )
+    } else {
+      alert("Thao tác thất bại: " + (result.message || "Lỗi không xác định"))
     }
+  } catch (err) {
+    console.error("Lỗi khi đổi trạng thái:", err)
+    alert("Không thể kết nối đến server!")
   }
+}
+
 
  
   const filtered = users.filter(
@@ -188,13 +193,12 @@ export function UserManagementStaff() {
 
                       <TableCell className="text-right">
                         <SimpleDropdown
-                          onActivate={() =>
-                            changeAccountStatus(u.username, "ACTIVE")
-                          }
-                          onDeactivate={() =>
-                            changeAccountStatus(u.username, "REJECTED")
-                          }
-                        />
+  onActivate={() => changeAccountStatus(u.username, "ACTIVE")}
+  onDeactivate={(reason) =>
+    changeAccountStatus(u.username, "REJECTED", reason)
+  }
+/>
+
                       </TableCell>
                     </TableRow>
                   ))

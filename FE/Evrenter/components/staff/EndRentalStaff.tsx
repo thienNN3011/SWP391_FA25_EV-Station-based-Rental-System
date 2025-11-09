@@ -114,6 +114,8 @@ export default function EndRentalStaff() {
               <p>
                 <strong>Thời gian thuê:</strong> {booking.startTime} → {booking.endTime}
               </p>
+              <p><strong>Tình trạng xe trước khi nhận:</strong> {booking.beforeRentingStatus}</p>
+              <p><strong>Odo lúc nhận xe:</strong> {booking.startOdo} Km</p>
            
             </div>
           )}

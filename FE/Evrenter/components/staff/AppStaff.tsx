@@ -19,11 +19,12 @@ import { LocationManagementStaff } from "./LocationManagementStaff"
 import { BookingStaff } from "./BookingStaff"
 import StartRentalStaff from "./StartRental"
 import EndRentalStaff from "./EndRentalStaff"
+import IncidentReportStaff  from "./IcidentReportStaff"
 import { useAuth } from "@/components/auth-context"
 import { AuthModal } from "@/components/auth-modal"
 import { Dashboard } from "./DashboardStaff"
 
-type ActivePage = "dashboard" | "users" | "station" | "booking" | "rental" | "endrental"
+type ActivePage = "dashboard" | "users" | "station" | "booking" | "rental" | "endrental" | "incident"
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
@@ -32,6 +33,7 @@ const menuItems = [
   { id: "booking" as ActivePage, label: "Quản lý booking", icon: MapPin },
   { id: "rental" as ActivePage, label: "Bắt đầu hợp đồng", icon: MapPin },
   { id: "endrental" as ActivePage, label: "Khách hàng trả xe", icon: MapPin },
+  { id: "incident" as ActivePage, label: "Báo cáo sự cố", icon: MapPin },
 ]
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {
@@ -119,6 +121,8 @@ function renderActivePage(activePage: ActivePage) {
       return <StartRentalStaff />
     case "endrental":
       return <EndRentalStaff />
+    case "incident":
+      return <IncidentReportStaff />  
     default:
       return <Dashboard />
   }

@@ -4,17 +4,21 @@ import { useState, useRef, useEffect } from "react"
 import { MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface SimpleDropdownProps {
   onActivate: () => void
-  onDeactivate: () => void
+  onDeactivate: (reason: string) => void
 }
 
 export function SimpleDropdown({ onActivate, onDeactivate }: SimpleDropdownProps) {
   const [open, setOpen] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [reason, setReason] = useState("")
   const ref = useRef<HTMLDivElement>(null)
 
-  // click ra ngoài tat drop
+  
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -57,12 +61,64 @@ export function SimpleDropdown({ onActivate, onDeactivate }: SimpleDropdownProps
             <button
               className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => {
-                onDeactivate()
+                setShowModal(true)
                 setOpen(false)
               }}
             >
               Hủy tài khoản
             </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-[10000]"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 w-96"
+            >
+              <h3 className="text-lg font-semibold mb-3">Nhập lý do hủy tài khoản</h3>
+              <Label htmlFor="reason" className="text-sm mb-1 block">Lý do</Label>
+              <Input
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Nhập lý do tại đây..."
+                className="mb-4"
+              />
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowModal(false)
+                    setReason("")
+                  }}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    onDeactivate(reason)
+                    setShowModal(false)
+                    setReason("")
+                  }}
+                  disabled={!reason.trim()}
+                >
+                  Xác nhận
+                </Button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
