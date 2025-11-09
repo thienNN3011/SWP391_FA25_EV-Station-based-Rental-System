@@ -1,8 +1,8 @@
 package vn.swp391.fa2025.evrental.mapper;
 
 import org.mapstruct.*;
-import org.springframework.context.annotation.Bean;
 import vn.swp391.fa2025.evrental.dto.request.RegisterCustomerRequest;
+import vn.swp391.fa2025.evrental.dto.request.CreateStaffRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.User;
 
@@ -14,6 +14,18 @@ public interface  UserMapper {
     @Mapping(target = "idCardPhoto", source = "idCardPhotoPath")
     @Mapping(target = "driveLicensePhoto", source = "driveLicensePhotoPath")
     User toEntity(RegisterCustomerRequest req, String idCardPhotoPath, String driveLicensePhotoPath);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "username", source = "username")
+    @Mapping(target = "password", source = "password")
+    @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "email", source = "email")
+    @Mapping(target = "phone", source = "phone")
+    @Mapping(target = "idCard", source = "idCard")
+    @Mapping(target = "driveLicense", source = "driveLicense")
+    @Mapping(target = "idCardPhoto", source = "idCardPhoto")
+    @Mapping(target = "driveLicensePhoto", source = "driveLicensePhoto")
+    User toStaffEntity(CreateStaffRequest req);
 
     CustomerResponse toDto(User user);
 

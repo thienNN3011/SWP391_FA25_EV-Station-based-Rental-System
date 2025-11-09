@@ -1,5 +1,6 @@
 package vn.swp391.fa2025.evrental.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -82,6 +83,19 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         response.setSuccess(true);
         response.setMessage("Lấy thông tin toàn bộ staff thành công");
         response.setCode(200);
+        return response;
+    }
+
+    @PostMapping(value = "/admin/staffs", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ApiResponse<StaffResponse> createStaff(@Valid @RequestBody CreateStaffRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        ApiResponse<StaffResponse> response = new ApiResponse<>();
+        response.setData(userService.createStaff(username, request));
+        response.setSuccess(true);
+        response.setMessage("Tạo staff thành công");
+        response.setCode(201);
         return response;
     }
     @GetMapping("/showallrenters")

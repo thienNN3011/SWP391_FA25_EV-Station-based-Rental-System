@@ -4,12 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.swp391.fa2025.evrental.dto.request.CreateStaffRequest;
 import vn.swp391.fa2025.evrental.dto.request.UserRejectedUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.request.UserUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Station;
 import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.enums.StationStatus;
+import vn.swp391.fa2025.evrental.enums.UserRole;
 import vn.swp391.fa2025.evrental.enums.UserStatus;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
@@ -137,6 +139,52 @@ public class UserServiceImpl implements UserService {
            throw new ResourceNotFoundException("Không có Staff nào trong hệ thống");
        }
        return staffsList.stream().map(user -> userMapper.toStaffListResponse(user)).toList();
+    }
+
+    @Override
+    @Transactional
+    public StaffResponse createStaff(String adminUsername, CreateStaffRequest request) {
+        User admin = userRepository.findByUsername(adminUsername);
+        if (admin == null || !"ADMIN".equals(admin.getRole().toString())) {
+            throw new BusinessException("Chỉ ADMIN mới được tạo tài khoản staff");
+        }
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new BusinessException("Username đã tồn tại: " + request.getUsername());
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException("Email đã tồn tại: " + request.getEmail());
+        }
+        if (userRepository.existsByPhone(request.getPhone())) {
+            throw new BusinessException("Số điện thoại đã tồn tại: " + request.getPhone());
+        }
+        if (request.getIdCard() != null && !request.getIdCard().isBlank() && userRepository.existsByIdCard(request.getIdCard())) {
+            throw new BusinessException("CMND/CCCD đã tồn tại: " + request.getIdCard());
+        }
+        if (request.getDriveLicense() != null && !request.getDriveLicense().isBlank()
+                && userRepository.existsByDriveLicense(request.getDriveLicense())) {
+            throw new BusinessException("Bằng lái đã tồn tại: " + request.getDriveLicense());
+        }
+
+        Station station = null;
+        if (request.getStationId() != null) {
+            station = stationRepository.findById(request.getStationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy station với ID: " + request.getStationId()));
+            if (!StationStatus.OPEN.equals(station.getStatus())) {
+                throw new BusinessException("Station hiện không mở, vui lòng chọn station khác");
+            }
+        }
+
+        User staff = userMapper.toStaffEntity(request);
+        staff.setPassword(passwordEncoder.encode(request.getPassword()));
+        staff.setRole(UserRole.STAFF);
+        staff.setStatus(UserStatus.ACTIVE);
+        staff.setCreatedDate(LocalDateTime.now());
+        staff.setUpdatedDate(LocalDateTime.now());
+        staff.setStation(station);
+
+        User saved = userRepository.save(staff);
+        return userMapper.toStaffResponse(saved);
     }
 
     @Override
