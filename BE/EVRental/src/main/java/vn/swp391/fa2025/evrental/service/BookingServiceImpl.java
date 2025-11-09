@@ -337,8 +337,6 @@ public class BookingServiceImpl implements  BookingService{
         if (!booking.getStatus().toString().equalsIgnoreCase("RENTING"))
             throw new RuntimeException("Booking không ở trạng thái RENTING");
 
-        booking.setActualEndTime(LocalDateTime.now());
-
         if (booking.getStartOdo() > endOdo)
             throw new RuntimeException("Số km kết thúc phải lớn hơn số km bắt đầu");
 
@@ -472,6 +470,23 @@ public class BookingServiceImpl implements  BookingService{
         tariffRepository.save(tariff);
         vehicleRepository.save(vehicle);
         booking.setStatus(BookingStatus.fromString("CANCELLED"));
+        bookingRepository.save(booking);
+    }
+
+    @Override
+    public void endTimeRenting(Long bookingId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String staffname = authentication.getName();
+        User staff=userRepository.findByUsername(staffname);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+
+        if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc station của bạn!Booking thuộc station"+ booking.getVehicle().getStation().getStationName());
+        if (booking.getContract().getStaff().getUserId()!=staff.getUserId()) throw new RuntimeException("Bạn không phải nhân viên thụ lí booking này");
+        if (!booking.getStatus().toString().equalsIgnoreCase("RENTING"))
+            throw new RuntimeException("Booking không ở trạng thái RENTING");
+        booking.setActualEndTime(LocalDateTime.now());
         bookingRepository.save(booking);
     }
 }
