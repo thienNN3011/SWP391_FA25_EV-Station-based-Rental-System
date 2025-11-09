@@ -28,17 +28,16 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByStation_StationNameAndModel_ModelIdAndStatus(String stationName, Long modelId, VehicleStatus status);
 
     @Query(value = """
-        SELECT * FROM vehicle
-        WHERE station_id = :stationId
-        AND model_id = :modelId
-        AND color = :color
-        AND status = 'AVAILABLE'
-        LIMIT 1
-        FOR UPDATE SKIP LOCKED
-        """, nativeQuery = true)
+    SELECT TOP 1 * FROM vehicles WITH (UPDLOCK, READPAST)
+    WHERE station_id = :stationId
+    AND model_id = :modelId
+    AND color = :color
+    AND status = 'AVAILABLE'
+    """, nativeQuery = true)
     Optional<Vehicle> findOneAvailableVehicleForUpdate(
             @Param("stationId") Long stationId,
             @Param("modelId") Long modelId,
             @Param("color") String color
     );
+
 }

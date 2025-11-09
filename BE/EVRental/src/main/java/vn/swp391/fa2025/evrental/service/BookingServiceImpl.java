@@ -70,6 +70,7 @@ public class BookingServiceImpl implements  BookingService{
                 bookingRequest.getModelId(),
                 bookingRequest.getColor()
         ).orElseThrow(() -> new RuntimeException("Hiện không có xe nào khả dụng cho mẫu xe này"));
+        booking.setVehicle(vehicle);
         LocalDateTime now= LocalDateTime.now();
         LocalDate roundedCurrentDate = now.toLocalDate();
         if (!now.toLocalTime().equals(LocalTime.MIDNIGHT)) {
@@ -336,7 +337,7 @@ public class BookingServiceImpl implements  BookingService{
         if (booking.getContract().getStaff().getUserId()!=staff.getUserId()) throw new RuntimeException("Bạn không phải nhân viên thụ lí booking này");
         if (!booking.getStatus().toString().equalsIgnoreCase("RENTING"))
             throw new RuntimeException("Booking không ở trạng thái RENTING");
-
+        if (booking.getActualEndTime()==null) throw new RuntimeException("Bạn chưa kết thúc thời gian thuê xe");
         if (booking.getStartOdo() > endOdo)
             throw new RuntimeException("Số km kết thúc phải lớn hơn số km bắt đầu");
 
