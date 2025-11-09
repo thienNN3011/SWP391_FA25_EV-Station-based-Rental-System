@@ -103,19 +103,23 @@ export default function StartRentalStaff() {
               <div className="flex gap-4 mt-2">
                 <div>
                   <p className="font-semibold text-sm mb-1">CCCD</p>
+                    <a href={booking.user.idCardPhoto} target="_blank" rel="noopener noreferrer">
                   <img
                     src={booking.user.idCardPhoto}
                     alt="CCCD"
-                    className="w-40 h-28 object-cover rounded border"
+                    className="w-16 h-10 object-cover rounded bg-muted hover:scale-105 transition"
                   />
+                  </a>
                 </div>
                 <div>
                   <p className="font-semibold text-sm mb-1">GPLX</p>
+                    <a href={booking.user.driveLicensePhoto} target="_blank" rel="noopener noreferrer">
                   <img
                     src={booking.user.driveLicensePhoto}
                     alt="GPLX"
-                    className="w-40 h-28 object-cover rounded border"
+                    className="w-16 h-10 object-cover rounded bg-muted hover:scale-105 transition"
                   />
+                  </a>
                 </div>
               </div>
 

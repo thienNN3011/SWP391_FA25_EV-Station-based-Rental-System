@@ -124,7 +124,7 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               </div>
 
               <div>
-                <Label>Thời gian nhận xe</Label>
+                <Label>Bắt đầu nhận xe</Label>
                 <Input
                   type="datetime-local"
                   onChange={(e) => setStartTime(e.target.value.replace("T", " "))}
@@ -132,7 +132,7 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               </div>
 
               <div>
-                <Label>Kết thúc</Label>
+                <Label>Kết thúc thuê xe</Label>
                 <Input
                   type="datetime-local"
                   onChange={(e) => setEndTime(e.target.value.replace("T", " "))}
