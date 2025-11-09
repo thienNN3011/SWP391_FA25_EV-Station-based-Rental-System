@@ -12,6 +12,7 @@ import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.enums.BookingStatus;
+import vn.swp391.fa2025.evrental.enums.PaymentMethod;
 import vn.swp391.fa2025.evrental.enums.PaymentType;
 import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 import vn.swp391.fa2025.evrental.service.PaymentServiceImpl;
@@ -98,7 +99,7 @@ public class PaymentController {
                             .amount(amount)
                             .referenceCode(transactionNo)
                             .transactionDate(TimeUtils.parsePayDate(payDate))
-                            .method("VN_PAY")
+                            .method(PaymentMethod.fromString("VN_PAY"))
                             .build();
                     paymentService.createPayment(payment);
                     if (paymentType.equalsIgnoreCase("DEPOSIT")) {
