@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/updaterejecteduser").permitAll()
                         .requestMatchers(HttpMethod.GET, "/showallrenters").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/showallstaffs").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/admin/staffs").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/updateuser").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/deleteuser/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/me/stats").hasAuthority("RENTER")
