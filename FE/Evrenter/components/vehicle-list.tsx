@@ -155,17 +155,23 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
                     Số ghế: {firstVehicle.seat} | {firstVehicle.description}
                   </p>
 
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {modelVehicles.map((v) => (
-                      <button
-                        key={v.vehicleId}
-                        className={`w-6 h-6 rounded-full border ${selectedVehicle.vehicleId === v.vehicleId ? "border-black" : "border-gray-300"}`}
-                        style={{ backgroundColor: v.color.toLowerCase() }}
-                        onClick={() => handleColorSelect(v)}
-                        title={v.color}
-                      />
-                    ))}
-                  </div>
+                 <div className="flex gap-2 mt-2 flex-wrap">
+  {modelVehicles.map((v) => {
+    const isSelected = selectedVehicle.vehicleId === v.vehicleId
+    return (
+      <button
+        key={v.vehicleId}
+        className={`w-6 h-6 rounded-full border transition-all duration-200
+          ${isSelected ? "border-black scale-125 shadow-lg ring-2 ring-offset-1 ring-sky-500" : "border-gray-300 hover:scale-110"}
+        `}
+        style={{ backgroundColor: v.color.toLowerCase() }}
+        onClick={() => handleColorSelect(v)}
+        title={v.color}
+      />
+    )
+  })}
+</div>
+
 
                  
                   <div className="mt-2 border-t pt-2">
