@@ -40,7 +40,7 @@ public class StationServiceImpl implements StationService {
 
     @Override
     public List<StationResponse> showActiveStation() {
-        List<Station> stations = stationRepository.findByStatus(StationStatus.fromString("OPEN"));
+        List<Station> stations = stationRepository.findOpenStationsWithAvailableVehicles();
         return stations
             .stream()
             .map(station ->

@@ -11,6 +11,7 @@ import vn.swp391.fa2025.evrental.repository.PaymentRepository;
 import vn.swp391.fa2025.evrental.repository.StationRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.*;
@@ -79,7 +80,10 @@ public class PaymentServiceImpl implements PaymentService {
         Station station=stationRepository.findByStationName(stationName);
         if (station == null) {throw new RuntimeException("Station không tồn tại");}
         List<StationRevenueResponse> result = new ArrayList<>();
-        for (int month = 1; month <= 12; month++) {
+        int currentMonth = (year == LocalDate.now().getYear())
+                ? LocalDate.now().getMonthValue()
+                : 12;
+        for (int month = 1; month <= currentMonth; month++) {
             List<StationRevenueResponse> monthlyList = getMonthlyRevenueByStation(month, year);
             BigDecimal revenue = monthlyList.stream()
                     .filter(r -> Objects.equals(r.getStationName(), stationName))
