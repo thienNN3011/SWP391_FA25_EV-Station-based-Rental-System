@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.entity.Vehicle;
@@ -31,6 +32,7 @@ public class BookingScheduler {
     private VehicleRepository vehicleRepository;
 
     @Scheduled(fixedRate = 4 * 60 * 1000)
+    @Transactional
     public void cancelBooking() {
         List<Booking> bookings = bookingRepository.findByStatus(BookingStatus.fromString("UNCONFIRMED"));
         if (bookings.isEmpty()) {
@@ -52,6 +54,7 @@ public class BookingScheduler {
     }
 
     @Scheduled(fixedRate =  5 * 60 * 1000)
+    @Transactional
     public void checkLateBookings() {
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = bookingRepository.findByStatus(BookingStatus.fromString("BOOKING"));

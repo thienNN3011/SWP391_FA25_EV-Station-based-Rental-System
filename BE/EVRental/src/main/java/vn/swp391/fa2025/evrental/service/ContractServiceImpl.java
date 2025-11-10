@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.entity.*;
 import vn.swp391.fa2025.evrental.enums.BookingStatus;
 import vn.swp391.fa2025.evrental.enums.ContractStatus;
@@ -43,6 +44,7 @@ public class ContractServiceImpl implements ContractService {
     private String contractsFolder;
 
     @Override
+    @Transactional
     public Contract saveContractFile(byte[] pdfBytes, Booking booking, User customer, User staff, String token) {
         try {
             String fileName = "Contract_" + booking.getBookingId() + ".pdf";
@@ -71,6 +73,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
+    @Transactional
 public String confirmContract(String token) {
     Contract contract = contractRepository.findByToken(token);
     if (contract == null) {
@@ -84,15 +87,36 @@ public String confirmContract(String token) {
     contractRepository.save(contract);
     bookingRepository.save(contract.getBooking());
 
-    return """
-    <h2>Hợp đồng đã được xác nhận thành công!</h2>
-    <p>Bạn có thể quay lại hệ thống để tiếp tục quy trình thuê xe.</p>
-    """;
+        return """
+<style>
+  body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc; /* nền xám rất nhạt */
+    color: #333;
+    text-align: center;
+    padding-top: 100px;
+  }
+  h2 {
+    color: #3b82f6; /* xanh dương nhẹ */
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+  p {
+    font-size: 16px;
+    color: #555;
+  }
+</style>
+
+<h2>✅ Hợp đồng đã được xác nhận thành công!</h2>
+<p>Bạn có thể quay lại hệ thống để tiếp tục quy trình thuê xe.</p>
+""";
+
 }
 
 
 
     @Override
+    @Transactional
     public String rejectContract(String token) {
         Contract contract = contractRepository.findByToken(token);
         if (contract == null) {
@@ -124,8 +148,28 @@ public String confirmContract(String token) {
         tariffRepository.save(tariff);
         contractRepository.save(contract);
         return """
-            <h2>Hợp đồng đã bị từ chối.</h2>
-            <p>Nếu bạn cần hỗ trợ, vui lòng liên hệ nhân viên.</p>
-        """;
+<style>
+  body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc; /* nền sáng nhạt */
+    color: #333;
+    text-align: center;
+    padding-top: 100px;
+  }
+  h2 {
+    color: #ef4444; /* đỏ nhạt, biểu thị từ chối */
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+  p {
+    font-size: 16px;
+    color: #555;
+  }
+</style>
+
+<h2>❌ Hợp đồng đã bị từ chối.</h2>
+<p>Nếu bạn cần hỗ trợ, vui lòng liên hệ nhân viên.</p>
+""";
+
     }
 }
