@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/bookings/confirm", "/bookings/reject").permitAll()                //.hasAuthority("RENTER") test thu
                         .requestMatchers("/bookings/startrental", "/bookings/endrental", "vehicles/showbystatus", "/bookings/stoprentingtime").hasAuthority("STAFF")
                         .requestMatchers("/bookings/createbooking", "/bookings/cancelbooking").hasAuthority("RENTER")
+                        .requestMatchers(HttpMethod.GET, "/bookings/total-revenue").hasAuthority("RENTER")
                         .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
                         .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")
                         //CRUD VEHICLE
@@ -89,6 +90,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/incidentreport/update").hasAuthority("ADMIN")
                         .requestMatchers("/changestaffstationreq", "/dochangestaffstation", "/showstaffstats", "/payments/revenue").hasAuthority("ADMIN")
                         .requestMatchers("/systemconfig/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/admin/staffs").hasAuthority("ADMIN")
+                        
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

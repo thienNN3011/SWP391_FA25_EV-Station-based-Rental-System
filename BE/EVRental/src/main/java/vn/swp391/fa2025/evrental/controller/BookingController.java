@@ -19,6 +19,7 @@ import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 import vn.swp391.fa2025.evrental.service.ContractServiceImpl;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.io.IOException;
@@ -133,4 +134,14 @@ public class BookingController {
         response.setCode(200);
         return response;
     }
+    @GetMapping("/total-revenue")
+    ApiResponse<BigDecimal> getTotalRevenue() {
+        ApiResponse<BigDecimal> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Tổng số tiền của các booking");
+        response.setData(bookingService.getMyTotalRevenue());
+        response.setCode(200);
+        return response;
+    }
+
 }

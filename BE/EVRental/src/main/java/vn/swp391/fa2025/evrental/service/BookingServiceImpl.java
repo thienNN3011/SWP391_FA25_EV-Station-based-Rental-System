@@ -495,4 +495,12 @@ public class BookingServiceImpl implements  BookingService{
         booking.setActualEndTime(LocalDateTime.now());
         bookingRepository.save(booking);
     }
+
+    @Override
+    public BigDecimal getMyTotalRevenue() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        BigDecimal total = bookingRepository.getTotalRevenueByUsername(username);
+        return total == null ? BigDecimal.ZERO : total;
+    }
 }
