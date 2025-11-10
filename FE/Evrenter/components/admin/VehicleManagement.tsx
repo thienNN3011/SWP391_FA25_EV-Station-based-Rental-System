@@ -1,223 +1,187 @@
 "use client"
-import { useEffect, useMemo, useState } from "react"
-import { Search, MoreHorizontal, Eye } from "lucide-react"
+
+import { useEffect, useState } from "react"
+import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ImageWithFallback } from "@/components/figma/ImageWithFallback"
-import { createVehicle, getAllVehicles, VehicleResponse, updateVehicle, deleteVehicle } from "@/lib/adminApi"
+import { api } from "@/lib/api"
+
+interface VehicleModel {
+  modelId: number
+  stationName: string
+  name: string
+  brand: string
+  batteryCapacity: number
+  range: number
+  seat: number
+  description: string
+  imageUrls: { imageUrl: string; color: string }[]
+  tariffs: { tariffId: number; type: string; price: number; depositAmount: number }[]
+  colors: string[]
+}
 
 export function VehicleManagement() {
+  const [vehicles, setVehicles] = useState<VehicleModel[]>([])
+  const [stations, setStations] = useState<{ stationName: string; address: string }[]>([])
+  const [selectedStation, setSelectedStation] = useState<string | null>(null)
   const [search, setSearch] = useState("")
-  const [rows, setRows] = useState<VehicleResponse[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [selectedColorByModel, setSelectedColorByModel] = useState<{ [modelId: number]: string }>({})
 
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState({ modelId: '', stationId: '', color: '', plateNumber: '' })
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        const res = await api.get("/showactivestation")
+        if (res.data.success) setStations(res.data.data ?? [])
+      } catch (err) {
+        console.error(err)
+        setError("Không thể tải danh sách trạm")
+      }
+    }
+    fetchStations()
+  }, [])
 
-  const loadVehicles = async () => {
-    setLoading(true)
+  const loadVehicles = async (stationName: string) => {
     try {
-      const data = await getAllVehicles()
-      setRows(data)
-    } catch (e: any) {
-      setError(e?.message ?? 'Lỗi tải danh sách xe')
+      setLoading(true)
+      setError("")
+      const res = await api.post("/vehiclemodel", { stationName })
+      if (res.data.success) setVehicles(res.data.data ?? [])
+      else setError(res.data.message ?? "Lỗi khi tải xe")
+    } catch (err: any) {
+      console.error(err)
+      setError(err.message ?? "Lỗi server")
     } finally {
       setLoading(false)
     }
- }
+  }
 
- useEffect(() => { loadVehicles() }, [])
+  const handleColorSelect = (modelId: number, color: string) => {
+    setSelectedColorByModel(prev => ({ ...prev, [modelId]: color }))
+  }
 
-  const filtered = useMemo(() => rows.filter(v =>
-    (v.brand ?? '').toLowerCase().includes(search.toLowerCase()) ||
-    (v.modelName ?? '').toLowerCase().includes(search.toLowerCase()) ||
-    (v.plateNumber ?? '').toLowerCase().includes(search.toLowerCase())
-  ), [rows, search])
+  const filtered = vehicles.filter(
+    v =>
+      (v.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (v.brand ?? "").toLowerCase().includes(search.toLowerCase())
+  )
 
   const toUiStatus = (s: string) => {
     switch (s) {
-      case 'AVAILABLE': return { label: 'Sẵn sàng', variant: 'default' as const }
-      case 'BOOKED':
-      case 'IN_USE': return { label: 'Đang thuê', variant: 'secondary' as const }
-      case 'MAINTENANCE':
-      case 'INACTIVE': return { label: 'Bảo dưỡng', variant: 'destructive' as const }
-      default: return { label: s, variant: 'secondary' as const }
+      case "AVAILABLE":
+        return { label: "Sẵn sàng", variant: "default" as const }
+      case "BOOKED":
+      case "IN_USE":
+        return { label: "Đang thuê", variant: "secondary" as const }
+      case "MAINTENANCE":
+      case "INACTIVE":
+        return { label: "Bảo dưỡng", variant: "destructive" as const }
+      default:
+        return { label: s, variant: "secondary" as const }
     }
   }
-  const handleCreate = async () => {
-    const modelId = parseInt(String(form.modelId), 10)
-    const stationId = parseInt(String(form.stationId), 10)
-    const color = (form.color ?? '').trim()
-    const plateNumber = (form.plateNumber ?? '').trim()
-
-    if (isNaN(modelId) || modelId <= 0) return alert('ModelId sai hoặc bỏ trống')
-    if (isNaN(stationId) || stationId <= 0) return alert('StationId sai hoặc bỏ trống')
-    if (!plateNumber) return alert('Biển số không được để trống')
-
-    setSubmitting(true)
-    try {
-      await createVehicle({ modelId, stationId, color, plateNumber })
-      await loadVehicles()
-      setShowCreateForm(false)
-      setForm({ modelId: '', stationId: '', color: '', plateNumber: '' })
-    } catch (e: any) {
-      alert(e?.message ?? 'Thêm xe thất bại')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  if (loading) return <div className="p-6">Đang tải...</div>
-  if (error) return <div className="p-6 text-red-500">{error}</div>
 
   return (
-    <div className="h-full w-full overflow-auto">
-      <div className="p-4 md:p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl">Quản lý xe</h1>
-          </div>
+    <div className="h-full w-full overflow-auto p-4 md:p-6 space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-3xl font-semibold">Quản lý xe</h1>
 
-          <div className="flex items-center gap-3">
-            <button
-              className="btn btn-primary flex items-center gap-2 px-4 py-2 border-2 border-blue-600 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              onClick={() => setShowCreateForm(s => !s)}
-            >
-              {showCreateForm ? 'Đóng form' : 'Thêm xe'}
-            </button>
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedStation ?? ""}
+            onChange={e => {
+              const station = e.target.value
+              setSelectedStation(station)
+              if (station) loadVehicles(station)
+            }}
+            className="border rounded p-2"
+          >
+            <option value="">Chọn trạm</option>
+            {stations.map(s => (
+              <option key={s.stationName} value={s.stationName}>{s.stationName}</option>
+            ))}
+          </select>
 
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 size-4 text-muted-foreground" />
-              <Input placeholder="Tìm theo biển số/loại" className="pl-8 w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Tìm theo loại/hãng"
+              className="pl-8 w-64"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
         </div>
-        {showCreateForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Thêm xe mới</CardTitle>
-              <CardDescription>Điền thông tin cơ bản của xe</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">ModelId</label>
-                  <Input type="number" value={form.modelId} onChange={(e) => setForm(f => ({ ...f, modelId: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">StationId</label>
-                  <Input type="number" value={form.stationId} onChange={(e) => setForm(f => ({ ...f, stationId: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Màu</label>
-                  <Input value={form.color} onChange={(e) => setForm(f => ({ ...f, color: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Biển số</label>
-                  <Input value={form.plateNumber} onChange={(e) => setForm(f => ({ ...f, plateNumber: e.target.value }))} />
-                </div>
-              </div>
+      </div>
 
-              <div className="flex items-center gap-2 mt-4">
-                <button className="btn btn-primary flex items-center gap-2 px-4 py-2 border-2 border-blue-600 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" onClick={handleCreate} disabled={submitting}>
-                  {submitting ? 'Đang lưu...' : 'Lưu'}
-                </button>
-                <button className="btn flex items-center gap-2 px-4 py-2 border-2 border-blue-600 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" onClick={() => { setShowCreateForm(false); setForm({ modelId: '', stationId: '', color: '', plateNumber: '' }) }} disabled={submitting}>
-                  Hủy
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        <Card>
-          <CardHeader>
-            <CardTitle>Danh sách xe</CardTitle>
-            <CardDescription>Thông tin chi tiết xe</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Biển số</TableHead>
-                  <TableHead>Hãng/Model</TableHead>
-                  <TableHead>Màu</TableHead>
-                  <TableHead>Trạm</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((v) => {
-                  const st = toUiStatus(v.status)
+      {loading && <p>🔄 Đang tải dữ liệu...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách xe</CardTitle>
+          <CardDescription>Thông tin chi tiết xe</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Hình/Model</TableHead>
+                <TableHead>Màu</TableHead>
+                <TableHead>Hãng</TableHead>
+                <TableHead>Trạm</TableHead>
+                <TableHead>Thao tác</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.length > 0 ? (
+                filtered.map(v => {
+                  const selectedColor = selectedColorByModel[v.modelId] || v.colors[0] || "#ccc"
+                  const img = v.imageUrls.find(img => img.color === selectedColor)?.imageUrl || v.imageUrls[0]?.imageUrl
                   return (
-                    <TableRow key={v.vehicleId}>
-                      <TableCell className="font-medium">{v.plateNumber}</TableCell>
+                    <TableRow key={v.modelId}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <ImageWithFallback src={'/placeholder.jpg'} alt={v.modelName} className="w-16 h-10 object-cover rounded" />
-                          <div>
-                            <div className="font-medium">{v.brand}</div>
-                            <div className="text-sm text-muted-foreground">{v.modelName}</div>
-                          </div>
+                          <ImageWithFallback src={img || "/placeholder.jpg"} alt={v.name} className="w-16 h-10 object-cover rounded" />
+                          <div>{v.name}</div>
                         </div>
                       </TableCell>
-                      <TableCell>{v.color}</TableCell>
-                      <TableCell>{v.stationName}</TableCell>
-                      <TableCell><Badge variant={st.variant}>{st.label}</Badge></TableCell>
-                      <TableCell className="text-right">
-                        
+                      <TableCell className="flex gap-2">
+                        {v.colors.map(c => (
+                          <button
+                            key={c}
+                            className={`w-6 h-6 rounded-full border ${selectedColor === c ? "border-black" : "border-gray-300"}`}
+                            style={{ backgroundColor: c.toLowerCase() }}
+                            onClick={() => handleColorSelect(v.modelId, c)}
+                            title={c}
+                          />
+                        ))}
                       </TableCell>
-                      <TableCell className="text-right flex justify-end gap-2">
-                        <button
-                          className="btn btn-secondary"
-                          onClick={async () => {
-                            // edit via prompts (prefill with current values)
-                            const modelId = Number(prompt('ModelId (số):', String(v.modelId)) ?? '')
-                            if (!modelId) return
-                            const stationId = Number(prompt('StationId (số):', String(v.stationId)) ?? '')
-                            if (!stationId) return
-                            const color = prompt('Màu:', v.color) ?? ''
-                            const plateNumber = prompt('Biển số:', v.plateNumber) ?? ''
-                            const status = prompt('Trạng thái (AVAILABLE|BOOKED|IN_USE|MAINTENANCE|INACTIVE):', v.status) ?? v.status
-                            try {
-                              await updateVehicle(v.vehicleId, { modelId, stationId, color, plateNumber, status: status as any })
-                              await loadVehicles()
-                            } catch (e:any) {
-                              alert(e?.message ?? 'Cập nhật thất bại')
-                            }
-                          }}
-                        >
-                          Sửa
-                        </button>
-                        <button
-                          className="btn btn-destructive"
-                          onClick={async () => {
-                           if (!confirm('Xác nhận xóa xe này?')) return
-                            try {
-                              await deleteVehicle(v.vehicleId)
-                              setRows(prev => prev.filter(r => r.vehicleId !== v.vehicleId))
-                            } catch (e:any) {
-                              alert(e?.message ?? 'Xóa thất bại')
-                            }
-                          }}
-                        >
-                          Xóa
-                        </button>
+                      <TableCell>{v.brand}</TableCell>
+                      <TableCell>{v.stationName}</TableCell>
+                      <TableCell className="text-right flex gap-2">
+                        <Button size="sm">Sửa</Button>
+                        <Button size="sm" variant="destructive">Xóa</Button>
                       </TableCell>
                     </TableRow>
                   )
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6 text-gray-500">
+                    Không có dữ liệu xe
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
