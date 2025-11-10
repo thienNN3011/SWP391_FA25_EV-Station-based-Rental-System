@@ -17,33 +17,37 @@ export function OrderManagement() {
   const [error, setError] = useState("")
 
   // Fetch booking từ API
-  const fetchBookings = async () => {
-    setLoading(true)
-    setError("")
-    try {
-      const res = await api.post("/bookings/showbookingbystatus", { status: "ALL" })
-      if (res.data?.data) {
-        const mapped = res.data.data.map((b: any) => ({
-          id: "BK" + b.bookingId,
-          customer: b.user?.fullName || "Ẩn danh",
-          customerPhone: b.user?.phone || "",
-          vehicle: b.vehicle?.modelName || "Không rõ",
-          start: b.startTime?.split(" ")[0] || "",
-          end: b.endTime?.split(" ")[0] || "",
-          amount: b.tariff?.price ? b.tariff.price.toLocaleString() : "—",
-          status: translateStatus(b.status),
-        }))
-        setBookings(mapped)
-      } else {
-        setBookings([])
-      }
-    } catch (err: any) {
-      console.error(err)
-      setError("Không thể tải danh sách booking")
-    } finally {
-      setLoading(false)
+const fetchBookings = async () => {
+  setLoading(true)
+  setError("")
+  try {
+    
+    const payload = { bookingStatus: "ALL" }
+    const res = await api.post("/bookings/showbookingbystatus", payload)
+
+    if (res.data?.data) {
+      const mapped = res.data.data.map((b: any) => ({
+        id: "BK" + b.bookingId,
+        customer: b.user?.fullName || "Ẩn danh",
+        customerPhone: b.user?.phone || "",
+        vehicle: b.vehicle?.modelName || "Không rõ",
+        start: b.startTime?.split(" ")[0] || "",
+        end: b.endTime?.split(" ")[0] || "",
+        amount: b.tariff?.price ? b.tariff.price.toLocaleString() : "—",
+        status: translateStatus(b.status),
+      }))
+      setBookings(mapped)
+    } else {
+      setBookings([])
     }
+  } catch (err: any) {
+    console.error("API Error:", err.response?.data || err)
+    setError("Không thể tải danh sách booking")
+  } finally {
+    setLoading(false)
   }
+}
+
 
   useEffect(() => {
     fetchBookings()
