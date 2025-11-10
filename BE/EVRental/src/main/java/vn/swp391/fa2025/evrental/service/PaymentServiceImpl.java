@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
@@ -26,6 +27,7 @@ public class PaymentServiceImpl implements PaymentService {
     private StationRepository stationRepository;
 
     @Override
+    @Transactional
     public void createPayment(Payment payment) {
         paymentRepository.save(payment);
     }

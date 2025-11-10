@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.response.SystemConfigResponse;
 import vn.swp391.fa2025.evrental.mapper.SystemConfigMapper;
 import vn.swp391.fa2025.evrental.repository.SystemConfigRepository;
@@ -22,6 +23,7 @@ public class SystemConfigServiceImpl implements SystemConfigService{
     }
 
     @Override
+    @Transactional
     public SystemConfigResponse updateSystemConfig(String key, String value) {
         SystemConfig systemConfig = systemConfigRepository.findByKey(key);
         if (systemConfig==null) throw new RuntimeException("SystemConfig không hợp lệ");

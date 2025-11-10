@@ -1,3 +1,158 @@
+# LEARNING NOTES — Tổng doanh thu bookings (GET /bookings/total-revenue)
+
+Ngày: 2025-11-07
+
+1) Overview
+- API mới cho RENTER xem nhanh tổng số tiền của các booking thuộc tài khoản của chính họ (`GET /EVRental/bookings/total-revenue`).
+- Vẫn tái sử dụng `ApiResponse<T>` nên FE không phải đổi cách parse.
+
+2) Core concepts
+- Tổng tiền được cộng trực tiếp trên DB bằng JPQL có `WHERE LOWER(b.user.username)=LOWER(:username)` để lọc đúng renter.
+- Service layer (`BookingService#getMyTotalRevenue`) lấy username từ `SecurityContextHolder`, sau đó fallback `BigDecimal.ZERO` nếu repo trả `null`.
+- Endpoint nằm trong `BookingController`, nên context-path `/EVRental` áp dụng tự động từ cấu hình Spring.
+
+3) Preparation
+- Backend runtime: `cd BE/EVRental && ./mvnw spring-boot:run`.
+- JWT: cần token với quyền `RENTER` (đăng nhập qua `/EVRental/auth/login`).
+- DB dev: SQL Server theo `application.properties`; đảm bảo bảng `bookings.totalAmount` đã có dữ liệu BigDecimal.
+
+4) Steps
+- `BookingRepository`: thêm `getTotalRevenueByUsername(String username)` với JPQL lọc theo renter.
+- `BookingService` + `BookingServiceImpl`: rename API sang `getMyTotalRevenue()` và dùng `SecurityContextHolder` lấy username hiện tại.
+- `BookingController`: `GET /bookings/total-revenue` trả message “Tổng số tiền của các booking thuộc về bạn”.
+- `SecurityConfig`: vẫn giới hạn `RENTER` (không đổi).
+- Bỏ unit test Mockito vì scope nhỏ, nhưng ghi chú TODO để thêm lại integration test khi seed H2 sẵn sàng.
+
+5) Testing
+- (Manual) Đăng nhập bằng renter và gọi `GET http://localhost:8080/EVRental/bookings/total-revenue` → `data` trả về tổng tiền của chính user trong DB.
+- `JAVA_HOME` chưa cấu hình nên chưa chạy được `./mvnw test`; cần cài JDK rồi bổ sung test sau.
+
+6) Troubleshooting
+- 403 Forbidden: token không có role RENTER hoặc header `Authorization` thiếu `Bearer`.
+- 500/NullPointer: kiểm tra `bookings.totalAmount` có null → hiện tại query `COALESCE` đã xử lý, nếu vẫn lỗi hãy xem log stacktrace để tìm booking không hợp lệ.
+- Tổng tiền sai số: đảm bảo `totalAmount` luôn ở BigDecimal, không tự ép về `double` ở service khác.
+
+7) Customization/Advanced
+- Thêm tham số `from/to` để renter xem tổng tiền trong một khoảng ngày cố định.
+- Cache ngắn hạn (caffeine/Redis) nếu dashboard gọi endpoint nhiều lần liên tiếp.
+- Tạo endpoint riêng cho ADMIN (ví dụ `/admin/bookings/total-revenue`) để xem toàn hệ thống mà không phải tái sử dụng logic của renter.
+
+8) Next steps
+- [ ] Viết integration test MockMvc cho `GET /bookings/total-revenue` sau khi có data seed H2 rõ ràng.
+- [ ] Thêm query thống kê theo trạng thái booking (BOOKING/COMPLETED) để hỗ trợ dashboard trong tương lai.
+- [ ] Đưa endpoint vào `API_SPEC.md` và screenflow FE để đội FE nắm được payload.
+
+---
+
+# LEARNING NOTES — Admin tạo staff nhanh (POST /admin/staffs)
+
+Ngày: 2025-11-07
+
+1) Overview
+- Mở API mới để ADMIN tạo tài khoản staff chỉ bằng JSON, không cần upload ảnh. FE gửi sẵn URL Supabase cho ảnh giấy tờ, backend lưu chuỗi đó thẳng vào bảng `users`.
+- Luồng này bypass đăng ký renter và bỏ qua email thông báo để giảm thời gian onboarding nội bộ.
+
+2) Core concepts
+- `UserMapper` map DTO → entity nên mọi validation (unique username/email/phone, optional idCard/driveLicense) đều tập trung tại service.
+- `UserRole.STAFF` + `UserStatus.ACTIVE` giúp staff đăng nhập ngay; có thể đổi thành `PENDING` nếu muốn quy trình duyệt.
+- Station gán qua `stationId`; chỉ chấp nhận station `OPEN` để tránh phân công vào trạm đóng cửa.
+
+3) Preparation
+- Cần token JWT có quyền ADMIN (đăng nhập qua `/auth/login`).
+- Xác định `stationId` muốn gán (lấy từ `/station/me` hoặc list station).
+- Payload mẫu:
+  ```json
+  {
+    "username": "staff.nguyen",
+    "password": "Secret@123",
+    "fullName": "Nguyễn Văn Staff",
+    "email": "staff.nguyen@example.com",
+    "phone": "+8499998888",
+    "idCard": "012345678901",
+    "driveLicense": "B2-8888",
+    "idCardPhoto": "https://supabase.storage/idcard.jpg",
+    "driveLicensePhoto": "https://supabase.storage/license.jpg",
+    "stationId": 3
+  }
+  ```
+
+4) Steps
+- Controller `POST /EVRental/admin/staffs` nhận `CreateStaffRequest` + `@Valid`.
+- `UserServiceImpl#createStaff`:
+  1. Lấy username hiện tại từ token, kiểm tra role ADMIN.
+  2. Rà duplicate bằng `UserRepository.existsBy*`.
+  3. Nếu có `stationId`: `findById` và xác nhận `StationStatus.OPEN`.
+  4. Map DTO → `User` bằng `UserMapper`, encode mật khẩu qua `PasswordEncoder`.
+  5. Set `role=STAFF`, `status=ACTIVE`, `createdDate/updatedDate=now`, gán station (nếu có), sau đó `save`.
+- Trả về `StaffResponse` (id, tên, email, phone) để FE hiển thị ngay.
+
+5) Testing
+- Backend: `cd BE/EVRental && ./mvnw spring-boot:run`.
+- Postman/cURL:
+  ```bash
+  curl -X POST http://localhost:8080/EVRental/admin/staffs \
+    -H "Authorization: Bearer <ADMIN_JWT>" \
+    -H "Content-Type: application/json" \
+    -d '{ "username":"staff.test","password":"Secret@123","fullName":"Staff Test","email":"staff.test@example.com","phone":"+84123456780","stationId":1 }'
+  ```
+- Kỳ vọng `data.userId` trả về > 0 và DB bảng `users` có dòng mới role `STAFF`.
+
+6) Troubleshooting
+- 403: JWT không phải ADMIN hoặc thiếu header `Authorization`.
+- 400 với message trùng lặp: kiểm tra unique constraints (username/email/phone/idCard/driveLicense).
+- 404 station: truyền sai `stationId` hoặc station đang `CLOSED`.
+- Password raw hiển thị trong log: không log request body chứa mật khẩu ở production.
+
+7) Customization/Advanced
+- Có thể cho phép truyền `stationName` hoặc danh sách stationId để auto round-robin.
+- Bật email thông báo sau khi có template (gọi `EmailUtils` trong service).
+- Cho phép tạo staff ở trạng thái `PENDING` + workflow duyệt, hoặc buộc đổi mật khẩu lần đầu bằng token một lần.
+
+8) Next steps
+- [ ] Viết test unit cho `UserServiceImpl#createStaff` (mock repo + passwordEncoder).
+- [ ] Bổ sung test MockMvc cho `POST /admin/staffs` (jwt ADMIN/STAFF).
+- [ ] Thêm OpenAPI/API_SPEC entry mô tả endpoint mới để FE dễ tích hợp.
+
+---
+
+# LEARNING NOTES — Screenflow diagrams (Mermaid)
+
+Ngày: 2025-11-07
+
+1) Overview
+- Thêm tài liệu screenflow để mọi người nắm nhanh các luồng chính theo vai trò (Guest/RENTER, STAFF, ADMIN) và biết mỗi bước gắn với endpoint nào. Tài liệu đặt tại `docs/screenflow.md`.
+
+2) Core concepts
+- Mermaid flowchart/sequence dùng để minh hoạ user journey và tích hợp với backend (VNPay, JWT, các controller chính).
+- Context-path `/EVRental` áp dụng cho tất cả endpoint ở dev.
+
+3) Preparation
+- Không cần cài thêm gì để đọc file, nhưng để xem dạng đồ hoạ: dùng Mermaid Live Editor (https://mermaid.live) hoặc VSCode extension Mermaid.
+
+4) Steps
+- Tạo `docs/screenflow.md` gồm 5 phần: Tổng quan; RENTER; STAFF; ADMIN; Thanh toán VNPay.
+- Mỗi phần gắn chú thích component FE và endpoint BE tương ứng để truy vết nhanh.
+
+5) Testing
+- Soi đối chiếu với `API_SPEC.md` và các controller trong `BE/EVRental/src/main/java/.../controller/` để đảm bảo không sai luồng.
+- Chạy nhanh backend và duyệt qua FE:
+  - `cd BE/EVRental && ./mvnw spring-boot:run`
+  - `cd FE/Evrenter && npm run dev`
+  - Mở các trang: `/booking`, `/pickup`, `/return`, `/admin`, `/staff` để kiểm tra các bước hiển thị đúng như diagram.
+
+6) Troubleshooting
+- Nếu thấy endpoint khác tên hoặc luồng thực tế khác diagram, cập nhật `docs/screenflow.md` và/hoặc `API_SPEC.md` ngay để tránh “chệch” tài liệu.
+
+7) Customization/Advanced
+- Có thể tách riêng mỗi role thành file `.mmd` để nhúng vào wiki/Confluence.
+- Có thể thêm “click” link trong Mermaid để nhảy tới file FE/BE tương ứng.
+
+8) Next steps
+- [ ] Bổ sung flow cho Incident Report (nếu FE thêm màn hình).
+- [ ] Chuẩn hoá response lỗi về 1 schema để FE đơn giản hoá xử lý.
+
+---
+
 # LEARNING NOTES — Seed renter + booking (dev)
 
 Ngày: 2025-10-24

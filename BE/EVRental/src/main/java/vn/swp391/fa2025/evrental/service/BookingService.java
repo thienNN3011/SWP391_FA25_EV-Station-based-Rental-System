@@ -26,4 +26,5 @@ public interface BookingService {
     Payment cancelBooking(Long bookingId);
     void cancelBookingForSystem(Long bookingId);
     void endTimeRenting(Long bookingId);
+    BigDecimal getMyTotalRevenue();
 }

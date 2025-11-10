@@ -73,6 +73,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public boolean changeAccountStatus(String username, String status, String reason) {
         User user = userRepository.findByUsername(username);
         if (user == null)
@@ -286,6 +287,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User changeStaffStation(String stationName, Long id) {
         Station station = stationRepository.findByStationName(stationName);
         if (station == null) throw new RuntimeException("Station không tồn tại");
