@@ -1,22 +1,29 @@
 "use client"
 
 import { useState } from "react"
-import { Car, Users, UserCheck, MapPin, TrendingUp, FileText, Home, Menu } from "lucide-react"
+import { Car, Users, MapPin, TrendingUp, FileText, Home, Menu, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider } from "@/components/ui/sidebar"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider
+} from "@/components/ui/sidebar"
 
 import { Dashboard } from "@/components/admin/Dashboard"
 import { UserManagement } from "@/components/admin/UserManagement"
-import { StaffManagement } from "@/components/admin/StaffManagement"
 import { VehicleManagement } from "@/components/admin/VehicleManagement"
 import { LocationManagement } from "@/components/admin/LocationManagement"
 import { RevenueManagement } from "@/components/admin/RevenueManagement"
 import { OrderManagement } from "@/components/admin/OrderManagement"
-import { Header } from "@/components/header"
-import  IncidentReportManagement  from "@/components/admin/IncidentReportAdmin"
+import IncidentReportManagement from "@/components/admin/IncidentReportAdmin"
+import { useAuth } from "@/components/auth-context"
 
-type ActivePage = "dashboard" | "users" | "staff" | "vehicles" | "locations" | "revenue" | "orders" | "incident"
+type ActivePage = "dashboard" | "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident"
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
@@ -44,7 +51,11 @@ function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; s
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.id}>
-              <SidebarMenuButton onClick={() => setActivePage(item.id)} isActive={activePage === item.id} className="w-full justify-start">
+              <SidebarMenuButton
+                onClick={() => setActivePage(item.id)}
+                isActive={activePage === item.id}
+                className="w-full justify-start"
+              >
                 <item.icon className="size-4" />
                 <span>{item.label}</span>
               </SidebarMenuButton>
@@ -62,6 +73,7 @@ function MobileSidebar({ activePage, setActivePage }: { activePage: ActivePage; 
     setActivePage(page)
     setOpen(false)
   }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -79,7 +91,12 @@ function MobileSidebar({ activePage, setActivePage }: { activePage: ActivePage; 
         </div>
         <div className="p-4">
           {menuItems.map((item) => (
-            <Button key={item.id} variant={activePage === item.id ? "default" : "ghost"} className="w-full justify-start mb-2" onClick={() => handlePageChange(item.id)}>
+            <Button
+              key={item.id}
+              variant={activePage === item.id ? "default" : "ghost"}
+              className="w-full justify-start mb-2"
+              onClick={() => handlePageChange(item.id)}
+            >
               <item.icon className="size-4 mr-2" />
               {item.label}
             </Button>
@@ -96,8 +113,6 @@ function renderActivePage(activePage: ActivePage) {
       return <Dashboard />
     case "users":
       return <UserManagement />
-    case "staff":
-      return <StaffManagement />
     case "vehicles":
       return <VehicleManagement />
     case "locations":
@@ -107,7 +122,7 @@ function renderActivePage(activePage: ActivePage) {
     case "orders":
       return <OrderManagement />
     case "incident":
-      return < IncidentReportManagement/>
+      return <IncidentReportManagement />
     default:
       return <Dashboard />
   }
@@ -115,28 +130,45 @@ function renderActivePage(activePage: ActivePage) {
 
 export default function AppAdmin() {
   const [activePage, setActivePage] = useState<ActivePage>("dashboard")
+  const { user, logout } = useAuth()
+
   return (
-    <>
-     
     <SidebarProvider>
-    
       <div className="flex min-h-screen w-full bg-background">
         <div className="hidden md:block w-64 border-r bg-card">
           <AdminSidebar activePage={activePage} setActivePage={setActivePage} />
         </div>
+
         <div className="flex-1 flex flex-col min-h-screen">
-            <Header />
-          <header className="border-b bg-card px-4 py-3 md:hidden shrink-0">
-            <div className="flex items-center justify-between">
-              <h1 className="text-lg">RentCar Admin</h1>
+
+          <header className="border-b bg-card px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <MobileSidebar activePage={activePage} setActivePage={setActivePage} />
+              <h1 className="text-lg font-semibold">Ứng dụng quản trị</h1>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {user && (
+                <>
+                  <span className="text-sm font-medium">{user.fullName}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={logout}
+                    className="flex items-center gap-2 text-red-600"
+                  >
+                    <LogOut className="h-4 w-4" /> Đăng xuất
+                  </Button>
+                </>
+              )}
             </div>
           </header>
-          <main className="flex-1 w-full">{renderActivePage(activePage)}</main>
+
+          <main className="flex-1 w-full overflow-visible relative z-0">
+            {renderActivePage(activePage)}
+          </main>
         </div>
       </div>
     </SidebarProvider>
-    </>
   )
 }
-
