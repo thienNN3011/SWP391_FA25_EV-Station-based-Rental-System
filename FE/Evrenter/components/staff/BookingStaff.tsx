@@ -145,7 +145,7 @@ export function BookingStaff() {
                 <TableBody>
                   {filtered.map((bk) => (
                     <TableRow key={bk.bookingId}>
-                      <TableCell className="font-medium">BK{bk.bookingId}</TableCell>
+                      <TableCell className="font-medium">{bk.bookingId}</TableCell>
 
                       <TableCell>
   <div className="flex items-center gap-2">

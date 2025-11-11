@@ -30,6 +30,19 @@ export default function BookingHistoryPage() {
   useEffect(() => {
     fetchBookings()
   }, [])
+const colorMap: Record<string, string> = {
+  red: "Đỏ",
+  blue: "Xanh dương",
+  white: "Trắng",
+  black: "Đen",
+  silver: "Bạc",
+  gray: "Xám",
+  green: "Xanh lá",
+  yellow: "Vàng",
+  orange: "Cam",
+  brown: "Nâu",
+}
+
 
   const fetchBookings = async () => {
     try {
@@ -120,7 +133,10 @@ export default function BookingHistoryPage() {
 
                     <div className="space-y-1">
                       <div className="font-medium">
-                        {b.vehicleModel} ({b.vehicleColor}) - {b.plateNumber}
+                        {b.vehicleModel} (
+  {colorMap[b.vehicleColor?.trim().toLowerCase()] || b.vehicleColor}
+) - {b.plateNumber}
+
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">

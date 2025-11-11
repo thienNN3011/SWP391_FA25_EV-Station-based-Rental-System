@@ -128,8 +128,7 @@ export default function UserProfilePage() {
                   <p><strong>Số điện thoại:</strong> {user.phone}</p>
                   <p><strong>CMND/CCCD:</strong> {user.idCard}</p>
                   <p><strong>Bằng lái:</strong> {user.driveLicense}</p>
-                  <p><strong>Vai trò:</strong> {user.role}</p>
-                  <p><strong>Trạng thái:</strong> {user.status}</p>
+         
                   <p className="text-muted-foreground text-sm">
                     Ngày tạo: {new Date(user.createdDate).toLocaleDateString("vi-VN")}
                   </p>

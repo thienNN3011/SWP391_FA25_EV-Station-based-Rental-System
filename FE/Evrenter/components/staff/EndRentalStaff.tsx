@@ -20,7 +20,18 @@ export default function EndRentalStaff() {
   const [transactionDate, setTransactionDate] = useState<string>(new Date().toISOString().slice(0, 16)) 
 
 
-
+const colorMap: Record<string, string> = {
+  red: "Đỏ",
+  blue: "Xanh dương",
+  white: "Trắng",
+  black: "Đen",
+  silver: "Bạc",
+  gray: "Xám",
+  green: "Xanh lá",
+  yellow: "Vàng",
+  orange: "Cam",
+  brown: "Nâu",
+}
   
  const handleFetchBooking = async () => {
   if (!bookingId) return
@@ -116,7 +127,11 @@ export default function EndRentalStaff() {
               <p><strong>Địa chỉ:</strong> {booking.station?.address}</p>
               <p>
                 <strong>Xe:</strong> {booking.vehicle?.brand}{" "}
-                {booking.vehicle?.modelName} ({booking.vehicle?.color})
+                {booking.vehicle?.modelName} (
+  {colorMap[booking.vehicle?.color?.trim().toLowerCase()] || booking.vehicle?.color}
+)
+
+                 
               </p>
               <p><strong>Biển số:</strong> {booking.vehicle?.plateNumber}</p>
               <p><strong>Khách hàng:</strong> {booking.user?.fullName}</p>
@@ -126,7 +141,8 @@ export default function EndRentalStaff() {
               </p>
               <p><strong>Tình trạng xe trước khi nhận:</strong> {booking.beforeRentingStatus}</p>
               <p><strong>Odo lúc nhận xe:</strong> {booking.startOdo} Km</p>
-              
+              <p><strong>Tiền đặt cọc:</strong> {booking.tariff?.depositAmount?.toLocaleString()}VND</p>
+    <p><strong>Tổng tiền thuê:</strong> {booking.totalAmount?.toLocaleString()}VND</p>
             </div>
           )}
 
