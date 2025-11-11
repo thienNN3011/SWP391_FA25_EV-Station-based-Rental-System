@@ -29,41 +29,45 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     if (vehicle?.tariffs?.length) setSelectedTariff(vehicle.tariffs[0])
   }, [vehicle])
 
-  const handleBooking = async () => {
-    if (!vehicle || !selectedTariff) return
-    setLoading(true)
-    setMessage("")
+const handleBooking = async () => {
+  if (!vehicle || !selectedTariff) return
+  setLoading(true)
+  setMessage("")
 
-    const body = {
-      stationName: vehicle.stationName,
-      modelId: vehicle.modelId.toString(),
-      color: vehicle.color,
-      tariffId: selectedTariff.tariffId,
-      startTime: `${startTime}:00`,
-      endTime: `${endTime}:00`,
-    }
-    console.log("Body raw gửi lên backend:", body)
-
-    try {
-      const res = await api.post("/bookings/createbooking", body)
-      if (res.status === 200 || res.status === 201) {
-        localStorage.setItem("bookingData", JSON.stringify(res.data.data))
-        setBookingSuccess(true) 
-      } else {
-        setMessage("Có lỗi xảy ra, vui lòng thử lại.")
-      }
-    } catch (err: any) {
-      console.error("Booking error:", err)
-      setMessage(
-        err.response?.data?.message ||
-          (err.response?.status === 403
-            ? "Bạn không có quyền đặt xe"
-            : "Lỗi kết nối đến máy chủ")
-      )
-    } finally {
-      setLoading(false)
-    }
+  const body: any = {
+    stationName: vehicle.stationName,
+    modelId: vehicle.modelId.toString(),
+    color: vehicle.color,
+    tariffId: selectedTariff.tariffId,
+    startTime: startTime ? `${startTime}:00` : null,
   }
+
+  if (endTime) {
+    body.endTime = `${endTime}:00`
+  }
+
+  console.log("Body gửi lên backend:", body)
+
+  try {
+    const res = await api.post("/bookings/createbooking", body)
+    if (res.status === 200 || res.status === 201) {
+      localStorage.setItem("bookingData", JSON.stringify(res.data.data))
+      setBookingSuccess(true)
+    } else {
+      setMessage("Có lỗi xảy ra, vui lòng thử lại.")
+    }
+  } catch (err: any) {
+    console.error("Booking error:", err)
+
+    const serverMsg =
+      err.response?.data?.message || 
+      (err.response?.data?.errors?.endTime?.[0]) 
+    setMessage(serverMsg || "Vui lòng chọn đầy đủ thông tin")
+  } finally {
+    setLoading(false)
+  }
+}
+
 
   if (!vehicle) return null
 
