@@ -52,7 +52,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
     }
 
     @PostMapping("/showdetailofpendingaccount")
-    public ApiResponse<CustomerResponse> showDetailOfPendingAccount(@RequestBody ShowUserDetailRequest request) {
+    public ApiResponse<CustomerResponse> showDetailOfPendingAccount(@Valid @RequestBody ShowUserDetailRequest request) {
         ApiResponse<CustomerResponse> response = new ApiResponse<>();
         response.setData(userService.showDetailOfPendingAccount(request.getUsername()));
         response.setSuccess(true);
@@ -62,7 +62,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
     }
 
     @PatchMapping("/changeaccountstatus")
-    public ApiResponse<Boolean> changeAccountStatus(@RequestBody ChangeUserStatusRequest request) {
+    public ApiResponse<Boolean> changeAccountStatus(@Valid @RequestBody ChangeUserStatusRequest request) {
         ApiResponse<Boolean> response = new ApiResponse<>();
         String reason="";
         if (request.getReason()!=null) reason=request.getReason();
@@ -178,7 +178,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
     }
 
     @PostMapping("/changestaffstationreq")
-    public ApiResponse<ChangeStaffStationResponse> changeStaffStation(@RequestBody StationRequest request){
+    public ApiResponse<ChangeStaffStationResponse> changeStaffStation(@Valid @RequestBody StationRequest request){
         ApiResponse<ChangeStaffStationResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setData(userService.listStaffInStation(request.getStationName()));
@@ -188,7 +188,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
     }
 
     @PostMapping("/dochangestaffstation")
-    public ApiResponse<String> doChangeStaffStation(@RequestBody ChangeStaffStationRequest request) {
+    public ApiResponse<String> doChangeStaffStation(@Valid @RequestBody ChangeStaffStationRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setCode(200);
@@ -208,7 +208,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
     }
 
     @PostMapping("/showstaffstats")
-    public ApiResponse<List<StaffStatsResponse>> showStaffStats(@RequestBody ShowStaffStatsRequest request){
+    public ApiResponse<List<StaffStatsResponse>> showStaffStats(@Valid @RequestBody ShowStaffStatsRequest request){
         ApiResponse<List<StaffStatsResponse>> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setData(userService.getStaffStatsByStation(request.getStationName(), request.getMonth(), request.getYear()));

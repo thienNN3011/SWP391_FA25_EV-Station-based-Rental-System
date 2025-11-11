@@ -74,7 +74,7 @@ public class VehicleController {
     }
 
     @PostMapping("/showbystatus")
-    public ApiResponse<List<VehicleResponse>> showAllVehicleByStatus(@RequestBody ShowVehicleByStatusRequest request) {
+    public ApiResponse<List<VehicleResponse>> showAllVehicleByStatus(@Valid @RequestBody ShowVehicleByStatusRequest request) {
         ApiResponse<List<VehicleResponse>> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Lấy xe theo status thành công");

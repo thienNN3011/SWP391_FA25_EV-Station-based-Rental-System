@@ -18,7 +18,7 @@
         private VehicleModelService vehicleModelService;
 
         @PostMapping
-        ApiResponse<List<VehicleModelResponse>> getVehicleModelsByStationWithActiveTariffs(@RequestBody ShowModelByStaionRequest request) {
+        ApiResponse<List<VehicleModelResponse>> getVehicleModelsByStationWithActiveTariffs(@Valid @RequestBody ShowModelByStaionRequest request) {
             ApiResponse<List<VehicleModelResponse>> response = new ApiResponse<>();
             response.setSuccess(true);
             response.setMessage("Lấy thông tin các mẫu xe với bảng giá đang hoạt động của trạm thành công");
@@ -28,7 +28,7 @@
         }
 
         @PostMapping("/getvehicelmodeldetail")
-        ApiResponse<VehicleModelResponse> getVehicleModelDetailByModelIdAndStation(@RequestBody VehicleModelDetailRequest request){
+        ApiResponse<VehicleModelResponse> getVehicleModelDetailByModelIdAndStation(@Valid @RequestBody VehicleModelDetailRequest request){
             ApiResponse<VehicleModelResponse> response = new ApiResponse<>();
             response.setSuccess(true);
             response.setMessage("Lấy thông tin của mẫu xe thành công");

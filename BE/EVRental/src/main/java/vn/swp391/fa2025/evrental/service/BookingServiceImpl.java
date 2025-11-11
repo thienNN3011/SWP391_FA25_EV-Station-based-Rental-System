@@ -10,10 +10,7 @@ import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.*;
-import vn.swp391.fa2025.evrental.enums.BookingStatus;
-import vn.swp391.fa2025.evrental.enums.PaymentMethod;
-import vn.swp391.fa2025.evrental.enums.PaymentType;
-import vn.swp391.fa2025.evrental.enums.VehicleStatus;
+import vn.swp391.fa2025.evrental.enums.*;
 import vn.swp391.fa2025.evrental.mapper.BookingMapper;
 import vn.swp391.fa2025.evrental.repository.*;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
@@ -206,6 +203,8 @@ public class BookingServiceImpl implements  BookingService{
         Booking booking= bookingRepository.findById(id).orElseThrow(()-> new RuntimeException("Booking không tồn tại"));
         if (user.getRole().toString().equalsIgnoreCase("STAFF") && !user.getStation().getStationId().equals(booking.getVehicle().getStation().getStationId())) {
             throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
+        } else if (user.getRole()== UserRole.RENTER && booking.getUser().getUserId()!=user.getUserId()){
+            throw new RuntimeException("Bạn không có quyền xem booking này");
         }
         return bookingMapper.toBookingResponse(booking);
     }

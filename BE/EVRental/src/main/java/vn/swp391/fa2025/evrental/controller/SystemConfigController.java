@@ -1,5 +1,6 @@
 package vn.swp391.fa2025.evrental.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import vn.swp391.fa2025.evrental.dto.request.SystemConfigRequest;
@@ -26,7 +27,7 @@ public class SystemConfigController {
     }
 
     @PostMapping("/updateconfig")
-    ApiResponse<SystemConfigResponse> updateConfig(@RequestBody SystemConfigRequest request){
+    ApiResponse<SystemConfigResponse> updateConfig(@Valid @RequestBody SystemConfigRequest request){
         ApiResponse<SystemConfigResponse> apiResponse = new ApiResponse<>();
         SystemConfigResponse systemConfig=systemConfigService.updateSystemConfig(request.getKey(), request.getValue());
         if (systemConfig!=null){

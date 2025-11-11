@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class CancelBookingRequest {
-    @NotNull
+    @NotNull(message = "BOoking ID không được rông")
     private Long bookingId;
 }

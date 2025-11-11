@@ -1,5 +1,6 @@
 package vn.swp391.fa2025.evrental.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -176,7 +177,7 @@ public class PaymentController {
     }
 
     @PostMapping("/revenue")
-    public ApiResponse<List<StationRevenueResponse>> showRevenue(@RequestBody StationRevenueRequest request) {
+    public ApiResponse<List<StationRevenueResponse>> showRevenue(@Valid @RequestBody StationRevenueRequest request) {
         ApiResponse<List<StationRevenueResponse>> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setData(paymentService.getYearlyRevenueByStation(request.getStationName(), request.getYear()));
