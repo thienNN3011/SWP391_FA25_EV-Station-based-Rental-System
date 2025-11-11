@@ -18,10 +18,10 @@ export default function DashboardPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <RentalHistory />
+             
             </div>
             <div>
-              <UserAnalytics />
+             
             </div>
           </div>
         </div>
