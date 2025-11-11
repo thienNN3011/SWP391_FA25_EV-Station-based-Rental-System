@@ -1,6 +1,7 @@
 package vn.swp391.fa2025.evrental.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class BookingController {
     private EmailUtils emailUtils;
     
     @PostMapping("/createbooking")
-    ApiResponse<AfterBookingResponse> createBooking(HttpServletRequest request, @RequestBody BookingRequest bookingRequest){
+    ApiResponse<AfterBookingResponse> createBooking(HttpServletRequest request, @Valid @RequestBody BookingRequest bookingRequest){
         ApiResponse<AfterBookingResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Tạo booking thành công");
@@ -46,7 +47,7 @@ public class BookingController {
         return response;
     }
     @PostMapping("/showbookingbystatus")
-    ApiResponse<java.util.List<BookingResponse>> showBookingByStatusForStaff(@RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
+    ApiResponse<java.util.List<BookingResponse>> showBookingByStatusForStaff(@Valid @RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
         ApiResponse<java.util.List<BookingResponse>> response = new ApiResponse<>();
         response.setSuccess(true);
         List<BookingResponse> data = bookingService.getBookingByStatus(request);
@@ -60,7 +61,7 @@ public class BookingController {
         return response;
     }
     @PostMapping("/showdetailbooking")
-    ApiResponse<BookingResponse> showBookingDetail(@RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
+    ApiResponse<BookingResponse> showBookingDetail(@Valid @RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
         ApiResponse<BookingResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Lấy thông tin chi tiết booking thành công");
@@ -70,7 +71,7 @@ public class BookingController {
     }
 
     @PostMapping("/startrental")
-    ApiResponse<String> startRental(@RequestBody StartRentingRequest request) {
+    ApiResponse<String> startRental(@Valid @RequestBody StartRentingRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Bắt đầu thuê xe thành công");
@@ -104,7 +105,7 @@ public class BookingController {
     }
 
     @PostMapping("/endrental")
-    ApiResponse<EndRentingResponse> endRental(HttpServletRequest req, @RequestBody EndRentingRequest request) {
+    ApiResponse<EndRentingResponse> endRental(HttpServletRequest req, @Valid @RequestBody EndRentingRequest request) {
         ApiResponse<EndRentingResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Kết thúc thuê xe thành công");
@@ -114,7 +115,7 @@ public class BookingController {
     }
 
     @PostMapping("/cancelbooking")
-    ApiResponse<String> cancelRental(@RequestBody CancelBookingRequest request) {
+    ApiResponse<String> cancelRental(@Valid @RequestBody CancelBookingRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Hủy booking thành công");
@@ -125,7 +126,7 @@ public class BookingController {
     }
 
     @PostMapping("/stoprentingtime")
-    ApiResponse<String> stopRentingTime(@RequestBody CancelBookingRequest request) {
+    ApiResponse<String> stopRentingTime(@Valid @RequestBody CancelBookingRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
         bookingService.endTimeRenting(request.getBookingId());
         response.setSuccess(true);
