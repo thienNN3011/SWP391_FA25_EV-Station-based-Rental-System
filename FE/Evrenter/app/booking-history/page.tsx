@@ -69,9 +69,7 @@ const colorMap: Record<string, string> = {
       console.error(err.response || err.message)
       if (err.response?.status === 403) {
         toast.error("Bạn không có quyền truy cập. Vui lòng đăng nhập lại.")
-      } else {
-        toast.error("Lỗi khi lấy danh sách booking")
-      }
+      } 
     } finally {
       setLoading(false)
     }

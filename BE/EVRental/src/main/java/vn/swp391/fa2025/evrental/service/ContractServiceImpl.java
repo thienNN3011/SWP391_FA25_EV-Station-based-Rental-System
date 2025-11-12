@@ -108,7 +108,7 @@ public String confirmContract(String token) {
 </style>
 
 <h2>✅ Hợp đồng đã được xác nhận thành công!</h2>
-<p>Bạn có thể quay lại hệ thống để tiếp tục quy trình thuê xe.</p>
+<p>Chúc bạn có chuyến đi vui vẻ.</p>
 """;
 
 }

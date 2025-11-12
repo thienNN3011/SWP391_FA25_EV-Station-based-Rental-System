@@ -19,7 +19,7 @@ export default function BookingPage() {
           <p className="text-muted-foreground">Chọn một trạm để xem các xe có sẵn</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8"> 
         
           <div className="space-y-6">
             <MapView onSelectStation={(name) => setSelectedStation(name)} />

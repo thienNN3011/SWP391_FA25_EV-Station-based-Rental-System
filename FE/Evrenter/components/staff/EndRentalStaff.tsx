@@ -41,7 +41,7 @@ const colorMap: Record<string, string> = {
 
   try {
 
-    await api.post("/bookings/stoprentingtime", { bookingId })
+    await api.post("/bookings/stoprentingtime", { bookingId }) //lấy thời giant trả xe hiện tại
 
     
     const res = await api.post("/bookings/showdetailbooking", { bookingId })

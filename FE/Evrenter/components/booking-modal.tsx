@@ -23,13 +23,13 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   useEffect(() => {
     const selected = localStorage.getItem("selectedVehicle")
     if (selected) setVehicle(JSON.parse(selected))
-  }, [isOpen])
+  }, [isOpen])  //isopen thay doi thi lay data xe tu storage ben list
 
   useEffect(() => {
     if (vehicle?.tariffs?.length) setSelectedTariff(vehicle.tariffs[0])
   }, [vehicle])
 
-const handleBooking = async () => {
+const handleBooking = async () => { //check data
   if (!vehicle || !selectedTariff) return
   setLoading(true)
   setMessage("")

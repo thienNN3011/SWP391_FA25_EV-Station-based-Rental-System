@@ -1,6 +1,6 @@
 import axios from "axios"
 
-export const api = axios.create({
+export const api = axios.create({ //baseUrl
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/EVRental",
   headers: {
     "Content-Type": "application/json",

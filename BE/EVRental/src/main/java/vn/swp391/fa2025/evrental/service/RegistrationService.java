@@ -36,7 +36,7 @@ public class RegistrationService {
     public CustomerResponse registerCustomer(RegisterCustomerRequest req) {
         // Validate duplicates (409 Conflict)
         if (userRepository.existsByUsername(req.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already existx s");
         }
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");

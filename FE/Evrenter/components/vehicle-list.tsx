@@ -25,6 +25,7 @@ interface VehicleModel {
 interface VehicleListProps {
   stationName: string | null
   onSelectVehicle?: (vehicle: VehicleModel) => void
+  
 }
 
 export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) {

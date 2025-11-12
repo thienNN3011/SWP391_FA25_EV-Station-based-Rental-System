@@ -23,6 +23,6 @@ public class EndRentingRequest {
     private String referenceCode;
 
     @NotNull(message = "Thời gian giao dịch không được để trống")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+   
     private LocalDateTime transactionDate;
 }

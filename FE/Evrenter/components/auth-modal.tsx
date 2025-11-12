@@ -113,7 +113,7 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
     const idCardPhoto = formData.get("idCardPhoto") as File
     const driveLicensePhoto = formData.get("driveLicensePhoto") as File
 
-    // 
+    // supabase de upload anh
     const uploadToSupabase = async (file: File, folder: string) => {
       const fileName = `${folder}/${Date.now()}-${file.name}`
       const { error } = await supabase.storage.from("uploads").upload(fileName, file)
@@ -155,7 +155,7 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
     }
 
     setIsSignedUp(true)
-    setUserStatus("unverified")
+    setUserStatus("unverified") //set trang thai cho tai khoan vua tao
   } catch (err: any) {
     console.error("Upload/Register error:", err)
     setError(err.message || "Đăng ký thất bại")

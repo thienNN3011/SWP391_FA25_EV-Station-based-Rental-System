@@ -64,7 +64,7 @@ export function UserManagementStaff() {
     }
   }
 
-  const filtered = users
+  const filtered = users //loc danh sach user theo status
     .filter(
       (u) =>
         u.fullName?.toLowerCase().includes(search.toLowerCase()) ||

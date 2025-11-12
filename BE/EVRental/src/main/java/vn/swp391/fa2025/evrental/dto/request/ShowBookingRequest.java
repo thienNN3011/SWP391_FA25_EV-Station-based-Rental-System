@@ -8,9 +8,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 public class ShowBookingRequest {
-    @NotNull(message = "Mã đặt xe không được để trống")
     private Long bookingId;
 
-    @NotBlank(message = "Trạng thái không được để trống")
+   
     private String status;
 }
