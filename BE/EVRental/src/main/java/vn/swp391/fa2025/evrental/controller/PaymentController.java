@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
+import vn.swp391.fa2025.evrental.dto.request.RefundCancelledBookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.StationRevenueRequest;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
 import vn.swp391.fa2025.evrental.dto.response.PaymentReturnResponse;
@@ -183,6 +184,17 @@ public class PaymentController {
         response.setData(paymentService.getYearlyRevenueByStation(request.getStationName(), request.getYear()));
         response.setCode(200);
         response.setMessage("Thống kê theo năm thành công");
+        return response;
+    }
+
+    @PostMapping("/refund")
+    public ApiResponse<String> refundBooking(@Valid @RequestBody RefundCancelledBookingRequest request) {
+        ApiResponse<String> response= new ApiResponse<>();
+        response.setSuccess(true);
+        paymentService.refundCancelledBooking(request.getBookingId(), request.getReferenceCode(), request.getTransactionDate());
+        response.setMessage("Hoàn tiền thành công");
+        response.setData("Hoàn tiền thành công");
+        response.setCode(200);
         return response;
     }
 }

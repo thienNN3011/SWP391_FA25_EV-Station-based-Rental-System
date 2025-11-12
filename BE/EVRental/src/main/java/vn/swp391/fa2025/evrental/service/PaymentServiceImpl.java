@@ -7,9 +7,14 @@ import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.entity.Station;
+import vn.swp391.fa2025.evrental.enums.BookingStatus;
+import vn.swp391.fa2025.evrental.enums.PaymentMethod;
 import vn.swp391.fa2025.evrental.enums.PaymentType;
+import vn.swp391.fa2025.evrental.repository.BookingRepository;
 import vn.swp391.fa2025.evrental.repository.PaymentRepository;
 import vn.swp391.fa2025.evrental.repository.StationRepository;
+import vn.swp391.fa2025.evrental.util.BigDecimalUtils;
+import vn.swp391.fa2025.evrental.util.EmailUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +30,15 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Autowired
     private StationRepository stationRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private SystemConfigServiceImpl systemConfigService;
+
+    @Autowired
+    private EmailUtils emailUtils;
 
     @Override
     @Transactional
@@ -101,5 +115,36 @@ public class PaymentServiceImpl implements PaymentService {
             ));
         }
         return result;
+    }
+
+    @Transactional
+    @Override
+    public void refundCancelledBooking(Long bookingId, String referenceCode, LocalDateTime transactionDate) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+        if (booking.getActualStartTime()==null && booking.getActualEndTime()!=null && booking.getStatus()== BookingStatus.CANCELLED) {
+            Payment refund=null;
+            if (paymentRepository.findByMethodAndReferenceCode(PaymentMethod.VIETCOMBANK, referenceCode)!=null) throw new RuntimeException("ReferenceCode đã tồn tại");
+            if (transactionDate.isBefore(LocalDateTime.now().minusMinutes(10))) throw new RuntimeException("Thời gian giao dịch không được quá 10p so với thời điểm hiện tại");
+            int minute = Integer.parseInt(systemConfigService.getSystemConfigByKey("CANCEL_BOOKING_REFUND_EXPIRE").getValue());
+            if (booking.getStartTime().isAfter(booking.getActualEndTime().plusMinutes(minute))) {
+                Payment deposit = paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), PaymentType.fromString("DEPOSIT"));
+                int extraRateInt = Integer.parseInt(systemConfigService.getSystemConfigByKey("REFUND").getValue());
+                BigDecimal extraRate = BigDecimal.valueOf(extraRateInt).divide(BigDecimal.valueOf(100));
+                refund = Payment.builder()
+                        .booking(booking)
+                        .transactionDate(transactionDate)
+                        .paymentType(PaymentType.fromString("REFUND_DEPOSIT"))
+                        .amount(BigDecimalUtils.roundUpToIntegerWithTwoDecimals(deposit.getAmount().multiply(extraRate)))
+                        .referenceCode(referenceCode)
+                        .method(PaymentMethod.fromString("VIETCOMBANK"))
+                        .build();
+                paymentRepository.save(refund);
+                try {
+                    emailUtils.sendRefundSuccessEmail(booking, refund.getAmount(), referenceCode);
+                } catch (Exception e) {
+                    System.err.println("Gửi email thông báo hoàn tiền thất bại: " + e.getMessage());
+                }
+            }
+        } else throw new RuntimeException("Không thể thực hiện refund trên booking này");
     }
 }

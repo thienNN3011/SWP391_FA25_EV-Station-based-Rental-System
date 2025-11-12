@@ -7,14 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
-import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
-import vn.swp391.fa2025.evrental.dto.request.CancelBookingRequest;
-import vn.swp391.fa2025.evrental.dto.request.EndRentingRequest;
-import vn.swp391.fa2025.evrental.dto.request.StartRentingRequest;
-import vn.swp391.fa2025.evrental.dto.response.AfterBookingResponse;
-import vn.swp391.fa2025.evrental.dto.response.BookingResponse;
-import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
-import vn.swp391.fa2025.evrental.dto.response.EndRentingResponse;
+import vn.swp391.fa2025.evrental.dto.request.*;
+import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Contract;
 import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 import vn.swp391.fa2025.evrental.service.ContractServiceImpl;
@@ -119,14 +113,14 @@ public class BookingController {
         ApiResponse<String> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Hủy booking thành công");
-        if (bookingService.cancelBooking(request.getBookingId())!=null) response.setData("Hủy booking thành công. Đã hoàn lại 70% số tiền đặt cọc cho khách hàng!");
+        if (bookingService.cancelBooking(request.getBookingId(), request.getBankName(), request.getBankAccount())!=null) response.setData("Hủy booking thành công. Đã hoàn lại 70% số tiền đặt cọc cho khách hàng!");
         else response.setData("Hủy booking thành công. Quý khách không được hoàn tiền vì hủy sau thời gian quy định");
         response.setCode(200);
         return response;
     }
 
     @PostMapping("/stoprentingtime")
-    ApiResponse<String> stopRentingTime(@Valid @RequestBody CancelBookingRequest request) {
+    ApiResponse<String> stopRentingTime(@Valid @RequestBody StopRentingRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
         bookingService.endTimeRenting(request.getBookingId());
         response.setSuccess(true);
@@ -145,4 +139,13 @@ public class BookingController {
         return response;
     }
 
+    @GetMapping("/showbookingsrefund")
+    ApiResponse<List<BookingRefundResponse>> showBookingsRefund(){
+        ApiResponse<List<BookingRefundResponse>> response = new ApiResponse<>();
+        response.setCode(200);
+        response.setData(bookingService.listCancelledBookingRefund());
+        response.setSuccess(true);
+        response.setMessage("Lấy các booking cần hoàn trả thành công");
+        return response;
+    }
 }

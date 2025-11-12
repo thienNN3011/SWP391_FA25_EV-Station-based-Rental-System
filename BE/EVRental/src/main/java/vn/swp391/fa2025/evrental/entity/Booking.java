@@ -65,4 +65,10 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking")
     private List<IncidentReport> incidentReports;
+
+    @Column
+    private String bankName;
+
+    @Column
+    private String bankAccount;
 }
