@@ -13,6 +13,7 @@ import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.service.SystemConfigServiceImpl;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Component
@@ -398,9 +399,9 @@ public class EmailUtils {
         String refundInfo;
         if (refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
             refundInfo = String.format("""
-            <p><b>Số tiền đặt cọc đã được hoàn:</b> %,.0f VND 
+            <p><b>Số tiền đặt cọc sẽ được hoàn:</b> %,.0f VND 
             (<b>%d%%</b> giá trị tiền đặt cọc ban đầu).</p>
-            <p style="color:#388e3c;">Khoản hoàn đã được xử lý thành công.</p>
+            <p style="color:#388e3c;">Khoản hoàn đang chờ được xử lí.</p>
         """, refundAmount, refundRate);
         } else {
             refundInfo = """
@@ -433,4 +434,60 @@ public class EmailUtils {
         sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
     }
 
+    public void sendRefundSuccessEmail(Booking booking, BigDecimal refundAmount, String referenceCode) {
+        String subject = "Thông báo hoàn tiền đặt cọc - EV Rental";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+        String bankAccount = booking.getBankAccount();
+        String bankName = booking.getBankName();
+
+        String message = String.format("""
+    Xin chào <b>%s</b>,<br><br>
+
+    Chúng tôi xin thông báo khoản tiền đặt cọc cho đơn đặt xe của bạn đã được <b>hoàn trả thành công</b>.<br><br>
+
+    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+        <b>Thông tin hoàn tiền:</b><br>
+        • Mã đơn thuê: <b>#%d</b><br>
+        • Xe: <b>%s</b><br>
+        • Thời gian đặt xe: <b>%s - %s</b><br>
+        • Số tiền hoàn: <b style="color: #28a745;">%,.0f VND</b><br>
+        • Mã giao dịch: <b>%s</b><br>
+        • Thời gian hoàn tiền: <b>%s</b><br>
+        • Số tài khoản nhận: <b>%s</b><br>
+        • Ngân hàng: <b>%s</b><br>
+    </div>
+
+    <br>
+    <p><b>Lưu ý:</b></p>
+    <ul style="color: #666;">
+        <li>Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: 
+            <a href="mailto:support@evrental.vn">support@evrental.vn</a>
+        </li>
+    </ul>
+
+    <br>
+    Cảm ơn bạn đã sử dụng dịch vụ của <b>EV Rental</b>!<br>
+    Chúng tôi hy vọng sẽ được phục vụ bạn trong những lần tiếp theo.
+    """,
+                booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
+                booking.getBookingId(),
+                booking.getVehicle().getModel().getName(),
+                booking.getStartTime().format(formatter),
+                booking.getEndTime().format(formatter),
+                refundAmount,
+                referenceCode,
+                LocalDateTime.now().format(formatter),
+                bankAccount != null ? bankAccount : "Không xác định",
+                bankName != null ? bankName : "Không xác định"
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Hoàn tiền thành công ✅",
+                message,
+                null,
+                "#28a745"
+        );
+
+        sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
+    }
 }

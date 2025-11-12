@@ -139,7 +139,6 @@ public String confirmContract(String token) {
                 .amount(deposit.getAmount().multiply(extraRate))
                 .referenceCode("REFUND_" + System.currentTimeMillis())
                 .build();
-        paymentRepository.save(refund);
         Vehicle vehicle=booking.getVehicle();
         vehicle.setStatus(VehicleStatus.fromString("AVAILABLE"));
         vehicleRepository.save(vehicle);

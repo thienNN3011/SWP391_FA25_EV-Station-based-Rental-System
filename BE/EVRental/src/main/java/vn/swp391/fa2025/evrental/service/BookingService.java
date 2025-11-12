@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest;
 import vn.swp391.fa2025.evrental.dto.response.AfterBookingResponse;
+import vn.swp391.fa2025.evrental.dto.response.BookingRefundResponse;
 import vn.swp391.fa2025.evrental.dto.response.BookingResponse;
 import vn.swp391.fa2025.evrental.dto.response.EndRentingResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
@@ -23,8 +24,9 @@ public interface BookingService {
     EndRentingResponse endRental(HttpServletRequest request, Long bookingId, String vehicleStatus, Long endOdo, LocalDateTime transactionDate, String referanceCode);
     Booking findById(Long id);
     void updateBooking(Booking booking);
-    Payment cancelBooking(Long bookingId);
+    Payment cancelBooking(Long bookingId, String bankName, String bankAccount);
     void cancelBookingForSystem(Long bookingId);
     void endTimeRenting(Long bookingId);
     BigDecimal getMyTotalRevenue();
+    List<BookingRefundResponse> listCancelledBookingRefund();
 }

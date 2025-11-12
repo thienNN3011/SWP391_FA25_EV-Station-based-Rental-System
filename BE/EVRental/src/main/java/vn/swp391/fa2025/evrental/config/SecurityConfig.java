@@ -89,7 +89,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/incidentreport/showbystation/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/incidentreport/update").hasAuthority("ADMIN")
                         .requestMatchers("/changestaffstationreq", "/dochangestaffstation", "/showstaffstats", "/payments/revenue").hasAuthority("ADMIN")
-                        .requestMatchers("/systemconfig/**").hasAuthority("ADMIN")
+                        .requestMatchers("/systemconfig/**", "/bookings/showbookingsrefund", "/payments/refund").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/admin/staffs").hasAuthority("ADMIN")
                         
                         .anyRequest().authenticated()

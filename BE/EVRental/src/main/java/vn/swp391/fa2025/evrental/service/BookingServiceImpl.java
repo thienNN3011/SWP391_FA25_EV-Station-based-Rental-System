@@ -13,16 +13,16 @@ import vn.swp391.fa2025.evrental.entity.*;
 import vn.swp391.fa2025.evrental.enums.*;
 import vn.swp391.fa2025.evrental.mapper.BookingMapper;
 import vn.swp391.fa2025.evrental.repository.*;
-import vn.swp391.fa2025.evrental.util.EmailUtils;
-import vn.swp391.fa2025.evrental.util.QrUtils;
-import vn.swp391.fa2025.evrental.util.TimeUtils;
+import vn.swp391.fa2025.evrental.util.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingServiceImpl implements  BookingService{
@@ -386,7 +386,7 @@ public class BookingServiceImpl implements  BookingService{
             throw new RuntimeException(e);
         }
         if (paymentRepository.findByReferenceCode(referanceCode)!=null) throw new RuntimeException("Mã thanh toán đã tồn tại");
-        if (transactionDate.isAfter(LocalDateTime.now().plusMinutes(10))) throw new RuntimeException("Thời gian giao dịch không được quá 10p so với thời điểm hiện tại");
+        if (transactionDate.isBefore(LocalDateTime.now().minusMinutes(10))) throw new RuntimeException("Thời gian giao dịch không được quá 10p so với thời điểm hiện tại");
         paymentRepository.save(Payment.builder()
                 .transactionDate(transactionDate)
                 .booking(booking)
@@ -424,7 +424,7 @@ public class BookingServiceImpl implements  BookingService{
 
     @Override
     @Transactional
-    public Payment cancelBooking(Long bookingId) {
+    public Payment cancelBooking(Long bookingId, String bankName, String bankAccount) {
         Payment refund=null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String rentername = authentication.getName();
@@ -448,16 +448,19 @@ public class BookingServiceImpl implements  BookingService{
                     .referenceCode("REFUND_" + System.currentTimeMillis())
                     .method(PaymentMethod.fromString("VN_PAY"))
                     .build();
-            paymentRepository.save(refund);
         }
-        emailUtils.sendBookingCancelledEmail(booking, refund != null ? refund.getAmount() : null);
+        booking.setActualEndTime(LocalDateTime.now());
+        if (!BankUtils.isValidBankAccount(bankAccount)) {throw new RuntimeException("Tài khoản ngân hàng không được chứa kí tự khác số");}
+        booking.setBankAccount(bankAccount);
+        booking.setBankName(bankName);
+        emailUtils.sendBookingCancelledEmail(booking, refund != null ? BigDecimalUtils.roundUpToIntegerWithTwoDecimals(refund.getAmount()) : null);
         Tariff tariff = booking.getTariff();
         tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()-1);
         tariffRepository.save(tariff);
         vehicleRepository.save(vehicle);
         booking.setStatus(BookingStatus.fromString("CANCELLED"));
         bookingRepository.save(booking);
-        return paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), PaymentType.fromString("REFUND_DEPOSIT"));
+        return refund;
     }
 
     @Override
@@ -501,5 +504,42 @@ public class BookingServiceImpl implements  BookingService{
         String username = authentication.getName();
         BigDecimal total = bookingRepository.getTotalRevenueByUsername(username);
         return total == null ? BigDecimal.ZERO : total;
+    }
+
+    @Override
+    public List<BookingRefundResponse> listCancelledBookingRefund() {
+        List<Object[]> results = bookingRepository.findCancelledWithRefundDetails();
+
+        return results.stream().map(result -> {
+            BookingRefundResponse response = new BookingRefundResponse();
+
+            response.setBookingId(((Number) result[0]).longValue());
+            response.setStatus((String) result[1]);
+            if (result[2] instanceof java.sql.Timestamp) {
+                response.setActualEndTime(((java.sql.Timestamp) result[2]).toLocalDateTime());
+            } else {
+                response.setActualEndTime((LocalDateTime) result[2]);
+            }
+
+            if (result[3] instanceof java.sql.Timestamp) {
+                response.setStartTime(((java.sql.Timestamp) result[3]).toLocalDateTime());
+            } else {
+                response.setStartTime((LocalDateTime) result[3]);
+            }
+
+            response.setCustomerName((String) result[4]);
+            response.setCustomerPhone((String) result[5]);
+            response.setCustomerEmail((String) result[6]);
+            response.setBankAccount((String) result[7]);
+            response.setBankName((String) result[8]);
+            response.setOriginalDeposit(new BigDecimal(result[9].toString()));
+            response.setRefundRate(((Number) result[10]).intValue());
+            response.setRefundAmount(
+                    new BigDecimal(result[11].toString())
+                            .setScale(0, RoundingMode.HALF_UP).setScale(2)
+            );
+
+            return response;
+        }).collect(Collectors.toList());
     }
 }
