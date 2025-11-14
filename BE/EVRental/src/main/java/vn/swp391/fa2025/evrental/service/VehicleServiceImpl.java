@@ -10,18 +10,17 @@ import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.*;
+import vn.swp391.fa2025.evrental.enums.BookingStatus;
 import vn.swp391.fa2025.evrental.enums.StationStatus;
 import vn.swp391.fa2025.evrental.enums.VehicleStatus;
 import vn.swp391.fa2025.evrental.exception.ResourceNotFoundException;
 import vn.swp391.fa2025.evrental.exception.BusinessException;
 import vn.swp391.fa2025.evrental.mapper.StationMapper;
 import vn.swp391.fa2025.evrental.mapper.VehicleMapper;
-import vn.swp391.fa2025.evrental.repository.StationRepository;
-import vn.swp391.fa2025.evrental.repository.UserRepository;
-import vn.swp391.fa2025.evrental.repository.VehicleModelRepository;
-import vn.swp391.fa2025.evrental.repository.VehicleRepository;
+import vn.swp391.fa2025.evrental.repository.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,6 +46,10 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Autowired
     private StationMapper stationMapper;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
 
     @Override
     public List<VehicleResponse> showAllVehicle() {
@@ -294,5 +297,25 @@ public class VehicleServiceImpl implements VehicleService {
                 .vehicleList(vehicles)
                 .build();
         return response;
+    }
+
+
+    @Override
+    public List<VehicleResponse> getVehicleToUpdate(Long bookingId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String staffname = authentication.getName();
+        User staff= userRepository.findByUsername(staffname);
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+        if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
+        if (booking.getStatus()!= BookingStatus.BOOKING) throw new RuntimeException("Booking không ở trạng thái BOOKING");
+        List<Vehicle> vehicles= vehicleRepository.findByStation_StationNameAndModel_ModelIdAndStatus(booking.getVehicle().getStation().getStationName(), booking.getVehicle().getModel().getModelId(), VehicleStatus.AVAILABLE);
+        String color= booking.getVehicle().getColor();
+        vehicles = vehicles.stream()
+                .filter(v -> !v.getVehicleId().equals(booking.getVehicle().getVehicleId()))
+                .sorted(Comparator.comparing(
+                        (Vehicle v) -> !v.getColor().equalsIgnoreCase(color)
+                ))
+                .toList();
+        return vehicleMapper.toListVehicleResponse(vehicles);
     }
 }

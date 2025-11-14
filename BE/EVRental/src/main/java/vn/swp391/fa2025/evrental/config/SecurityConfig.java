@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers("/bookings/confirm", "/bookings/reject").permitAll()                //.hasAuthority("RENTER") test thu
                         .requestMatchers("/bookings/startrental", "/bookings/endrental", "vehicles/showbystatus", "/bookings/stoprentingtime").hasAuthority("STAFF")
-                        .requestMatchers("/bookings/createbooking", "/bookings/cancelbooking").hasAuthority("RENTER")
+                        .requestMatchers("/bookings/createbooking", "/bookings/cancelbooking", "/bookings/isrefund").hasAuthority("RENTER")
                         .requestMatchers(HttpMethod.GET, "/bookings/total-revenue").hasAuthority("RENTER")
                         .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
                         .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")
@@ -91,7 +91,7 @@ public class SecurityConfig {
                         .requestMatchers("/changestaffstationreq", "/dochangestaffstation", "/showstaffstats", "/payments/revenue").hasAuthority("ADMIN")
                         .requestMatchers("/systemconfig/**", "/bookings/showbookingsrefund", "/payments/refund").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/admin/staffs").hasAuthority("ADMIN")
-                        
+                        .requestMatchers("/vehicles/showtoupdate", "bookings/updatebookingvehicle").hasAuthority("STAFF")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

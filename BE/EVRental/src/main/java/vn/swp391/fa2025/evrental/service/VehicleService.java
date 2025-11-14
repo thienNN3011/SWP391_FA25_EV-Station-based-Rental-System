@@ -25,4 +25,6 @@ public interface VehicleService {
     void changeVehicleStation(Long vehicleId, String stationName);
 
     ChangeVehicleStationResponse showVehicleInStation(String stationName, Long modelId);
+
+    List<VehicleResponse> getVehicleToUpdate(Long bookingId);
 }

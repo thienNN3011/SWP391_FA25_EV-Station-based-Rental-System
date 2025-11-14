@@ -4,10 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest;
-import vn.swp391.fa2025.evrental.dto.response.AfterBookingResponse;
-import vn.swp391.fa2025.evrental.dto.response.BookingRefundResponse;
-import vn.swp391.fa2025.evrental.dto.response.BookingResponse;
-import vn.swp391.fa2025.evrental.dto.response.EndRentingResponse;
+import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 
@@ -29,4 +26,6 @@ public interface BookingService {
     void endTimeRenting(Long bookingId);
     BigDecimal getMyTotalRevenue();
     List<BookingRefundResponse> listCancelledBookingRefund();
+    boolean isRefundWhenCancel(Long bookingId);
+    void updateBookingVehicle(Long bookingId, Long vehicleId);
 }
