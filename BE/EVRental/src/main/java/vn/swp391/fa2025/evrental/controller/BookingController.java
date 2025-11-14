@@ -172,10 +172,11 @@ public class BookingController {
     }
 
     @PostMapping("/cancelbookingbystaff")
-    ApiResponse<String> cancelBookingByStaff(@Valid @RequestBody CancelBookingRequest request) {
+    ApiResponse<String> cancelBookingByStaff(@Valid @RequestBody CancelBookingByStaffRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
         response.setData("Booking đã được hủy");
         response.setSuccess(true);
+        bookingService.cancelBookingForStaff(request.getBookingId(), request.getReferenceCode(), request.getTransactionDate());
         response.setMessage("Booking đã đươợc hủy");
         response.setCode(200);
         return response;
