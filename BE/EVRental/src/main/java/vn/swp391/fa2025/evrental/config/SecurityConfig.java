@@ -91,7 +91,7 @@ public class SecurityConfig {
                         .requestMatchers("/changestaffstationreq", "/dochangestaffstation", "/showstaffstats", "/payments/revenue").hasAuthority("ADMIN")
                         .requestMatchers("/systemconfig/**", "/bookings/showbookingsrefund", "/payments/refund").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/admin/staffs").hasAuthority("ADMIN")
-                        .requestMatchers("/vehicles/showtoupdate", "bookings/updatebookingvehicle").hasAuthority("STAFF")
+                        .requestMatchers("/vehicles/showtoupdate", "/bookings/updatebookingvehicle", "/bookings/cancelbookingbystaff").hasAuthority("STAFF")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

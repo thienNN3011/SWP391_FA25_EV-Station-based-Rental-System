@@ -170,4 +170,14 @@ public class BookingController {
         response.setData("Cập nhật thành công");
         return response;
     }
+
+    @PostMapping("/cancelbookingbystaff")
+    ApiResponse<String> cancelBookingByStaff(@Valid @RequestBody CancelBookingRequest request) {
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setData("Booking đã được hủy");
+        response.setSuccess(true);
+        response.setMessage("Booking đã đươợc hủy");
+        response.setCode(200);
+        return response;
+    }
 }

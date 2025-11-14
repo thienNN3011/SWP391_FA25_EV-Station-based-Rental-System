@@ -551,4 +551,54 @@ public class EmailUtils {
         sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
     }
 
+    public void sendBookingCancelledByStaffEmail(Booking booking, User staff, String reason) {
+        String subject = "Đơn đặt xe đã bị hủy bởi nhân viên - EV Rental";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        String message = String.format("""
+        Xin chào <b>%s</b>,<br><br>
+
+        Đơn đặt xe của bạn đã được <b style='color:red;'>hủy bởi nhân viên trạm</b>.<br><br>
+
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+            <b>Thông tin đơn đặt xe:</b><br>
+            • Mã đơn thuê: <b>#%d</b><br>
+            • Xe: <b>%s</b><br>
+            • Thời gian thuê: <b>%s - %s</b><br><br>
+
+            <b>Thông tin xử lý:</b><br>
+            • Nhân viên thực hiện: <b>%s</b><br>
+            • Thời gian hủy: <b>%s</b><br>
+            • Lý do hủy: <span style="color:#d32f2f;"><b>%s</b></span>
+        </div>
+
+        <br>
+        <p>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ bộ phận hỗ trợ:</p>
+        <ul>
+            <li><a href="mailto:support@evrental.vn">support@evrental.vn</a></li>
+        </ul>
+
+        Cảm ơn bạn đã sử dụng dịch vụ của <b>EV Rental</b>. Chúng tôi xin lỗi vì sự bất tiện này.
+    """,
+                booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
+                booking.getBookingId(),
+                booking.getVehicle().getModel().getName(),
+                booking.getStartTime().format(formatter),
+                booking.getEndTime().format(formatter),
+                staff.getFullName() != null ? staff.getFullName() : staff.getUsername(),
+                LocalDateTime.now().format(formatter),
+                reason != null ? reason : "Không cung cấp"
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Đơn đặt xe bị hủy bởi nhân viên 🚫",
+                message,
+                null,
+                "#d32f2f"
+        );
+
+        sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
+    }
+
 }

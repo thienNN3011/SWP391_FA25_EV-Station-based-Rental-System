@@ -578,4 +578,36 @@ public class BookingServiceImpl implements  BookingService{
         emailUtils.sendVehicleChangedEmail(booking, currVehicle, vehicle);
     }
 
+    @Override
+    @Transactional
+    public void cancelBookingForStaff(Long bookingId, String referenceCode, LocalDateTime transactionDate) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String staffname = authentication.getName();
+        User staff= userRepository.findByUsername(staffname);
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+        if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
+        if (booking.getStatus()!=BookingStatus.BOOKING) throw new RuntimeException("Booking chỉ có thể hủy ở trạng thái BOOKING");
+        if (paymentRepository.findByReferenceCode(referenceCode)!=null) throw new RuntimeException("Mã thanh toán đã tồn tại");
+        if (transactionDate.isBefore(LocalDateTime.now().minusMinutes(10))) throw new RuntimeException("Thời gian giao dịch không được quá 10p so với thời điểm hiện tại");
+        paymentRepository.save(Payment.builder()
+                .transactionDate(transactionDate)
+                .booking(booking)
+                .paymentType(PaymentType.fromString("REFUND_DEPOSIT"))
+                .amount(paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), PaymentType.fromString("DEPOSIT")).getAmount())
+                .referenceCode(referenceCode)
+                .method(PaymentMethod.fromString("VIETCOMBANK"))
+                .build());
+        booking.setActualEndTime(LocalDateTime.now());
+        booking.setStatus(BookingStatus.CANCELLED);
+        Vehicle vehicle = booking.getVehicle();
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
+        bookingRepository.save(booking);
+        vehicleRepository.save(vehicle);
+        emailUtils.sendBookingCancelledByStaffEmail(
+                booking,
+                staff,
+                "Hủy đơn do xe gặp sự cố tại trạm"
+        );
+    }
+
 }
