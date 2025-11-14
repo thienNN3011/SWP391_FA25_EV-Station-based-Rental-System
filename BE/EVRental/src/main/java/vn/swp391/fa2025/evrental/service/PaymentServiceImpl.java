@@ -144,7 +144,7 @@ public class PaymentServiceImpl implements PaymentService {
                 } catch (Exception e) {
                     System.err.println("Gửi email thông báo hoàn tiền thất bại: " + e.getMessage());
                 }
-            }
+            } else throw new RuntimeException("Booking không đạt điều kiện để refund");
         } else throw new RuntimeException("Không thể thực hiện refund trên booking này");
     }
 }

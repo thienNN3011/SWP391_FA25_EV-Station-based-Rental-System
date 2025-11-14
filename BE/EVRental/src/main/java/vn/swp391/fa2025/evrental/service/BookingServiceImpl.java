@@ -542,4 +542,40 @@ public class BookingServiceImpl implements  BookingService{
             return response;
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public boolean isRefundWhenCancel(Long bookingId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String rentername = authentication.getName();
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+        if (!booking.getUser().getUsername().equalsIgnoreCase(rentername)) throw new RuntimeException("Không có quyền thao tác trên booking này");
+        if (!booking.getStatus().toString().equalsIgnoreCase("BOOKING")) throw new RuntimeException("Chỉ có thể hủy booking ở trạng thái BOOKING");
+        int minute = Integer.parseInt(systemConfigService.getSystemConfigByKey("CANCEL_BOOKING_REFUND_EXPIRE").getValue());
+        if (booking.getStartTime().isAfter(LocalDateTime.now().plusMinutes(minute))) return true;
+        return false;
+    }
+
+    @Transactional
+    @Override
+    public void updateBookingVehicle(Long bookingId, Long vehicleId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String staffname = authentication.getName();
+        User staff= userRepository.findByUsername(staffname);
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+        if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
+        if (booking.getStatus()!= BookingStatus.BOOKING) throw new RuntimeException("Booking không ở trạng thái BOOKING");
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new RuntimeException("Xe không tồn tại"));
+        if (vehicle.getStatus()!=VehicleStatus.AVAILABLE) throw new RuntimeException("Xe được cập nhật không ở trạng thái có thể thuê");
+        Vehicle currVehicle= booking.getVehicle();
+        if (vehicle.getStation().getStationId()!=currVehicle.getStation().getStationId()) throw new RuntimeException("Xem được cập nhật không cùng trạm với xe hiện tại");
+        if (vehicle.getModel().getModelId()!=currVehicle.getModel().getModelId()) throw new RuntimeException("Xe mới không cùng mẫu xe với xe hiện tại");
+        currVehicle.setStatus(VehicleStatus.AVAILABLE);
+        vehicleRepository.save(currVehicle);
+        booking.setVehicle(vehicle);
+        vehicle.setStatus(VehicleStatus.IN_USE);
+        vehicleRepository.save(vehicle);
+        emailUtils.sendVehicleChangedEmail(booking, currVehicle, vehicle);
+    }
+
 }

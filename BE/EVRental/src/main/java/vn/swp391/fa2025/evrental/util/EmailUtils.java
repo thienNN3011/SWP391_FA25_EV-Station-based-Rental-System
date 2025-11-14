@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.SystemConfig;
 import vn.swp391.fa2025.evrental.entity.User;
+import vn.swp391.fa2025.evrental.entity.Vehicle;
 import vn.swp391.fa2025.evrental.service.SystemConfigServiceImpl;
 
 import java.math.BigDecimal;
@@ -490,4 +491,64 @@ public class EmailUtils {
 
         sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
     }
+
+    public void sendVehicleChangedEmail(Booking booking, Vehicle oldVehicle, Vehicle newVehicle) {
+        String subject = "Thông báo đổi xe cho đơn đặt xe - EV Rental";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        String message = String.format("""
+    Xin chào <b>%s</b>,<br><br>
+
+    Chúng tôi xin thông báo đơn đặt xe của bạn đã được <b>đổi sang một phương tiện khác</b> theo yêu cầu xử lý từ nhân viên trạm.<br><br>
+
+    <div style="background-color: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 4px solid #0d6efd;">
+        <b>Thông tin đổi xe:</b><br>
+        • Mã đơn thuê: <b>#%d</b><br><br>
+
+        <b>Xe cũ:</b><br>
+        • Mẫu xe: <b>%s</b><br>
+        • Biển số: <b>%s</b><br>
+        • Màu: <b>%s</b><br><br>
+
+        <b>Xe mới:</b><br>
+        • Mẫu xe: <b>%s</b><br>
+        • Biển số: <b>%s</b><br>
+        • Màu: <b>%s</b><br><br>
+
+        • Thời gian đổi: <b>%s</b><br>
+    </div>
+
+    <br>
+    <p>Nếu bạn cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email:</p>
+    <ul style="color: #666;">
+        <li><a href="mailto:support@evrental.vn">support@evrental.vn</a></li>
+    </ul>
+
+    <br>
+    Cảm ơn bạn đã sử dụng dịch vụ của <b>EV Rental</b>!
+    """,
+                booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
+                booking.getBookingId(),
+
+                oldVehicle.getModel().getName(),
+                oldVehicle.getPlateNumber(),
+                oldVehicle.getColor(),
+
+                newVehicle.getModel().getName(),
+                newVehicle.getPlateNumber(),
+                newVehicle.getColor(),
+
+                LocalDateTime.now().format(formatter)
+        );
+
+        String body = buildBaseEmailTemplate(
+                "Xe đã được đổi thành công 🚗",
+                message,
+                null,
+                "#0d6efd"
+        );
+
+        sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
+    }
+
 }

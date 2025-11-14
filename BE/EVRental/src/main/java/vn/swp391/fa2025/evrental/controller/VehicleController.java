@@ -3,10 +3,7 @@ package vn.swp391.fa2025.evrental.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import vn.swp391.fa2025.evrental.dto.request.ShowVehicleByStatusRequest;
-import vn.swp391.fa2025.evrental.dto.request.ShowActiveVehicleByStationRequest;
-import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
-import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
+import vn.swp391.fa2025.evrental.dto.request.*;
 import vn.swp391.fa2025.evrental.dto.response.ActiveVehicleResponse;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
@@ -91,6 +88,16 @@ public class VehicleController {
         response.setMessage("Lấy thông tin các xe đang hoạt động của trạm thành công");
         response.setData(vehicleService.getActiveVehiclesByStation(request.getStationName()));
         response.setCode(200);
+        return response;
+    }
+
+    @PostMapping("/showtoupdate")
+    public ApiResponse<List<VehicleResponse>> showVehicleToUpdate(@Valid @RequestBody StopRentingRequest request){
+        ApiResponse<List<VehicleResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(vehicleService.getVehicleToUpdate(request.getBookingId()));
+        response.setCode(200);
+        response.setMessage("Lấy danh sách xe thành công");
         return response;
     }
 }

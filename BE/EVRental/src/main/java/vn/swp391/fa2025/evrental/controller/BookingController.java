@@ -1,5 +1,6 @@
 package vn.swp391.fa2025.evrental.controller;
 
+import com.beust.ah.A;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -146,6 +147,27 @@ public class BookingController {
         response.setData(bookingService.listCancelledBookingRefund());
         response.setSuccess(true);
         response.setMessage("Lấy các booking cần hoàn trả thành công");
+        return response;
+    }
+
+    @PostMapping("/isrefund")
+    ApiResponse<Boolean> isRefundWhenCancel(@Valid @RequestBody StopRentingRequest request){
+        ApiResponse<Boolean> response= new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(bookingService.isRefundWhenCancel(request.getBookingId()));
+        response.setMessage("Kiểm tra thành công");
+        response.setCode(200);
+        return response;
+    }
+
+    @PostMapping("/updatebookingvehicle")
+    ApiResponse<String> updateBookingVehicle(@Valid @RequestBody UpdateBookingVehicleRequest request) {
+        ApiResponse<String> response = new ApiResponse<>();
+        response.setMessage("Cập nhật thành công");
+        response.setSuccess(true);
+        response.setCode(200);
+        bookingService.updateBookingVehicle(request.getBookingId(), request.getVehicleId());
+        response.setData("Cập nhật thành công");
         return response;
     }
 }

@@ -23,7 +23,7 @@ public interface VehicleMapper {
     @Mapping(target = "plateNumber", source = "plateNumber")
     VehicleResponse toVehicleResponse(Vehicle vehicle);
 
-
+    List<VehicleResponse> toListVehicleResponse(List<Vehicle> vehicles);
 
     @Named("toShortVehicleResponse")
     @BeanMapping(ignoreByDefault = true)
