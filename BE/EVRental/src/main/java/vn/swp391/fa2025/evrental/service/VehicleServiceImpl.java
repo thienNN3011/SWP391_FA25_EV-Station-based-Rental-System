@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
-import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.*;
 import vn.swp391.fa2025.evrental.enums.BookingStatus;
@@ -84,109 +83,16 @@ public class VehicleServiceImpl implements VehicleService {
         }
 
 
-        Set<String> availableColors = model.getImageUrls().stream()
-                .map(ModelImageUrl::getColor)
-                .collect(Collectors.toSet());
-
-        if (availableColors.isEmpty()) {
-            throw new BusinessException("Model xe chưa có danh sách màu khả dụng");
-        }
-
-        if (!availableColors.contains(request.getColor())) {
-            throw new BusinessException("Màu '" + request.getColor() +
-                    "' không có sẵn cho model xe này. Các màu khả dụng: " +
-                    String.join(", ", availableColors));
-        }
-
         Vehicle vehicle = vehicleMapper.toVehicleFromCreateRequest(request);
         vehicle.setModel(model);
         vehicle.setStation(station);
         vehicle.setStatus(VehicleStatus.fromString("AVAILABLE"));
+        vehicle.setColor(request.getColor().toLowerCase());
 
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
         return vehicleMapper.toVehicleResponse(savedVehicle);
     }
 
-    @Override
-    @Transactional
-    public VehicleResponse updateVehicle(Long id, VehicleUpdateRequest request) {
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + id));
-
-        boolean isUpdated = false;
-
-        // Nếu thay đổi model, cần validate lại màu
-        VehicleModel targetModel = vehicle.getModel();
-        if (request.getModelId() != null) {
-            if (!vehicle.getModel().getModelId().equals(request.getModelId())) {
-                targetModel = vehicleModelRepository.findById(request.getModelId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy model xe với ID: " + request.getModelId()));
-                vehicle.setModel(targetModel);
-                isUpdated = true;
-            }
-        }
-
-
-        if (request.getColor() != null && !request.getColor().isBlank()) {
-            if (!vehicle.getColor().equals(request.getColor()) || isUpdated) {
-
-                Set<String> availableColors = targetModel.getImageUrls().stream()
-                        .map(ModelImageUrl::getColor)
-                        .collect(Collectors.toSet());
-
-                if (availableColors.isEmpty()) {
-                    throw new BusinessException("Model xe chưa có danh sách màu khả dụng");
-                }
-
-                if (!availableColors.contains(request.getColor())) {
-                    throw new BusinessException("Màu '" + request.getColor() +
-                            "' không có sẵn cho model xe này. Các màu khả dụng: " +
-                            String.join(", ", availableColors));
-                }
-
-                vehicle.setColor(request.getColor());
-                isUpdated = true;
-            }
-        }
-
-
-        if (request.getStationId() != null) {
-            if (!vehicle.getStation().getStationId().equals(request.getStationId())) {
-                Station station = stationRepository.findById(request.getStationId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + request.getStationId()));
-
-                if (!"OPEN".equals(station.getStatus().toString())) {
-                    throw new BusinessException("Trạm hiện không hoạt động");
-                }
-                vehicle.setStation(station);
-                isUpdated = true;
-            }
-        }
-
-        if (request.getPlateNumber() != null && !request.getPlateNumber().isBlank()) {
-            if (!vehicle.getPlateNumber().equals(request.getPlateNumber())) {
-                if (vehicleRepository.findByPlateNumber(request.getPlateNumber()).isPresent()) {
-                    throw new BusinessException("Biển số xe đã tồn tại: " + request.getPlateNumber());
-                }
-                vehicle.setPlateNumber(request.getPlateNumber());
-                isUpdated = true;
-            }
-        }
-
-        if (request.getStatus() != null && !request.getStatus().isBlank()) {
-            if (!vehicle.getStatus().toString().equals(request.getStatus())) {
-                vehicle.setStatus(VehicleStatus.fromString(request.getStatus()));
-                isUpdated = true;
-            }
-        }
-
-        if (!isUpdated) {
-            throw new BusinessException("Không có thông tin nào được thay đổi");
-        }
-
-        Vehicle updatedVehicle = vehicleRepository.save(vehicle);
-        return vehicleMapper.toVehicleResponse(updatedVehicle);
-    }
 
     @Override
     @Transactional
@@ -194,8 +100,8 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + id));
 
-        if ("INACTIVE".equals(vehicle.getStatus().toString())) {
-            throw new BusinessException("Xe đã ở trạng thái INACTIVE");
+        if ("UNAVAILABLE".equals(vehicle.getStatus().toString())) {
+            throw new BusinessException("Xe đã ở trạng thái UNAVAILABLE");
         }
 
 
@@ -203,7 +109,7 @@ public class VehicleServiceImpl implements VehicleService {
             throw new BusinessException("Không thể xóa xe đang được sử dụng");
         }
 
-        vehicle.setStatus(VehicleStatus.fromString("INACTIVE"));
+        vehicle.setStatus(VehicleStatus.fromString("UNAVAILABLE"));
         vehicleRepository.save(vehicle);
     }
 

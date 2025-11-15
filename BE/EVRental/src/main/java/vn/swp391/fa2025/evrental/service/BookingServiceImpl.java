@@ -65,7 +65,7 @@ public class BookingServiceImpl implements  BookingService{
         Vehicle vehicle = vehicleRepository.findOneAvailableVehicleForUpdate(
                 station.getStationId(),
                 bookingRequest.getModelId(),
-                bookingRequest.getColor()
+                bookingRequest.getColor().toLowerCase()
         ).orElseThrow(() -> new RuntimeException("Hiện không có xe nào khả dụng cho mẫu xe này"));
         booking.setVehicle(vehicle);
         LocalDateTime now= LocalDateTime.now();

@@ -48,17 +48,7 @@ public class VehicleController {
         return response;
     }
 
-    @PutMapping("/update/{id}")
-    public ApiResponse<VehicleResponse> updateVehicle(
-            @PathVariable Long id,
-            @Valid @RequestBody VehicleUpdateRequest request) {
-        ApiResponse<VehicleResponse> response = new ApiResponse<>();
-        response.setSuccess(true);
-        response.setMessage("Cập nhật thông tin xe thành công");
-        response.setData(vehicleService.updateVehicle(id, request));
-        response.setCode(200);
-        return response;
-    }
+
 
     @DeleteMapping("/delete/{id}")
     public ApiResponse<Void> deleteVehicle(@PathVariable Long id) {

@@ -2,7 +2,6 @@ package vn.swp391.fa2025.evrental.service;
 
 import vn.swp391.fa2025.evrental.dto.request.VehicleCreateRequest;
 
-import vn.swp391.fa2025.evrental.dto.request.VehicleUpdateRequest;
 import vn.swp391.fa2025.evrental.dto.response.ActiveVehicleResponse;
 import vn.swp391.fa2025.evrental.dto.response.ChangeVehicleStationResponse;
 import vn.swp391.fa2025.evrental.dto.response.VehicleResponse;
@@ -15,7 +14,6 @@ public interface VehicleService {
 
     VehicleResponse createVehicle(VehicleCreateRequest request);
 
-    VehicleResponse updateVehicle(Long id, VehicleUpdateRequest request);
 
     void deleteVehicle(Long id);
 

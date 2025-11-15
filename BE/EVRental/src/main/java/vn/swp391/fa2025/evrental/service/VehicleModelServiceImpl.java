@@ -185,7 +185,7 @@ public class VehicleModelServiceImpl implements VehicleModelService {
         List<ModelImageUrl> imageUrls = new ArrayList<>();
         VehicleModel finalVehicleModel = vehicleModel;
         for (VehicleModelCreateRequest.ModelImageData imageData : request.getImages()) {
-            ModelImageUrl imageUrl = ModelImageUrl.builder().imageUrl(imageData.getImageUrl()).color(imageData.getColor()).model(finalVehicleModel)
+            ModelImageUrl imageUrl = ModelImageUrl.builder().imageUrl(imageData.getImageUrl()).color(imageData.getColor().toLowerCase()).model(finalVehicleModel)
                     .build();
 
             imageUrls.add(imageUrl);

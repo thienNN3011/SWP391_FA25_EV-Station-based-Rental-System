@@ -62,7 +62,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/vehicles/showactivebystation").permitAll()
                         .requestMatchers(HttpMethod.GET, "/vehicles/showall", "/vehicles/showbyid/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/vehicles/create").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/vehicles/update/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vehicles/delete/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/station/me").hasAnyAuthority("STAFF", "ADMIN")
                         //CRUD VEHICLE MODEL
