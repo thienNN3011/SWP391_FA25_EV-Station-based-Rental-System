@@ -28,5 +28,5 @@ public interface BookingService {
     List<BookingRefundResponse> listCancelledBookingRefund();
     boolean isRefundWhenCancel(Long bookingId);
     void updateBookingVehicle(Long bookingId, Long vehicleId);
-    void cancelBookingForStaff(Long bookingId, String referenceCode, LocalDateTime transactionDate);
+    void cancelBookingForStaff(Long bookingId, String referenceCode, LocalDateTime transactionDate, String reason);
 }
