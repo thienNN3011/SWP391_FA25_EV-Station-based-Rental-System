@@ -122,6 +122,7 @@ public class PaymentServiceImpl implements PaymentService {
     public void refundCancelledBooking(Long bookingId, String referenceCode, LocalDateTime transactionDate) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
         if (booking.getActualStartTime()==null && booking.getActualEndTime()!=null && booking.getStatus()== BookingStatus.CANCELLED) {
+            if (paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), PaymentType.REFUND_DEPOSIT)!=null) throw new RuntimeException("Booking đã được hoàn tiền trước đó");
             Payment refund=null;
             if (paymentRepository.findByMethodAndReferenceCode(PaymentMethod.VIETCOMBANK, referenceCode)!=null) throw new RuntimeException("ReferenceCode đã tồn tại");
             if (transactionDate.isBefore(LocalDateTime.now().minusMinutes(10))) throw new RuntimeException("Thời gian giao dịch không được quá 10p so với thời điểm hiện tại");
