@@ -176,7 +176,7 @@ public class BookingController {
         ApiResponse<String> response = new ApiResponse<>();
         response.setData("Booking đã được hủy");
         response.setSuccess(true);
-        bookingService.cancelBookingForStaff(request.getBookingId(), request.getReferenceCode(), request.getTransactionDate());
+        bookingService.cancelBookingForStaff(request.getBookingId(), request.getReferenceCode(), request.getTransactionDate(), request.getReason());
         response.setMessage("Booking đã đươợc hủy");
         response.setCode(200);
         return response;

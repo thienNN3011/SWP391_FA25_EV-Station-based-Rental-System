@@ -581,7 +581,7 @@ public class BookingServiceImpl implements  BookingService{
 
     @Override
     @Transactional
-    public void cancelBookingForStaff(Long bookingId, String referenceCode, LocalDateTime transactionDate) {
+    public void cancelBookingForStaff(Long bookingId, String referenceCode, LocalDateTime transactionDate, String reason) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String staffname = authentication.getName();
         User staff= userRepository.findByUsername(staffname);
@@ -607,7 +607,7 @@ public class BookingServiceImpl implements  BookingService{
         emailUtils.sendBookingCancelledByStaffEmail(
                 booking,
                 staff,
-                "Hủy đơn do xe gặp sự cố tại trạm"
+                reason
         );
     }
 
