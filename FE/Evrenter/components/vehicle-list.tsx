@@ -6,35 +6,48 @@ import { Button } from "@/components/ui/button"
 import { Car } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+interface ImageInfo {
+  imageUrl: string
+  color: string
+}
+
+interface Tariff {
+  tarriffId: number
+  type: string
+  price: number
+  depositAmount: number
+}
+
 interface VehicleModel {
   vehicleId: number
   modelId: number
-  modelName: string
+  name: string
   stationName: string
   plateNumber: string
-  color: string
+  color?: string
   brand: string
   batteryCapacity: number
   range: number
   seat: number
   description: string
-  imageUrls: { imageUrl: string; color: string }[]
-  tariffs: { tarriffId: number; type: string; price: number; depositAmount: number }[]
+  imageUrls: ImageInfo[]
+  tariffs: Tariff[]
+  colors?: string[]
 }
 
 interface VehicleListProps {
   stationName: string | null
   onSelectVehicle?: (vehicle: VehicleModel) => void
-  
 }
 
 export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) {
   const [vehicles, setVehicles] = useState<VehicleModel[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedVehicleByModel, setSelectedVehicleByModel] = useState<{ [modelId: number]: VehicleModel }>({})
+  const [selectedVehicleByModel, setSelectedVehicleByModel] = useState<Record<number, VehicleModel>>({})
+  const [bodyPreview, setBodyPreview] = useState<object | null>(null)
   const router = useRouter()
-    const [bodyPreview, setBodyPreview] = useState<object | null>(null)
+
 
   useEffect(() => {
     if (!stationName) return
@@ -43,14 +56,13 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
       setLoading(true)
       setError(null)
       try {
-        const response = await fetch("http://localhost:8080/EVRental/vehicles/showactivebystation", {
+        const res = await fetch("http://localhost:8080/EVRental/vehiclemodel", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ stationName }),
         })
-
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`)
-        const result = await response.json()
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+        const result = await res.json()
         console.log("Data BE trả về:", result)
 
         if (result.success && result.data) {
@@ -59,6 +71,7 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
           setError("Không có xe nào tại trạm này.")
         }
       } catch (err) {
+        console.error(err)
         setError("Lỗi khi tải danh sách xe.")
       } finally {
         setLoading(false)
@@ -68,52 +81,63 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
     fetchVehicles()
   }, [stationName])
 
-  const handleColorSelect = (v: VehicleModel) => {
-    console.log("Chọn màu:", v)
-    setSelectedVehicleByModel(prev => ({ ...prev, [v.modelId]: v }))
+ 
+  const handleColorSelect = (model: VehicleModel, color: string) => {
+    const matchedImages = model.imageUrls.filter(
+      img => img.color.toLowerCase() === color.toLowerCase()
+    )
+
+    const updatedVehicle: VehicleModel = {
+      ...model,
+      color,
+      imageUrls: matchedImages.length > 0 ? matchedImages : model.imageUrls,
+    }
+
+    setSelectedVehicleByModel(prev => ({
+      ...prev,
+      [model.modelId]: updatedVehicle,
+    }))
   }
-
-  const handleSelect = (modelId: number) => {
-  const vehicle = selectedVehicleByModel[modelId]
-  if (!vehicle) return alert("Vui lòng chọn màu xe trước khi đặt.")
-
-  const payload = {
-    stationName: vehicle.stationName,
-    modelId: vehicle.modelId,
-    color: vehicle.color,
-    tariffId: vehicle.tariffs[0]?.tarriffId,
-    startTime: "2025-10-31 20:00:00", 
-    endTime: "2025-11-10 07:00:00"
-  }
-
-  
-  console.log("Body raw gửi lên backend:", payload)
- setBodyPreview(payload)
-  
-  fetch("http://localhost:8080/EVRental/vehicles/select", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-    .then(res => res.json())
-    .then(data => console.log("Response từ backend:", data))
-    .catch(err => console.error("Lỗi gửi lên backend:", err))
-
-  
-  localStorage.setItem("selectedVehicle", JSON.stringify(vehicle))
-  if (onSelectVehicle) onSelectVehicle(vehicle)
-
-  console.log("Selected vehicle:", vehicle)
-}
-
 
  
-  const modelsMap: { [modelId: number]: VehicleModel[] } = {}
+  const handleSelect = (modelId: number) => {
+    const vehicle = selectedVehicleByModel[modelId]
+    if (!vehicle) {
+      alert("Vui lòng chọn màu xe trước khi đặt.")
+      return
+    }
+
+    const payload = {
+      stationName: vehicle.stationName,
+      modelId: vehicle.modelId,
+      color: vehicle.color,
+      tariffId: vehicle.tariffs[0]?.tarriffId,
+      startTime: "2025-10-31 20:00:00",
+      endTime: "2025-11-10 07:00:00",
+    }
+
+    console.log("Body gửi lên backend:", payload)
+    setBodyPreview(payload)
+
+    fetch("http://localhost:8080/EVRental/vehicles/select", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then(res => res.json())
+      .then(data => console.log("Response từ backend:", data))
+      .catch(err => console.error("Lỗi gửi lên backend:", err))
+
+    localStorage.setItem("selectedVehicle", JSON.stringify(vehicle))
+    onSelectVehicle?.(vehicle)
+  }
+
+  
+  const modelsMap: Record<number, VehicleModel[]> = {}
   vehicles.forEach(v => {
     if (!modelsMap[v.modelId]) modelsMap[v.modelId] = []
     modelsMap[v.modelId].push(v)
   })
- 
 
   return (
     <Card className="h-[500px] flex flex-col">
@@ -137,17 +161,14 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
               const imgSrc = selectedVehicle.imageUrls?.[0]?.imageUrl || "/no-image.png"
 
               return (
-                <li
-                  key={idx}
-                  className="border rounded-lg p-3 hover:bg-muted/50 transition-all shadow-sm"
-                >
+                <li key={idx} className="border rounded-lg p-3 hover:bg-muted/50 transition-all shadow-sm">
                   <img
                     src={imgSrc}
-                    alt={firstVehicle.modelName}
+                    alt={firstVehicle.name}
                     className="w-full h-40 object-cover rounded-md mb-2"
                   />
 
-                  <p className="font-medium text-base">{firstVehicle.modelName}</p>
+                  <p className="font-medium text-base">{firstVehicle.name}</p>
                   <p className="text-xs text-muted-foreground">{firstVehicle.brand}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Pin: {firstVehicle.batteryCapacity} kWh | Quãng đường: {firstVehicle.range} km
@@ -156,27 +177,31 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
                     Số ghế: {firstVehicle.seat} | {firstVehicle.description}
                   </p>
 
-                 <div className="flex gap-2 mt-2 flex-wrap">
-  {modelVehicles.map((v) => {
-    const isSelected = selectedVehicle.vehicleId === v.vehicleId
-    return (
-      <button
-        key={v.vehicleId}
-        className={`w-6 h-6 rounded-full border transition-all duration-200
-          ${isSelected ? "border-black scale-125 shadow-lg ring-2 ring-offset-1 ring-sky-500" : "border-gray-300 hover:scale-110"}
-        `}
-        style={{ backgroundColor: v.color.toLowerCase() }}
-        onClick={() => handleColorSelect(v)}
-        title={v.color}
-      />
-    )
-  })}
-</div>
-
+                
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {firstVehicle.colors?.map(color => {
+                      const isSelected =
+                        selectedVehicle.color?.toLowerCase() === color.toLowerCase()
+                      return (
+                        <button
+                          key={color}
+                          className={`w-6 h-6 rounded-full border transition-all duration-200
+                            ${
+                              isSelected
+                                ? "border-black scale-125 shadow-lg ring-2 ring-offset-1 ring-sky-500"
+                                : "border-gray-300 hover:scale-110"
+                            }`}
+                          style={{ backgroundColor: color.toLowerCase() }}
+                          onClick={() => handleColorSelect(firstVehicle, color)}
+                          title={color}
+                        />
+                      )
+                    })}
+                  </div>
 
                  
                   <div className="mt-2 border-t pt-2">
-                    {selectedVehicle.tariffs.map((t) => {
+                    {selectedVehicle.tariffs.map(t => {
                       const typeVi =
                         t.type.toUpperCase() === "HOURLY"
                           ? "Theo giờ"
