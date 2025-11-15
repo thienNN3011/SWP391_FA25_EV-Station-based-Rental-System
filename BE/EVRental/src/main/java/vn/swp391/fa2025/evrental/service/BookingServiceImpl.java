@@ -474,6 +474,7 @@ public class BookingServiceImpl implements  BookingService{
         vehicle.setStatus(VehicleStatus.fromString("AVAILABLE"));
         Tariff tariff = booking.getTariff();
         tariff.setNumberOfContractAppling(tariff.getNumberOfContractAppling()-1);
+        booking.setActualEndTime(LocalDateTime.now());
         tariffRepository.save(tariff);
         vehicleRepository.save(vehicle);
         booking.setStatus(BookingStatus.fromString("CANCELLED"));
