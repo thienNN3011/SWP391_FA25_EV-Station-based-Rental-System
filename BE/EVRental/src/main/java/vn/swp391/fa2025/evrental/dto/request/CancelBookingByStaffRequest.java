@@ -14,4 +14,6 @@ public class CancelBookingByStaffRequest {
     private String referenceCode;
     @NotNull(message = "Thời gian giao dịch không được để trống")
     private LocalDateTime transactionDate;
+    @NotNull(message = "Không được để trống lí do")
+    private String reason;
 }
