@@ -308,7 +308,10 @@ public class VehicleServiceImpl implements VehicleService {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
         if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
         if (booking.getStatus()!= BookingStatus.BOOKING) throw new RuntimeException("Booking không ở trạng thái BOOKING");
-        List<Vehicle> vehicles= vehicleRepository.findByStation_StationNameAndModel_ModelIdAndStatus(booking.getVehicle().getStation().getStationName(), booking.getVehicle().getModel().getModelId(), VehicleStatus.AVAILABLE);
+        List<Vehicle> vehicles = vehicleRepository.findAvailableVehiclesWithoutLock(
+                booking.getVehicle().getStation().getStationId(),
+                booking.getVehicle().getModel().getModelId()
+        );
         String color= booking.getVehicle().getColor();
         vehicles = vehicles.stream()
                 .filter(v -> !v.getVehicleId().equals(booking.getVehicle().getVehicleId()))

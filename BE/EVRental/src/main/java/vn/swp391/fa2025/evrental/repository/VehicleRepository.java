@@ -40,4 +40,14 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
             @Param("color") String color
     );
 
+    @Query(value = """
+    SELECT * FROM vehicles WITH (READPAST)
+    WHERE station_id = :stationId
+    AND model_id = :modelId
+    AND status = 'AVAILABLE'
+    """, nativeQuery = true)
+    List<Vehicle> findAvailableVehiclesWithoutLock(
+            @Param("stationId") Long stationId,
+            @Param("modelId") Long modelId
+    );
 }
