@@ -33,7 +33,7 @@ export function VehicleManagement() {
   const [error, setError] = useState("")
   const [selectedColorByModel, setSelectedColorByModel] = useState<{ [modelId: number]: string }>({})
 
-  // POPUP tạo xe
+
   const [showCreateVehicle, setShowCreateVehicle] = useState(false)
   const [newVehicle, setNewVehicle] = useState({
     color: "",
@@ -42,9 +42,7 @@ export function VehicleManagement() {
     stationId: ""
   })
 
-  // ========================
-  // API: Lấy danh sách trạm
-  // ========================
+
   useEffect(() => {
     const fetchStations = async () => {
       try {
@@ -58,9 +56,7 @@ export function VehicleManagement() {
     fetchStations()
   }, [])
 
-  // ========================
-  // API: Lấy model xe theo trạm
-  // ========================
+ 
   const loadVehicles = async (stationName: string) => {
     try {
       setLoading(true)
@@ -76,9 +72,7 @@ export function VehicleManagement() {
     }
   }
 
-  // ========================
-  // API: Tạo model xe
-  // ========================
+
   const createVehicleModel = async () => {
     try {
       const payload = {
@@ -104,9 +98,7 @@ export function VehicleManagement() {
     }
   }
 
-  // ========================
-  // API: Tạo Xe
-  // ========================
+
   const createVehicle = async () => {
     if (!newVehicle.color || !newVehicle.modelId || !newVehicle.plateNumber || !newVehicle.stationId) {
       alert("Vui lòng nhập đầy đủ thông tin!")
@@ -115,7 +107,7 @@ export function VehicleManagement() {
 
     try {
       const payload = {
-        color: newVehicle.color,               // KHÔNG uppercase – backend cần đúng như Postman
+        color: newVehicle.color,               
         modelId: Number(newVehicle.modelId),
         plateNumber: newVehicle.plateNumber.trim(),
         stationId: Number(newVehicle.stationId)
@@ -137,25 +129,19 @@ export function VehicleManagement() {
     }
   }
 
-  // ========================
-  // Chọn màu ảnh
-  // ========================
+
   const handleColorSelect = (modelId: number, color: string) => {
     setSelectedColorByModel(prev => ({ ...prev, [modelId]: color }))
   }
 
-  // ========================
-  // Search
-  // ========================
+
   const filtered = vehicles.filter(
     v =>
       v.name.toLowerCase().includes(search.toLowerCase()) ||
       v.brand.toLowerCase().includes(search.toLowerCase())
   )
 
-  // ========================
-  // UI
-  // ========================
+
   return (
     <div className="h-full w-full overflow-auto p-4 md:p-6 space-y-6">
 
@@ -206,7 +192,7 @@ export function VehicleManagement() {
         </div>
       </div>
 
-      {/* POPUP tạo xe */}
+  
       {showCreateVehicle && (
         <div className="p-4 border rounded bg-gray-100 space-y-3">
           <h2 className="text-lg font-semibold">Tạo Xe Mới</h2>
@@ -244,7 +230,7 @@ export function VehicleManagement() {
         </div>
       )}
 
-      {/* Loading + Error */}
+     
       {loading && <p>🔄 Đang tải dữ liệu...</p>}
       {error && <p className="text-red-500">{error}</p>}
 

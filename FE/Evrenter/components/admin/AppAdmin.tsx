@@ -21,9 +21,10 @@ import { LocationManagement } from "@/components/admin/LocationManagement"
 import { RevenueManagement } from "@/components/admin/RevenueManagement"
 import { OrderManagement } from "@/components/admin/OrderManagement"
 import IncidentReportManagement from "@/components/admin/IncidentReportAdmin"
-import { useAuth } from "@/components/auth-context"
+import { useAuth } from "@/components/auth-context"  
+import SystemConfigAdmin from "./SystemConfigAdmin"
 
-type ActivePage = "dashboard" | "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident"
+type ActivePage = "dashboard" | "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident" | "config"
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
@@ -33,6 +34,7 @@ const menuItems = [
   { id: "revenue" as ActivePage, label: "Doanh thu & Thống kê", icon: TrendingUp },
   { id: "orders" as ActivePage, label: "Quản lý đơn thuê", icon: FileText },
   { id: "incident" as ActivePage, label: "Báo cáo tai nạn", icon: FileText },
+   { id: "config" as ActivePage, label: "Cấu hình hệ thống", icon: FileText },
 ]
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {
@@ -123,6 +125,8 @@ function renderActivePage(activePage: ActivePage) {
       return <OrderManagement />
     case "incident":
       return <IncidentReportManagement />
+    case "config":
+      return <SystemConfigAdmin />
     default:
       return <Dashboard />
   }

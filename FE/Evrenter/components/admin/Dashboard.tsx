@@ -1,30 +1,25 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Car, Users, UserCheck, DollarSign, TrendingUp, Calendar } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts"
+import { api } from "@/lib/api"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 
 const statsData = [
-  { title: "Tổng khách hàng", value: "1,234", change: "+12%", changeType: "increase" as const, icon: Users, description: "So với tháng trước" },
-  { title: "Tổng nhân viên", value: "45", change: "+2", changeType: "increase" as const, icon: UserCheck, description: "Nhân viên đang hoạt động" },
-  { title: "Tổng số xe", value: "89", change: "-3", changeType: "decrease" as const, icon: Car, description: "Xe đang có sẵn: 67" },
-  { title: "Doanh thu tháng", value: "245.800.000", change: "+18%", changeType: "increase" as const, icon: DollarSign, description: "VNĐ" },
-]
-
-const revenueData = [
-  { month: "T1", revenue: 65 },
-  { month: "T2", revenue: 89 },
-  { month: "T3", revenue: 80 },
-  { month: "T4", revenue: 81 },
-  { month: "T5", revenue: 56 },
-  { month: "T6", revenue: 95 },
-  { month: "T7", revenue: 110 },
-  { month: "T8", revenue: 125 },
-  { month: "T9", revenue: 140 },
-  { month: "T10", revenue: 135 },
-  { month: "T11", revenue: 155 },
-  { month: "T12", revenue: 165 },
+  { title: "Tổng khách hàng", value: "1,234", change: "+12%", changeType: "increase", icon: Users, description: "So với tháng trước" },
+  { title: "Tổng nhân viên", value: "45", change: "+2", changeType: "increase", icon: UserCheck, description: "Nhân viên đang hoạt động" },
+  { title: "Tổng số xe", value: "89", change: "-3", changeType: "decrease", icon: Car, description: "Xe đang có sẵn: 67" },
+  { title: "Doanh thu tháng", value: "245.800.000", change: "+18%", changeType: "increase", icon: DollarSign, description: "VNĐ" },
 ]
 
 const vehicleTypeData = [
@@ -42,14 +37,75 @@ const recentOrders = [
 ]
 
 export function Dashboard() {
+
+  const [year, setYear] = useState("2025")
+  const [stations, setStations] = useState<any[]>([])
+  const [selectedStation, setSelectedStation] = useState<string>("")
+
+  const [revenueData, setRevenueData] = useState<{ month: string; revenue: number }[]>([])
+
+
+  useEffect(() => {
+    const loadStations = async () => {
+      try {
+        const res = await api.get("/showactivestation")
+        if (res.data.success) {
+          setStations(res.data.data ?? [])
+
+       
+          const saved = localStorage.getItem("selectedStation")
+
+          if (saved) {
+            setSelectedStation(saved)
+          } else if (res.data.data.length > 0) {
+            const first = res.data.data[0].stationName
+            setSelectedStation(first)
+            localStorage.setItem("selectedStation", first)
+          }
+        }
+      } catch (err) {
+        console.error("Lỗi load station:", err)
+      }
+    }
+    loadStations()
+  }, [])
+
+
+  useEffect(() => {
+    if (!selectedStation) return
+
+    const loadRevenue = async () => {
+      try {
+        const res = await api.post("/payments/revenue", {
+          stationName: selectedStation,
+          year: year,
+        })
+
+        const formatted = (res.data.data || []).map((item: any) => ({
+          month: `T${item.month}`,
+          revenue: item.revenue / 1_000_000, 
+        }))
+
+        setRevenueData(formatted)
+      } catch (err) {
+        console.error("Lỗi API:", err)
+      }
+    }
+
+    loadRevenue()
+  }, [selectedStation, year])
+
   return (
     <div className="h-full w-full overflow-auto">
       <div className="p-4 md:p-6 space-y-6">
+
+    
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl">Trang chủ</h1>
             <p className="text-muted-foreground">Tổng quan hệ thống thuê xe</p>
           </div>
+
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm">
               <Calendar className="size-4 mr-2" />
@@ -62,6 +118,7 @@ export function Dashboard() {
           </div>
         </div>
 
+    
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {statsData.map((stat, index) => (
             <Card key={index}>
@@ -82,12 +139,53 @@ export function Dashboard() {
           ))}
         </div>
 
+   
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+       
           <Card>
-            <CardHeader>
-              <CardTitle>Doanh thu theo tháng</CardTitle>
-              <CardDescription>Triệu VNĐ</CardDescription>
+            <CardHeader className="flex items-center justify-between">
+              <div>
+                <CardTitle>Doanh thu theo tháng</CardTitle>
+                <CardDescription>Triệu VNĐ</CardDescription>
+              </div>
+
+              <div className="flex gap-3">
+               <Select
+  value={selectedStation}
+  onValueChange={(value) => {
+    setSelectedStation(value)
+    localStorage.setItem("selectedStation", value)
+  }}
+>
+  <SelectTrigger className="w-[180px]">
+    <SelectValue placeholder="Chọn trạm" />
+  </SelectTrigger>
+  <SelectContent>
+    {stations.map((s: any) => (
+    <SelectItem key={s.stationId} value={s.stationName}>
+  {s.stationName.replace(/^Station\s+/i, "Trạm ")}
+</SelectItem>
+
+    ))}
+  </SelectContent>
+</Select>
+
+
+                <Select value={year} onValueChange={(v) => setYear(v)}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Năm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2023">2023</SelectItem>
+                    <SelectItem value="2024">2024</SelectItem>
+                    <SelectItem value="2025">2025</SelectItem>
+                    <SelectItem value="2026">2026</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
+
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={revenueData}>
@@ -101,6 +199,7 @@ export function Dashboard() {
             </CardContent>
           </Card>
 
+          {/* PIE CHART Giữ nguyên */}
           <Card>
             <CardHeader>
               <CardTitle>Phân bố loại xe</CardTitle>
@@ -109,7 +208,15 @@ export function Dashboard() {
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie data={vehicleTypeData} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={80} fill="#8884d8" dataKey="value">
+                  <Pie
+                    data={vehicleTypeData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    dataKey="value"
+                  >
                     {vehicleTypeData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
@@ -119,8 +226,10 @@ export function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+
         </div>
 
+        {/* ĐƠN THUÊ GẦN ĐÂY (Giữ nguyên) */}
         <Card>
           <CardHeader>
             <CardTitle>Đơn thuê gần đây</CardTitle>
@@ -143,11 +252,15 @@ export function Dashboard() {
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
                       <p className="font-medium">{order.amount}</p>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs ${
-                        order.status === "Đang thuê" ? "bg-blue-100 text-blue-800" :
-                        order.status === "Hoàn thành" ? "bg-green-100 text-green-800" :
-                        "bg-yellow-100 text-yellow-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs ${
+                          order.status === "Đang thuê"
+                            ? "bg-blue-100 text-blue-800"
+                            : order.status === "Hoàn thành"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
                         {order.status}
                       </span>
                     </div>
@@ -157,8 +270,8 @@ export function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
       </div>
     </div>
   )
 }
-
