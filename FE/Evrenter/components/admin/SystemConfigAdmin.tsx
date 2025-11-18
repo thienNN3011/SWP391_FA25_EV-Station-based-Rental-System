@@ -20,6 +20,26 @@ export default function SystemConfigAdmin() {
   const [error, setError] = useState("")
 
 
+  
+  const translateKey = (key: string) => {
+    const map: Record<string, string> = {
+      OVERTIME_EXTRA_RATE: "Phần trăm phụ thu khi thêm giờ",
+      QR_EXPIRE: "Thời hạn thanh toán đặt cọc",
+      CHECK_IN_EXPIRE: "Thời hạn nhận xe",
+      REFUND: "Phần trăm hoàn trả khi hủy",
+      CANCEL_BOOKING_REFUND_EXPIRE: "Thời hạn hủy được hoàn tiền",
+    }
+    return map[key] || key 
+  }
+  const translateUnit = (unit?: string) => {
+  const map: Record<string, string> = {
+    PERCENT: "(%)",
+    MINUTE: "Phút",
+  }
+  return unit ? map[unit] || unit : "-"
+}
+
+
   useEffect(() => {
     const fetchConfigs = async () => {
       setLoading(true)
@@ -44,7 +64,7 @@ export default function SystemConfigAdmin() {
     try {
       const res = await api.post("/systemconfig/updateconfig", { key, value })
       if (res.data.success) {
-        alert(`Cập nhật "${key}" thành công!`)
+        alert(`Cập nhật "${translateKey(key)}" thành công!`)
         setConfigs((prev) =>
           prev.map((c) => (c.key === key ? { ...c, value } : c))
         )
@@ -80,7 +100,7 @@ export default function SystemConfigAdmin() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Key</TableHead>
+                  <TableHead>Thông số</TableHead>
                   <TableHead>Giá trị</TableHead>
                   <TableHead>Đơn vị</TableHead>
                   <TableHead className="text-right">Hành động</TableHead>
@@ -89,7 +109,10 @@ export default function SystemConfigAdmin() {
               <TableBody>
                 {configs.map((c) => (
                   <TableRow key={c.key}>
-                    <TableCell className="font-medium">{c.key}</TableCell>
+                    <TableCell className="font-medium">
+                      {translateKey(c.key)}
+                    </TableCell>
+
                     <TableCell>
                       <Input
                         type="text"
@@ -100,7 +123,10 @@ export default function SystemConfigAdmin() {
                         placeholder="Nhập giá trị mới"
                       />
                     </TableCell>
-                    <TableCell>{c.unit || "-"}</TableCell>
+
+                  <TableCell>{translateUnit(c.unit)}</TableCell>
+
+
                     <TableCell className="text-right">
                       <Button
                         variant="default"
