@@ -9,7 +9,6 @@ import { Car, Clock, MapPin } from "lucide-react"
 import toast, { Toaster } from "react-hot-toast"
 import { Header } from "@/components/header"
 
-
 type Booking = {
   bookingId: number
   vehicleModel: string
@@ -23,13 +22,16 @@ type Booking = {
   status: string
 }
 
-export default function BookingHistoryPage() {
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
+const STATUS_TABS = [
+  { key: "ALL", label: "Tất cả" },
+  { key: "BOOKING", label: "Đã hoàn tất cọc" },
+  { key: "UNCONFIRMED", label: "Chưa xác nhận" },
+  { key: "RENTING", label: "Đang thuê" },
+  { key: "COMPLETED", label: "Hoàn thành" },
+  { key: "CANCELLED", label: "Đã hủy" },
+  { key: "NO_SHOW", label: "Không đến" },
+]
 
-  useEffect(() => {
-    fetchBookings()
-  }, [])
 const colorMap: Record<string, string> = {
   red: "Đỏ",
   blue: "Xanh dương",
@@ -43,11 +45,20 @@ const colorMap: Record<string, string> = {
   brown: "Nâu",
 }
 
+export default function BookingHistoryPage() {
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState("ALL")
+
+  useEffect(() => {
+    fetchBookings()
+  }, [])
 
   const fetchBookings = async () => {
     try {
       setLoading(true)
-      const res = await api.post("/bookings/showbookingbystatus", { status: "BOOKING" })
+      const res = await api.post("/bookings/showbookingbystatus", { bookingStatus: "ALL" })
+
       if (res.data.success) {
         const simplified: Booking[] = res.data.data.map((b: any) => ({
           bookingId: b.bookingId,
@@ -67,9 +78,7 @@ const colorMap: Record<string, string> = {
       }
     } catch (err: any) {
       console.error(err.response || err.message)
-      if (err.response?.status === 403) {
-        toast.error("Bạn không có quyền truy cập. Vui lòng đăng nhập lại.")
-      } 
+      toast.error("Vui lòng đăng nhập lại.")
     } finally {
       setLoading(false)
     }
@@ -79,50 +88,70 @@ const colorMap: Record<string, string> = {
     try {
       const res = await api.post("/bookings/cancelbooking", { bookingId })
       if (res.data.success) {
-        setBookings((prev) => prev.filter((b) => b.bookingId !== bookingId))
+        setBookings((prev) => prev.map((b) => b.bookingId === bookingId ? { ...b, status: "CANCELLED" } : b))
         toast.success("Hủy booking thành công!")
       } else {
         toast.error("Hủy booking thất bại: " + res.data.message)
       }
-    } catch (err: any) {
-      console.error(err.response || err.message)
+    } catch {
       toast.error("Có lỗi xảy ra khi hủy booking")
     }
   }
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
+  const filtered = bookings.filter((b) => (tab === "ALL" ? true : b.status === tab))
 
-  const formatTime = (dateString: string) =>
-    new Date(dateString).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false })
+  const statusColor = (s: string) => {
+    switch (s) {
+      case "BOOKING": return "bg-yellow-400 text-black"
+      case "RENTING": return "bg-blue-500 text-white"
+      case "COMPLETED": return "bg-green-600 text-white"
+      case "CANCELLED": 
+      case "NO_SHOW": 
+      case "UNCONFIRMED": return "bg-red-500 text-white"
+      default: return "bg-gray-300 text-black"
+    }
+  }
 
-  if (loading) return <div className="text-center p-6">Đang tải danh sách booking...</div>
+  if (loading) return <div className="text-center p-6">Đang tải đơn...</div>
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-       <Header />
-      {/* Toaster */}
+      <Header />
       <Toaster position="top-right" />
+
+     
+      <div className="flex gap-2 overflow-x-auto py-3 mb-4">
+        {STATUS_TABS.map((t) => (
+          <Button
+            key={t.key}
+            variant={tab === t.key ? "default" : "outline"}
+            onClick={() => setTab(t.key)}
+          >
+            {t.label}
+          </Button>
+        ))}
+      </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Car className="h-5 w-5 text-secondary" />
-            Xe bạn đang booking
+            Lịch sử đơn thuê xe
           </CardTitle>
-          <CardDescription>Đợi 1 chút để nhân viên gửi hợp đồng thuê xe cho bạn nhé!</CardDescription>
-          <CardDescription>Hoặc bạn có thể hủy xe nếu không còn nhu cầu</CardDescription>
-         
+          <CardDescription>Xem lại tất cả đơn bạn đã đặt</CardDescription>
         </CardHeader>
+
         <CardContent>
-          {bookings.length === 0 ? (
-            <div className="text-center text-muted-foreground py-4">Hiện bạn đang không booking xe nào</div>
+          {filtered.length === 0 ? (
+            <div className="text-center text-muted-foreground py-4">
+              Không có đơn trong mục này
+            </div>
           ) : (
             <div className="space-y-4">
-              {bookings.map((b) => (
+              {filtered.map((b) => (
                 <div
                   key={b.bookingId}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
@@ -132,32 +161,38 @@ const colorMap: Record<string, string> = {
                     <div className="space-y-1">
                       <div className="font-medium">
                         {b.vehicleModel} (
-  {colorMap[b.vehicleColor?.trim().toLowerCase()] || b.vehicleColor}
-) - {b.plateNumber}
-
+                          {colorMap[b.vehicleColor?.trim().toLowerCase()] || b.vehicleColor}
+                        ) - {b.plateNumber}
                       </div>
+
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {b.stationName}
+                          <MapPin className="h-3 w-3" /> {b.stationName}
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {formatTime(b.startTime)} - {formatTime(b.endTime)}
+                          {new Date(b.startTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                          {" - "}
+                          {new Date(b.endTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </div>
+
                       <div className="text-xs text-muted-foreground">{b.stationAddress}</div>
                     </div>
                   </div>
 
                   <div className="text-right space-y-1">
                     <div className="font-medium text-secondary">{b.totalAmount.toLocaleString()}₫</div>
-                    <Badge variant="outline" className="text-xs">
-                      {b.status}
+
+                    <Badge className={`${statusColor(b.status)} text-xs`}>
+                      {STATUS_TABS.find(t => t.key === b.status)?.label ?? b.status}
                     </Badge>
-                    <Button size="sm" variant="destructive" onClick={() => handleCancel(b.bookingId)}>
-                      Hủy
-                    </Button>
+
+                    {b.status === "BOOKING" && (
+                      <Button size="sm" variant="destructive" onClick={() => handleCancel(b.bookingId)}>
+                        Hủy
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
