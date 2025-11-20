@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Car, Clock, MapPin, Leaf } from "lucide-react"
+import { Car, Clock, MapPin, Leaf, DollarSign } from "lucide-react"
 import { api } from "@/lib/api"
 
 interface Vehicle {
@@ -24,6 +24,7 @@ interface Stats {
 export function DashboardOverview() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [totalRevenue, setTotalRevenue] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -45,7 +46,19 @@ export function DashboardOverview() {
       }
     }
 
+    const fetchTotalRevenue = async () => {
+      try {
+        const res = await api.get("/bookings/total-revenue")
+        if (res.data?.success) {
+          setTotalRevenue(res.data.data)
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải tổng doanh thu:", err)
+      }
+    }
+
     fetchStats()
+    fetchTotalRevenue()
   }, [])
 
   if (loading) {
@@ -56,15 +69,12 @@ export function DashboardOverview() {
     return <p className="text-center text-red-500">Không có dữ liệu thống kê.</p>
   }
 
-  
   const totalHours = (stats.totalDurationMinutes / 60).toFixed(1)
-  const co2SavedKg = (stats.totalDistanceKm * 0.12).toFixed(1) 
+  const co2SavedKg = (stats.totalDistanceKm * 0.12).toFixed(1)
 
   return (
     <div className="space-y-8">
-     
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-       
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng số lần thuê</CardTitle>
@@ -76,7 +86,6 @@ export function DashboardOverview() {
           </CardContent>
         </Card>
 
-       
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng thời gian thuê</CardTitle>
@@ -88,7 +97,6 @@ export function DashboardOverview() {
           </CardContent>
         </Card>
 
-        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng quãng đường</CardTitle>
@@ -96,11 +104,9 @@ export function DashboardOverview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalDistanceKm.toFixed(1)} km</div>
-  
           </CardContent>
         </Card>
 
-        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">CO₂ giảm thải</CardTitle>
@@ -113,9 +119,23 @@ export function DashboardOverview() {
             </p>
           </CardContent>
         </Card>
+
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tổng chi tiêu</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {totalRevenue !== null ? totalRevenue.toLocaleString() + " VND" : "-"}
+            </div>
+            <p className="text-xs text-muted-foreground">Tổng số tiền từ tất cả booking</p>
+          </CardContent>
+        </Card>
       </div>
 
-     
+    
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-semibold">Xe đã thuê gần đây</CardTitle>

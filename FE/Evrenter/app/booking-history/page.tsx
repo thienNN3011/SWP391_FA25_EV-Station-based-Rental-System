@@ -200,7 +200,7 @@ const submitCancelBooking = async () => {
 
                     <div className="space-y-1">
                       <div className="font-medium">
-                        {b.vehicleModel} (
+                        Booking số {b.bookingId} — {b.vehicleModel} (
                           {colorMap[b.vehicleColor?.trim().toLowerCase()] || b.vehicleColor}
                         ) - {b.plateNumber}
                       </div>
