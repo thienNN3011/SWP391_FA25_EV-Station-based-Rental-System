@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Car, Clock, MapPin } from "lucide-react"
 import toast, { Toaster } from "react-hot-toast"
 import { Header } from "@/components/header"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+
 
 type Booking = {
   bookingId: number
@@ -83,6 +86,10 @@ export default function BookingHistoryPage() {
       setLoading(false)
     }
   }
+  const [cancelBookingId, setCancelBookingId] = useState<number | null>(null)
+const [bankAccount, setBankAccount] = useState("")
+const [bankName, setBankName] = useState("")
+
 
   const handleCancel = async (bookingId: number) => {
     try {
@@ -113,6 +120,39 @@ export default function BookingHistoryPage() {
   }
 
   if (loading) return <div className="text-center p-6">Đang tải đơn...</div>
+const submitCancelBooking = async () => {
+  if (!bankAccount || !bankName) {
+    toast.error("Vui lòng nhập đầy đủ thông tin.")
+    return
+  }
+
+  try {
+    const res = await api.post("/bookings/cancelbooking", {
+      bookingId: cancelBookingId,
+      bankAccount: bankAccount,
+      bankName: bankName,
+    })
+
+    if (res.data.success) {
+      toast.success(res.data.message)
+
+      
+      setBookings(prev => 
+        prev.map(b => b.bookingId === cancelBookingId 
+          ? { ...b, status: "CANCELLED" } 
+          : b
+        )
+      )
+    } else {
+      toast.error(res.data.message)
+    }
+  } catch (err) {
+    toast.error("Lỗi khi hủy booking.")
+  }
+
+ 
+  setCancelBookingId(null)
+}
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -170,11 +210,14 @@ export default function BookingHistoryPage() {
                           <MapPin className="h-3 w-3" /> {b.stationName}
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(b.startTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-                          {" - "}
-                          {new Date(b.endTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-                        </div>
+  <Clock className="h-3 w-3" />
+  {new Date(b.startTime).toLocaleDateString("vi-VN")}{" "}
+  ({new Date(b.startTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })})
+  {" - "}
+  {new Date(b.endTime).toLocaleDateString("vi-VN")}{" "}
+  ({new Date(b.endTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })})
+</div>
+
                       </div>
 
                       <div className="text-xs text-muted-foreground">{b.stationAddress}</div>
@@ -188,11 +231,20 @@ export default function BookingHistoryPage() {
                       {STATUS_TABS.find(t => t.key === b.status)?.label ?? b.status}
                     </Badge>
 
-                    {b.status === "BOOKING" && (
-                      <Button size="sm" variant="destructive" onClick={() => handleCancel(b.bookingId)}>
-                        Hủy
-                      </Button>
-                    )}
+                   {b.status === "BOOKING" && (
+  <Button 
+    size="sm" 
+    variant="destructive" 
+    onClick={() => {
+      setCancelBookingId(b.bookingId)
+      setBankAccount("")
+      setBankName("")
+    }}
+  >
+    Hủy
+  </Button>
+)}
+
                   </div>
                 </div>
               ))}
@@ -200,6 +252,35 @@ export default function BookingHistoryPage() {
           )}
         </CardContent>
       </Card>
+      <Dialog open={cancelBookingId !== null} onOpenChange={() => setCancelBookingId(null)}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Hủy đặt cọc</DialogTitle>
+    </DialogHeader>
+
+    <div className="space-y-3">
+      <Input 
+        placeholder="Số tài khoản ngân hàng"
+        value={bankAccount}
+        onChange={(e) => setBankAccount(e.target.value)}
+      />
+
+      <Input 
+        placeholder="Tên ngân hàng (VD: Vietcombank)"
+        value={bankName}
+        onChange={(e) => setBankName(e.target.value)}
+      />
+
+      <Button 
+        className="w-full mt-2" 
+        onClick={submitCancelBooking}
+      >
+        Xác nhận hủy cọc
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
+
     </div>
   )
 }

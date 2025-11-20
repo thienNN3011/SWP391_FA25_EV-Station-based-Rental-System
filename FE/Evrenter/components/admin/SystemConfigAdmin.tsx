@@ -103,7 +103,7 @@ export default function SystemConfigAdmin() {
                   <TableHead>Thông số</TableHead>
                   <TableHead>Giá trị</TableHead>
                   <TableHead>Đơn vị</TableHead>
-                  <TableHead className="text-right">Hành động</TableHead>
+                 
                 </TableRow>
               </TableHeader>
               <TableBody>

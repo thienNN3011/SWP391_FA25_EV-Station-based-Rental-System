@@ -57,7 +57,7 @@ export function Header() {
             href="/booking-history"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Xe đang được booking
+            Booking
           </Link>
           <Link
             href="/dashboard"
@@ -96,7 +96,7 @@ export function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/booking-history" className="flex items-center gap-2">
-                    <Car className="h-4 w-4" /> Xe đang được booking
+                    <Car className="h-4 w-4" /> Booking
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

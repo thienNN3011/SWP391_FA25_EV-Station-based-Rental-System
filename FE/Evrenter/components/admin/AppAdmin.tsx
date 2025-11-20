@@ -23,8 +23,8 @@ import { OrderManagement } from "@/components/admin/OrderManagement"
 import IncidentReportManagement from "@/components/admin/IncidentReportAdmin"
 import { useAuth } from "@/components/auth-context"  
 import SystemConfigAdmin from "./SystemConfigAdmin"
-
-type ActivePage = "dashboard" | "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident" | "config"
+import RefundManagementPage from "./RefundManagementPage"
+type ActivePage = "dashboard" | "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident" | "config" | "refund"
 
 const menuItems = [
   { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
@@ -35,6 +35,7 @@ const menuItems = [
   { id: "orders" as ActivePage, label: "Quản lý đơn thuê", icon: FileText },
   { id: "incident" as ActivePage, label: "Báo cáo tai nạn", icon: FileText },
    { id: "config" as ActivePage, label: "Cấu hình hệ thống", icon: FileText },
+   { id: "refund" as ActivePage, label: "Hoàn tiền booking", icon: FileText },
 ]
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {
@@ -127,6 +128,8 @@ function renderActivePage(activePage: ActivePage) {
       return <IncidentReportManagement />
     case "config":
       return <SystemConfigAdmin />
+     case "refund":
+      return <RefundManagementPage />  
     default:
       return <Dashboard />
   }
