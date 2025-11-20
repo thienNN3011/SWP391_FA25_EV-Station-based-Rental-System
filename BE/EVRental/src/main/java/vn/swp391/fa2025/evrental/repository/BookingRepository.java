@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import vn.swp391.fa2025.evrental.dto.response.MonthlyBookingStatsResponse;
+import vn.swp391.fa2025.evrental.dto.response.StationBookingStatsDTO;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.enums.BookingStatus;
 
@@ -103,7 +103,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     // Get breakdown by station for a month
     @Query("""
-        SELECT new vn.swp391.fa2025.evrental.dto.response.MonthlyBookingStatsResponse.StationBookingStats(
+        SELECT new vn.swp391.fa2025.evrental.dto.response.StationBookingStatsDTO(
             s.stationId,
             s.stationName,
             COUNT(b.bookingId)
@@ -117,7 +117,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         GROUP BY s.stationId, s.stationName
         ORDER BY s.stationName
         """)
-    List<MonthlyBookingStatsResponse.StationBookingStats> getCompletedBookingsBreakdownByStation(
+    List<StationBookingStatsDTO> getCompletedBookingsBreakdownByStation(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );

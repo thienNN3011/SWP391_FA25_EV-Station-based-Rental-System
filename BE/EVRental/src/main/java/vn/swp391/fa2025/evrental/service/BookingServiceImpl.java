@@ -641,7 +641,7 @@ public class BookingServiceImpl implements  BookingService{
         // Otherwise, get stats for all stations with breakdown
         else {
             Long totalCount = bookingRepository.countCompletedBookingsByMonth(startDate, endDate);
-            List<MonthlyBookingStatsResponse.StationBookingStats> breakdown =
+            List<StationBookingStatsDTO> breakdown =
                     bookingRepository.getCompletedBookingsBreakdownByStation(startDate, endDate);
 
             return responseBuilder

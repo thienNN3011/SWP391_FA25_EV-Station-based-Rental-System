@@ -19,16 +19,6 @@ public class MonthlyBookingStatsResponse {
     private String stationName;  // null if all stations
     
     // Optional: Breakdown by station (only if stationId was null in request)
-    private List<StationBookingStats> stationBreakdown;
-    
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class StationBookingStats {
-        private Long stationId;
-        private String stationName;
-        private Long completedBookings;
-    }
+    private List<StationBookingStatsDTO> stationBreakdown;
 }
 
