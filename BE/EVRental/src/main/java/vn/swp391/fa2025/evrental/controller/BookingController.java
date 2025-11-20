@@ -181,4 +181,26 @@ public class BookingController {
         response.setCode(200);
         return response;
     }
+
+    @PostMapping("/stats/monthly-completed")
+    ApiResponse<MonthlyBookingStatsResponse> getMonthlyCompletedBookingsStats(
+            @Valid @RequestBody MonthlyBookingStatsRequest request) {
+        ApiResponse<MonthlyBookingStatsResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setCode(200);
+        MonthlyBookingStatsResponse data = bookingService.getMonthlyCompletedBookingsStats(request);
+
+        if (data.getTotalCompletedBookings() == 0) {
+            response.setMessage("Không có booking hoàn thành nào trong tháng " +
+                    request.getMonth() + "/" + request.getYear());
+        } else {
+            String stationInfo = request.getStationId() != null ?
+                    " tại trạm " + data.getStationName() : " (tất cả trạm)";
+            response.setMessage("Lấy thống kê booking hoàn thành tháng " +
+                    request.getMonth() + "/" + request.getYear() + stationInfo + " thành công");
+        }
+
+        response.setData(data);
+        return response;
+    }
 }

@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
+import vn.swp391.fa2025.evrental.dto.request.MonthlyBookingStatsRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.*;
@@ -609,6 +610,46 @@ public class BookingServiceImpl implements  BookingService{
                 staff,
                 reason
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MonthlyBookingStatsResponse getMonthlyCompletedBookingsStats(MonthlyBookingStatsRequest request) {
+        // Calculate start and end date for the month
+        LocalDateTime startDate = LocalDateTime.of(request.getYear(), request.getMonth(), 1, 0, 0, 0);
+        LocalDateTime endDate = startDate.plusMonths(1);
+
+        MonthlyBookingStatsResponse.MonthlyBookingStatsResponseBuilder responseBuilder =
+                MonthlyBookingStatsResponse.builder()
+                        .month(request.getMonth())
+                        .year(request.getYear());
+
+        // If stationId is provided, get stats for that station only
+        if (request.getStationId() != null) {
+            Station station = stationRepository.findById(request.getStationId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy trạm với ID: " + request.getStationId()));
+
+            Long count = bookingRepository.countCompletedBookingsByMonthAndStation(
+                    startDate, endDate, request.getStationId());
+
+            return responseBuilder
+                    .totalCompletedBookings(count)
+                    .stationName(station.getStationName())
+                    .stationBreakdown(null)
+                    .build();
+        }
+        // Otherwise, get stats for all stations with breakdown
+        else {
+            Long totalCount = bookingRepository.countCompletedBookingsByMonth(startDate, endDate);
+            List<MonthlyBookingStatsResponse.StationBookingStats> breakdown =
+                    bookingRepository.getCompletedBookingsBreakdownByStation(startDate, endDate);
+
+            return responseBuilder
+                    .totalCompletedBookings(totalCount)
+                    .stationName(null)
+                    .stationBreakdown(breakdown)
+                    .build();
+        }
     }
 
 }

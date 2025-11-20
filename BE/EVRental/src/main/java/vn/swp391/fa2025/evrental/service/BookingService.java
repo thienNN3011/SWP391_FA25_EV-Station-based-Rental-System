@@ -3,6 +3,7 @@ package vn.swp391.fa2025.evrental.service;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
+import vn.swp391.fa2025.evrental.dto.request.MonthlyBookingStatsRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Booking;
@@ -29,4 +30,7 @@ public interface BookingService {
     boolean isRefundWhenCancel(Long bookingId);
     void updateBookingVehicle(Long bookingId, Long vehicleId);
     void cancelBookingForStaff(Long bookingId, String referenceCode, LocalDateTime transactionDate, String reason);
+
+    // New method for monthly completed bookings statistics
+    MonthlyBookingStatsResponse getMonthlyCompletedBookingsStats(MonthlyBookingStatsRequest request);
 }

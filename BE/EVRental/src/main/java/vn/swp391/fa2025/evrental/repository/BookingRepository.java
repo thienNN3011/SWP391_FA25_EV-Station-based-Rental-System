@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import vn.swp391.fa2025.evrental.dto.response.MonthlyBookingStatsResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.enums.BookingStatus;
 
@@ -29,7 +30,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     BigDecimal getTotalRevenueByUsername(@Param("username") String username);
 
     @Query(value = """
-    SELECT 
+    SELECT
         b.bookingId,
         b.status,
         b.actualEndTime,
@@ -55,9 +56,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         WHERE config_key = 'REFUND'
     ) config_refund
     CROSS APPLY (
-        SELECT amount 
-        FROM payments 
-        WHERE booking_id = b.bookingId 
+        SELECT amount
+        FROM payments
+        WHERE booking_id = b.bookingId
           AND paymentType = 'DEPOSIT'
     ) p_deposit
     WHERE b.status = 'CANCELLED'
@@ -71,4 +72,53 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       )
     """, nativeQuery = true)
     List<Object[]> findCancelledWithRefundDetails();
+
+    // Count completed bookings for all stations in a month
+    @Query("""
+        SELECT COUNT(b)
+        FROM Booking b
+        WHERE b.status = 'COMPLETED'
+          AND b.actualEndTime >= :startDate
+          AND b.actualEndTime < :endDate
+        """)
+    Long countCompletedBookingsByMonth(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    // Count completed bookings for a specific station in a month
+    @Query("""
+        SELECT COUNT(b)
+        FROM Booking b
+        WHERE b.status = 'COMPLETED'
+          AND b.actualEndTime >= :startDate
+          AND b.actualEndTime < :endDate
+          AND b.vehicle.station.stationId = :stationId
+        """)
+    Long countCompletedBookingsByMonthAndStation(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("stationId") Long stationId
+    );
+
+    // Get breakdown by station for a month
+    @Query("""
+        SELECT new vn.swp391.fa2025.evrental.dto.response.MonthlyBookingStatsResponse.StationBookingStats(
+            s.stationId,
+            s.stationName,
+            COUNT(b.bookingId)
+        )
+        FROM Booking b
+        JOIN b.vehicle v
+        JOIN v.station s
+        WHERE b.status = 'COMPLETED'
+          AND b.actualEndTime >= :startDate
+          AND b.actualEndTime < :endDate
+        GROUP BY s.stationId, s.stationName
+        ORDER BY s.stationName
+        """)
+    List<MonthlyBookingStatsResponse.StationBookingStats> getCompletedBookingsBreakdownByStation(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }
