@@ -15,17 +15,7 @@ public interface  UserMapper {
     @Mapping(target = "driveLicensePhoto", source = "driveLicensePhotoPath")
     User toEntity(RegisterCustomerRequest req, String idCardPhotoPath, String driveLicensePhotoPath);
 
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "username", source = "username")
-    @Mapping(target = "password", source = "password")
-    @Mapping(target = "fullName", source = "fullName")
-    @Mapping(target = "email", source = "email")
-    @Mapping(target = "phone", source = "phone")
-    @Mapping(target = "idCard", source = "idCard")
-    @Mapping(target = "driveLicense", source = "driveLicense")
-    @Mapping(target = "idCardPhoto", source = "idCardPhoto")
-    @Mapping(target = "driveLicensePhoto", source = "driveLicensePhoto")
-    User toStaffEntity(CreateStaffRequest req);
+
 
     CustomerResponse toDto(User user);
 
@@ -35,7 +25,7 @@ public interface  UserMapper {
     @Mapping(target = "createdDate", source = "createdDate")
     CustomerResponse toShortResponse(User user);
 
-    //map showall Renters
+
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "username", source = "username")
     @Mapping(target = "fullName", source = "fullName")
@@ -48,7 +38,7 @@ public interface  UserMapper {
     @Mapping(target = "driveLicensePhoto", source = "driveLicensePhoto")
     RenterListResponse toRenterListResponse(User user);
 
-    //map showall Staffs
+
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "username", source = "username")
     @Mapping(target = "fullName", source = "fullName")
@@ -61,7 +51,7 @@ public interface  UserMapper {
     @Mapping(target = "driveLicensePhoto", source = "driveLicensePhoto")
     StaffListResponse toStaffListResponse(User user);
 
-    //map updateuser
+
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "username", source = "username")
     @Mapping(target = "fullName", source = "fullName")

@@ -155,7 +155,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
 
     @GetMapping("/showuserinfo")
     public ApiResponse<CustomerResponse> showUserInfo() {
-        // Lấy username từ token
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
