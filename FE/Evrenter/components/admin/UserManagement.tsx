@@ -152,20 +152,18 @@ export function UserManagement() {
   }
   
   function openCreateDialog() {
-    setEditingUser(null)
-    setForm({
-      username: "",
-      fullName: "",
-      email: "",
-      phone: "",
-      idCard: "",
-      driveLicense: "",
-      role: activeTab === "staffs" ? "STAFF" : "CUSTOMER",
-      password: "",
-      status: "ACTIVE"
-    })
-    setIsEditDialogOpen(true)
-  }
+  setEditingUser(null)
+  setForm({
+    username: "",
+    password: "",
+    fullName: "",
+    email: "",
+    phone: "",
+    stationId: ""
+  })
+  setIsEditDialogOpen(true)
+}
+
   
   function openEditDialog(user: CustomerResponse) {
     setEditingUser(user)
@@ -183,65 +181,36 @@ export function UserManagement() {
     setIsEditDialogOpen(true)
   }
   
- async function handleSave() {
-  if (!form.fullName || !form.email || !form.phone) {
+async function handleSave() {
+  if (!form.username || !form.password || !form.fullName || !form.email || !form.phone || !form.stationId) {
     alert("Vui lòng nhập đầy đủ thông tin bắt buộc")
     return
   }
 
   try {
-    if (editingUser) {
-      // Cập nhật user cũ
-      const payload: CustomerUpdatePayload = {
-        fullName: form.fullName,
-        email: form.email,
-        phone: form.phone,
-        idCard: form.idCard,
-        driveLicense: form.driveLicense,
-        status: form.status as any
-      }
-      await updateCustomer(editingUser.userId, payload)
-    } else {
-      // Tạo mới
-      if (!form.username || !form.password) {
-        alert("Vui lòng nhập username và password")
-        return
-      }
-
-      if (form.role === "STAFF") {
-  const res = await api.post("/admin/staffs", {
-    username: form.username,
-    password: form.password,
-    fullName: form.fullName,
-    email: form.email,
-    phone: form.phone
-  })
-  if (res.data.success) {
-    alert(res.data.message || "Tạo staff thành công")
-  }
-      } else {
-        // Tạo CUSTOMER bình thường
-        const payload: CustomerCreatePayload = {
-          username: form.username!,
-          fullName: form.fullName!,
-          email: form.email!,
-          phone: form.phone!,
-          idCard: form.idCard!,
-          driveLicense: form.driveLicense!,
-          role: form.role as any,
-          password: form.password!,
-          stationId: form.stationId!
-        }
-        await createCustomer(payload)
-      }
+    const payload = {
+      username: form.username,
+      password: form.password,
+      fullName: form.fullName,
+      email: form.email,
+      phone: form.phone,
+      stationId: form.stationId
     }
 
-    setIsEditDialogOpen(false)
-    await loadAllData()
+    const res = await api.post("/admin/staffs", payload)
+    if (res.data.success) {
+      alert(res.data.message || "Tạo staff thành công")
+      setIsEditDialogOpen(false)
+      await loadAllData()
+    } else {
+      alert(res.data.message || "Tạo staff thất bại")
+    }
   } catch (e: any) {
-    alert("Lỗi khi lưu: " + e.message)
+    alert("Lỗi khi tạo staff: " + (e.response?.data?.message || e.message))
   }
 }
+
+
 
   
   async function handleDelete(userId: number) {
@@ -570,136 +539,115 @@ export function UserManagement() {
         </Dialog>
 
         {/* Dialog thêm/sửa */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>{editingUser ? "Sửa người dùng" : "Thêm người dùng mới"}</DialogTitle>
-              <DialogDescription>
-                {editingUser ? "Cập nhật thông tin người dùng" : "Nhập thông tin người dùng mới"}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-4">
-             {!editingUser && (
+     {/* Dialog thêm/sửa */}
+<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+  <DialogContent className="max-w-2xl">
+    <DialogHeader>
+      <DialogTitle>{editingUser ? "Sửa nhân viên" : "Thêm nhân viên mới"}</DialogTitle>
+      <DialogDescription>
+        {editingUser ? "Cập nhật thông tin nhân viên" : "Nhập thông tin nhân viên mới"}
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="grid grid-cols-2 gap-4">
+    {!editingUser && (
   <>
     <div>
       <Label htmlFor="username">Username *</Label>
-      <Input 
-        id="username" 
-        placeholder="username123" 
-        value={form.username ?? ""} 
-        onChange={(e) => setForm((s) => ({ ...s, username: e.target.value }))} 
+      <Input
+        id="username"
+        placeholder="username123"
+        value={form.username ?? ""}
+        onChange={(e) => setForm((s) => ({ ...s, username: e.target.value }))}
       />
     </div>
     <div>
       <Label htmlFor="password">Mật khẩu *</Label>
-      <Input 
-        id="password" 
+      <Input
+        id="password"
         type="password"
-        placeholder="******" 
-        value={form.password ?? ""} 
-        onChange={(e) => setForm((s) => ({ ...s, password: e.target.value }))} 
+        placeholder="******"
+        value={form.password ?? ""}
+        onChange={(e) => setForm((s) => ({ ...s, password: e.target.value }))}
+      />
+    </div>
+    <div>
+      <Label htmlFor="fullName">Họ tên *</Label>
+      <Input
+        id="fullName"
+        placeholder="Nguyễn Văn A"
+        value={form.fullName ?? ""}
+        onChange={(e) => setForm((s) => ({ ...s, fullName: e.target.value }))}
+      />
+    </div>
+    <div>
+      <Label htmlFor="email">Email *</Label>
+      <Input
+        id="email"
+        type="email"
+        placeholder="email@example.com"
+        value={form.email ?? ""}
+        onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
+      />
+    </div>
+    <div>
+      <Label htmlFor="phone">Số điện thoại *</Label>
+      <Input
+        id="phone"
+        placeholder="0901234567"
+        value={form.phone ?? ""}
+        onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
       />
     </div>
     <div>
       <Label htmlFor="stationId">Station ID *</Label>
-      <Input 
+      <Input
         id="stationId"
-        placeholder="Nhập Station ID" 
-        value={form.stationId ?? ""} 
-        onChange={(e) => setForm((s) => ({ ...s, stationId: e.target.value }))} 
+        placeholder="Nhập Station ID"
+        value={form.stationId ?? ""}
+        onChange={(e) => setForm((s) => ({ ...s, stationId: e.target.value }))}
       />
     </div>
   </>
 )}
 
-              <div>
-                <Label htmlFor="fullName">Họ tên *</Label>
-                <Input 
-                  id="fullName" 
-                  placeholder="Nguyễn Văn A" 
-                  value={form.fullName ?? ""} 
-                  onChange={(e) => setForm((s) => ({ ...s, fullName: e.target.value }))} 
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email *</Label>
-                <Input 
-                  id="email" 
-                  type="email"
-                  placeholder="email@example.com" 
-                  value={form.email ?? ""} 
-                  onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))} 
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Số điện thoại *</Label>
-                <Input 
-                  id="phone" 
-                  placeholder="0901234567" 
-                  value={form.phone ?? ""} 
-                  onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))} 
-                />
-              </div>
-              <div>
-                <Label htmlFor="idCard">Số CCCD</Label>
-                <Input 
-                  id="idCard" 
-                  placeholder="001234567890" 
-                  value={form.idCard ?? ""} 
-                  onChange={(e) => setForm((s) => ({ ...s, idCard: e.target.value }))} 
-                />
-              </div>
-              <div>
-                <Label htmlFor="driveLicense">Số GPLX</Label>
-                <Input 
-                  id="driveLicense" 
-                  placeholder="012345678" 
-                  value={form.driveLicense ?? ""} 
-                  onChange={(e) => setForm((s) => ({ ...s, driveLicense: e.target.value }))} 
-                />
-              </div>
-              {!editingUser && (
-                <div>
-                  <Label htmlFor="role">Vai trò</Label>
-                  <Select value={form.role} onValueChange={(v) => setForm((s) => ({ ...s, role: v as any }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn vai trò" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CUSTOMER">CUSTOMER</SelectItem>
-                      <SelectItem value="STAFF">STAFF</SelectItem>
-                      <SelectItem value="ADMIN">ADMIN</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              {editingUser && (
-                <div>
-                  <Label htmlFor="status">Trạng thái</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm((s) => ({ ...s, status: v }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn trạng thái" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                      <SelectItem value="INACTIVE">INACTIVE</SelectItem>
-                      <SelectItem value="PENDING">PENDING</SelectItem>
-                      <SelectItem value="REJECTED">REJECTED</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                Hủy
-              </Button>
-              <Button onClick={handleSave}>
-                {editingUser ? "Cập nhật" : "Tạo mới"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+      <div>
+        <Label htmlFor="fullName">Họ tên *</Label>
+        <Input 
+          id="fullName" 
+          placeholder="Nguyễn Văn Test312" 
+          value={form.fullName ?? ""} 
+          onChange={(e) => setForm((s) => ({ ...s, fullName: e.target.value }))} 
+        />
+      </div>
+      <div>
+        <Label htmlFor="email">Email *</Label>
+        <Input 
+          id="email" 
+          type="email"
+          placeholder="stafftest01223@evrental.com" 
+          value={form.email ?? ""} 
+          onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))} 
+        />
+      </div>
+      <div>
+        <Label htmlFor="phone">Số điện thoại *</Label>
+        <Input 
+          id="phone" 
+          placeholder="0901235557" 
+          value={form.phone ?? ""} 
+          onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))} 
+        />
+      </div>
+    </div>
+
+    <div className="flex justify-end gap-2 pt-4">
+      <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Hủy</Button>
+      <Button onClick={handleSave}>{editingUser ? "Cập nhật" : "Tạo mới"}</Button>
+    </div>
+  </DialogContent>
+</Dialog>
+
       </div>
     </div>
   )

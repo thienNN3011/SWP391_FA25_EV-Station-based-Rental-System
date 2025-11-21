@@ -58,7 +58,7 @@ export default function StartRentalStaff() {
       console.error("Start rental error:", err)
       setMessage(
         err.response?.data?.message ||
-          "Không thể gửi yêu cầu nhận xe. Vui lòng thử lại."
+          "Kiểm tra lại dữ liệu nhập vào. Vui lòng thử lại."
       )
     } finally {
       setLoading(false)

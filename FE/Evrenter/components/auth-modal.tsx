@@ -193,25 +193,23 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
                   <Label htmlFor="signin-username">Tên đăng nhập</Label>
                   <Input id="signin-username" type="text" placeholder="Tên đăng nhập" required />
                 </div>
-                <div className="relative space-y-2">
-  <Label htmlFor="signin-password">Mật khẩu</Label>
-  <div className="relative">
-    <Input
-      id="signin-password"
-      type={showPassword ? "text" : "password"}
-      placeholder="••••••••"
-      required
-      className="pr-10"
-    />
-    <button
-      type="button"
-      onClick={() => setShowPassword(!showPassword)}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-    >
-      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-    </button>
-  </div>
-</div>
+                 <div className="relative space-y-2">
+                  <Label htmlFor="signin-password">Mật khẩu</Label>
+                  <Input
+                    id="signin-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    required
+                    className="pr-10 h-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
 
                 {error && <p className="text-red-500 text-sm">{error}</p>}
                 <Button type="submit" className="w-full">Đăng Nhập</Button>
@@ -231,25 +229,13 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
       <Input id="username" name="username" required pattern="^[a-zA-Z0-9_]{4,20}$" title="4-20 ký tự, chữ/số/_" />
     </div>
 
-    <div className="relative space-y-2">
-  <Label htmlFor="signin-password">Mật khẩu</Label>
-  <div className="relative">
-    <Input
-      id="signin-password"
-      type={showPassword ? "text" : "password"}
-      placeholder="••••••••"
-      required
-      className="pr-10"
-    />
-    <button
-      type="button"
-      onClick={() => setShowPassword(!showPassword)}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-    >
-      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-    </button>
-  </div>
-</div>
+   <div className="relative space-y-2">
+      <Label htmlFor="password">Mật khẩu</Label>
+      <Input id="password" name="password" type={showPassword ? "text" : "password"} required className="pr-10 h-10" />
+      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
+        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+      </button>
+    </div>
 
     <div className="space-y-2">
       <Label htmlFor="phone">Số điện thoại</Label>
@@ -263,12 +249,14 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
 
     <div className="space-y-2">
       <Label htmlFor="idCard">Số CCCD</Label>
-      <Input id="idCard" name="idCard" required pattern="^\\d{9}|\\d{12}$" title="9 hoặc 12 số" />
+     <Input id="idCard" name="idCard" required pattern="^\d{9}$|^\d{12}$" title="9 hoặc 12 số" />
+
     </div>
 
     <div className="space-y-2">
       <Label htmlFor="driveLicense">Số GPLX</Label>
-      <Input id="driveLicense" name="driveLicense" required pattern="^\\d{8,12}$" title="8-12 số" />
+      <Input id="driveLicense" name="driveLicense" required pattern="^\d{9}$|^\d{12}$" title="9 hoặc 12 số" />
+
     </div>
 
     <div className="space-y-2">

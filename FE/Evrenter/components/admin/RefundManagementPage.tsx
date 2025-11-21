@@ -145,7 +145,7 @@ export default function RefundInlinePage() {
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <DollarSign className="text-green-600 w-6 h-6" />
-            Quản lý hoàn tiền (Inline)
+            Quản lý hoàn tiền 
           </h1>
           <p className="text-muted-foreground">Danh sách booking cần hoàn tiền — thao tác nhanh</p>
         </div>

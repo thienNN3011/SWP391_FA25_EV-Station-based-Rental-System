@@ -133,13 +133,13 @@ function renderActivePage(activePage: ActivePage) {
 }
 
 export default function AppAdmin() {
-  const [activePage, setActivePage] = useState<ActivePage>("users") // <-- mặc định hợp lệ
+  const [activePage, setActivePage] = useState<ActivePage>("users") 
   const { user, logout } = useAuth()
   const router = useRouter()
 
   const handleLogout = () => {
     logout()
-    router.push("http://localhost:3000") // redirect sau khi logout
+    router.push("http://localhost:3000") 
   }
 
   return (
@@ -163,7 +163,7 @@ export default function AppAdmin() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleLogout} // <-- dùng hàm mới
+                    onClick={handleLogout} 
                     className="flex items-center gap-2 text-red-600"
                   >
                     <LogOut className="h-4 w-4" /> Đăng xuất

@@ -36,16 +36,16 @@ public class RegistrationService {
     public CustomerResponse registerCustomer(RegisterCustomerRequest req) {
         // Validate duplicates (409 Conflict)
         if (userRepository.existsByUsername(req.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already existx s");
+            throw new RuntimeException( "Username đã tồn tại ");
         }
         if (userRepository.existsByEmail(req.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new RuntimeException( "Email đã tồn tại");
         }
         if (userRepository.existsByIdCard(req.getIdCard())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "ID card already exists");
+            throw new RuntimeException(  "CCCD đã tồn tại");
         }
         if (userRepository.existsByDriveLicense(req.getDriveLicense())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Driver license already exists");
+           throw new RuntimeException(  "Số GPLX đã tồn tại");
         }
 
         // Store images
