@@ -145,44 +145,43 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public StaffResponse createStaff(String adminUsername, CreateStaffRequest request) {
+
         User admin = userRepository.findByUsername(adminUsername);
         if (admin == null || !"ADMIN".equals(admin.getRole().toString())) {
             throw new BusinessException("Chỉ ADMIN mới được tạo tài khoản staff");
         }
 
+
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new BusinessException("Username đã tồn tại: " + request.getUsername());
+            throw new BusinessException("Username đã tồn tại");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("Email đã tồn tại: " + request.getEmail());
+            throw new BusinessException("Email đã tồn tại");
         }
         if (userRepository.existsByPhone(request.getPhone())) {
-            throw new BusinessException("Số điện thoại đã tồn tại: " + request.getPhone());
-        }
-        if (request.getIdCard() != null && !request.getIdCard().isBlank() && userRepository.existsByIdCard(request.getIdCard())) {
-            throw new BusinessException("CMND/CCCD đã tồn tại: " + request.getIdCard());
-        }
-        if (request.getDriveLicense() != null && !request.getDriveLicense().isBlank()
-                && userRepository.existsByDriveLicense(request.getDriveLicense())) {
-            throw new BusinessException("Bằng lái đã tồn tại: " + request.getDriveLicense());
+            throw new BusinessException("Số điện thoại đã tồn tại");
         }
 
-        Station station = null;
-        if (request.getStationId() != null) {
-            station = stationRepository.findById(request.getStationId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy station với ID: " + request.getStationId()));
-            if (!StationStatus.OPEN.equals(station.getStatus())) {
-                throw new BusinessException("Station hiện không mở, vui lòng chọn station khác");
-            }
+        Station station = stationRepository.findById(request.getStationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trạm với ID: " + request.getStationId()));
+
+        if (!StationStatus.OPEN.equals(station.getStatus())) {
+            throw new BusinessException("Trạm đã đóng, không thể gán staff");
         }
 
-        User staff = userMapper.toStaffEntity(request);
-        staff.setPassword(passwordEncoder.encode(request.getPassword()));
-        staff.setRole(UserRole.STAFF);
-        staff.setStatus(UserStatus.ACTIVE);
-        staff.setCreatedDate(LocalDateTime.now());
-        staff.setUpdatedDate(LocalDateTime.now());
-        staff.setStation(station);
+
+        User staff = User.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .phone(request.getPhone())
+                .role(UserRole.STAFF)
+                .status(UserStatus.ACTIVE)
+                .station(station)
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
+                .build();
 
         User saved = userRepository.save(staff);
         return userMapper.toStaffResponse(saved);

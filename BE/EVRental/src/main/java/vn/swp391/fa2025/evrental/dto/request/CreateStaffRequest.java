@@ -1,45 +1,31 @@
 package vn.swp391.fa2025.evrental.dto.request;
 
-// Purpose: capture admin -> create staff payload; Tests: MockMvc POST /admin/staffs with JWT ADMIN
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
 public class CreateStaffRequest {
 
-    @NotBlank(message = "Username is required")
+    @NotBlank(message = "Username không được để trống")
     private String username;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "Password không được để trống")
     private String password;
 
-    @NotBlank(message = "Full name is required")
+    @NotBlank(message = "Họ tên không được để trống")
     private String fullName;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không hợp lệ")
     private String email;
 
-    @NotBlank(message = "Phone is required")
-    @Pattern(
-        regexp = "^[+]?[0-9]{7,15}$",
-        message = "Invalid phone format"
-    )
+    @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "^[+]?[0-9]{7,15}$", message = "Số điện thoại không hợp lệ")
     private String phone;
 
-    private String idCard;
-
-    private String driveLicense;
-
-    private String idCardPhoto;
-
-    private String driveLicensePhoto;
-
-    /**
-     * Station to assign the staff to. Optional for now.
-     */
+    @NotNull(message = "Station ID không được để trống")
     private Long stationId;
 }
