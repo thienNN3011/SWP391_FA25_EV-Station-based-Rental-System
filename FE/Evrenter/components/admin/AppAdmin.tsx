@@ -14,7 +14,7 @@ import {
   SidebarProvider
 } from "@/components/ui/sidebar"
 
-import { Dashboard } from "@/components/admin/Dashboard"
+
 import { UserManagement } from "@/components/admin/UserManagement"
 import { VehicleManagement } from "@/components/admin/VehicleManagement"
 import { LocationManagement } from "@/components/admin/LocationManagement"
@@ -24,10 +24,10 @@ import IncidentReportManagement from "@/components/admin/IncidentReportAdmin"
 import { useAuth } from "@/components/auth-context"  
 import SystemConfigAdmin from "./SystemConfigAdmin"
 import RefundManagementPage from "./RefundManagementPage"
-type ActivePage = "dashboard" | "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident" | "config" | "refund"
+type ActivePage =  "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident" | "config" | "refund"
 
 const menuItems = [
-  { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
+  
   { id: "users" as ActivePage, label: "Quản lý người dùng", icon: Users },
   { id: "vehicles" as ActivePage, label: "Quản lý xe", icon: Car },
   { id: "locations" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
@@ -112,8 +112,6 @@ function MobileSidebar({ activePage, setActivePage }: { activePage: ActivePage; 
 
 function renderActivePage(activePage: ActivePage) {
   switch (activePage) {
-    case "dashboard":
-      return <Dashboard />
     case "users":
       return <UserManagement />
     case "vehicles":
@@ -130,8 +128,6 @@ function renderActivePage(activePage: ActivePage) {
       return <SystemConfigAdmin />
      case "refund":
       return <RefundManagementPage />  
-    default:
-      return <Dashboard />
   }
 }
 

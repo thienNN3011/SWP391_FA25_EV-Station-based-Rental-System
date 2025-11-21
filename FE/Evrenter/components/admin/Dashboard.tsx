@@ -292,80 +292,10 @@ export function Dashboard() {
         </div>
 
 
-        {/* PIE CHART */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Phân bố loại xe</CardTitle>
-            <CardDescription>Theo số lượng</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={vehicleTypeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  dataKey="value"
-                >
-                  {vehicleTypeData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+     
 
 
-        {/* RECENT ORDERS */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Đơn thuê gần đây</CardTitle>
-            <CardDescription>5 đơn thuê mới nhất</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div>
-                      <p className="font-medium">{order.id}</p>
-                      <p className="text-sm text-muted-foreground">{order.customer}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm">{order.vehicle}</p>
-                      <p className="text-xs text-muted-foreground">Xe thuê</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <p className="font-medium">{order.amount}</p>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs ${
-                          order.status === "Đang thuê"
-                            ? "bg-blue-100 text-blue-800"
-                            : order.status === "Hoàn thành"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
-
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-
+        
       </div>
     </div>
   )

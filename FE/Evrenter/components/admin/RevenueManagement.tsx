@@ -78,37 +78,38 @@ export function RevenueManagement() {
   }, [selectedStation, year, stations])
 
   // Load orders
-  useEffect(() => {
-    if (!selectedStation) return
-    const station = stations.find(s => s.stationName === selectedStation)
-    if (!station) return
+useEffect(() => {
+  if (!selectedStation) return
+  const station = stations.find(s => s.stationName === selectedStation)
+  if (!station) return
 
-    const loadOrders = async () => {
-      try {
-        const arr: { month: string; orders: number }[] = []
+  const loadOrders = async () => {
+    try {
+      const res = await api.post("/bookings/stats/yearly-completed", {
+        stationName: selectedStation,
+        year
+      })
 
-        // Gọi API từng tháng
-        for (let m = 1; m <= 12; m++) {
-          const res = await api.post("/bookings/stats/yearly-completed", {
-            
-            stationName: selectedStation,
-            
-            year
-          })
-         arr.push({
-  month: `T${m}`,
-  orders: res.data.data?.completedBookings || 0
-})
-        }
+      const arr: { month: string; orders: number }[] = []
 
-        setOrderData(arr)
-      } catch (err) {
-        console.error("Lỗi API orders:", err)
+      // Map dữ liệu từng tháng
+      for (let m = 1; m <= 12; m++) {
+        const monthData = res.data.data.find((d: any) => d.month === m)
+        arr.push({
+          month: `T${m}`,
+          orders: monthData?.completedBookings || 0
+        })
       }
-    }
 
-    loadOrders()
-  }, [selectedStation, year, stations])
+      setOrderData(arr)
+    } catch (err) {
+      console.error("Lỗi API orders:", err)
+    }
+  }
+
+  loadOrders()
+}, [selectedStation, year, stations])
+
 
   return (
     <div className="h-full w-full overflow-auto">
