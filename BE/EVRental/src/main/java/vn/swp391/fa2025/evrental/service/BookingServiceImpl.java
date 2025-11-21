@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.MonthlyBookingStatsRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest;
+import vn.swp391.fa2025.evrental.dto.request.StationCompletedBookingsRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.*;
 import vn.swp391.fa2025.evrental.enums.*;
@@ -650,6 +651,44 @@ public class BookingServiceImpl implements  BookingService{
                     .stationBreakdown(breakdown)
                     .build();
         }
+    }
+
+    @Override
+    public List<StationCompletedBookingsResponse> getYearlyCompletedBookingsByStation(String stationName, int year) {
+        // Validate station exists
+        Station station = stationRepository.findByStationName(stationName);
+        if (station == null) {
+            throw new RuntimeException("Station không tồn tại");
+        }
+
+        List<StationCompletedBookingsResponse> result = new ArrayList<>();
+
+        // Determine current month (if current year, only go up to current month)
+        int currentMonth = (year == LocalDate.now().getYear())
+                ? LocalDate.now().getMonthValue()
+                : 12;
+
+        // Loop through each month
+        for (int month = 1; month <= currentMonth; month++) {
+            // Calculate start and end date for the month
+            LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0, 0);
+            LocalDateTime endDate = startDate.plusMonths(1);
+
+            // Count completed bookings for this station in this month
+            Long count = bookingRepository.countCompletedBookingsByMonthAndStation(
+                    startDate, endDate, station.getStationId());
+
+            // Add to result
+            result.add(new StationCompletedBookingsResponse(
+                    station.getStationId(),
+                    station.getStationName(),
+                    month,
+                    year,
+                    count
+            ));
+        }
+
+        return result;
     }
 
 }
