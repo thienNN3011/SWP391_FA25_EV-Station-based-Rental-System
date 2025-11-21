@@ -41,7 +41,10 @@ const colorMap: Record<string, string> = {
 
   try {
 
-    await api.post("/bookings/stoprentingtime", { bookingId }) //lấy thời giant trả xe hiện tại
+   const stopRentingRes = await api.post("/bookings/stoprentingtime", { bookingId })
+    console.log("Stop renting response:", stopRentingRes.data) 
+    setMessage(`Thời gian trả xe đã cập nhật: ${stopRentingRes.data.time || "Không có dữ liệu"}`)
+ 
 
     
     const res = await api.post("/bookings/showdetailbooking", { bookingId })

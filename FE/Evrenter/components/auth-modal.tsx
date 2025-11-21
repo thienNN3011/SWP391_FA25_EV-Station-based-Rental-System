@@ -216,10 +216,62 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
               </form>
             </TabsContent>
 
-            {/* Sign Up Tab */}
-            <TabsContent value="signup" className="space-y-4">
-              {/* ... giữ nguyên form đăng ký ... */}
-            </TabsContent>
+          
+<TabsContent value="signup" className="space-y-4">
+  <form onSubmit={handleSignUp} className="space-y-4" encType="multipart/form-data">
+    <div className="space-y-2">
+      <Label htmlFor="fullName">Họ và tên</Label>
+      <Input id="fullName" name="fullName" required pattern="^[\\p{L}\\s]+$" title="Chỉ chữ và khoảng trắng" />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="username">Tên đăng nhập</Label>
+      <Input id="username" name="username" required pattern="^[a-zA-Z0-9_]{4,20}$" title="4-20 ký tự, chữ/số/_" />
+    </div>
+
+    <div className="relative space-y-2">
+      <Label htmlFor="password">Mật khẩu</Label>
+      <Input id="password" name="password" type={showPassword ? "text" : "password"} required className="pr-10 h-10" />
+      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
+        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+      </button>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="phone">Số điện thoại</Label>
+      <Input id="phone" name="phone" type="tel" required pattern="^(0[0-9]{9})$" title="Bắt đầu 0, 10 số" />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="email">Email</Label>
+      <Input id="email" name="email" type="email" required />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="idCard">Số CCCD</Label>
+      <Input id="idCard" name="idCard" required pattern="^\\d{9}|\\d{12}$" title="9 hoặc 12 số" />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="driveLicense">Số GPLX</Label>
+      <Input id="driveLicense" name="driveLicense" required pattern="^\\d{8,12}$" title="8-12 số" />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="idCardPhoto">Ảnh CCCD</Label>
+      <Input id="idCardPhoto" name="idCardPhoto" type="file" accept="image/*" required />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="driveLicensePhoto">Ảnh GPLX</Label>
+      <Input id="driveLicensePhoto" name="driveLicensePhoto" type="file" accept="image/*" required />
+    </div>
+
+    {error && <p className="text-red-500 text-sm">{error}</p>}
+    <Button type="submit" className="w-full">Tạo tài khoản</Button>
+  </form>
+</TabsContent>
+
 
             {/* Forgot Password Tab */}
             <TabsContent value="forgot" className="space-y-4">
