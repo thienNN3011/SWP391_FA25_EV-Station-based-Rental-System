@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import vn.swp391.fa2025.evrental.dto.request.BookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.MonthlyBookingStatsRequest;
 import vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest;
+import vn.swp391.fa2025.evrental.dto.request.StationCompletedBookingsRequest;
 import vn.swp391.fa2025.evrental.dto.response.*;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
@@ -33,4 +34,7 @@ public interface BookingService {
 
     // New method for monthly completed bookings statistics
     MonthlyBookingStatsResponse getMonthlyCompletedBookingsStats(MonthlyBookingStatsRequest request);
+
+    // New method for yearly completed bookings statistics by station
+    List<StationCompletedBookingsResponse> getYearlyCompletedBookingsByStation(String stationName, int year);
 }

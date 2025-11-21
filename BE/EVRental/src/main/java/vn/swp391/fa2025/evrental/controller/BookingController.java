@@ -203,4 +203,15 @@ public class BookingController {
         response.setData(data);
         return response;
     }
+
+    @PostMapping("/stats/yearly-completed")
+    public ApiResponse<List<StationCompletedBookingsResponse>> getYearlyCompletedBookingsStats(
+            @Valid @RequestBody StationCompletedBookingsRequest request) {
+        ApiResponse<List<StationCompletedBookingsResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(bookingService.getYearlyCompletedBookingsByStation(request.getStationName(), request.getYear()));
+        response.setCode(200);
+        response.setMessage("Thống kê booking hoàn thành theo năm thành công");
+        return response;
+    }
 }
