@@ -57,7 +57,8 @@ export function UserManagement() {
     driveLicense: "",
     role: "CUSTOMER",
     password: "",
-    status: "ACTIVE"
+    status: "ACTIVE",
+    stationId: ""
   })
 
   useEffect(() => {
@@ -228,7 +229,8 @@ export function UserManagement() {
           idCard: form.idCard!,
           driveLicense: form.driveLicense!,
           role: form.role as any,
-          password: form.password!
+          password: form.password!,
+          stationId: form.stationId!
         }
         await createCustomer(payload)
       }
@@ -577,29 +579,39 @@ export function UserManagement() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4">
-              {!editingUser && (
-                <>
-                  <div>
-                    <Label htmlFor="username">Username *</Label>
-                    <Input 
-                      id="username" 
-                      placeholder="username123" 
-                      value={form.username ?? ""} 
-                      onChange={(e) => setForm((s) => ({ ...s, username: e.target.value }))} 
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Mật khẩu *</Label>
-                    <Input 
-                      id="password" 
-                      type="password"
-                      placeholder="******" 
-                      value={form.password ?? ""} 
-                      onChange={(e) => setForm((s) => ({ ...s, password: e.target.value }))} 
-                    />
-                  </div>
-                </>
-              )}
+             {!editingUser && (
+  <>
+    <div>
+      <Label htmlFor="username">Username *</Label>
+      <Input 
+        id="username" 
+        placeholder="username123" 
+        value={form.username ?? ""} 
+        onChange={(e) => setForm((s) => ({ ...s, username: e.target.value }))} 
+      />
+    </div>
+    <div>
+      <Label htmlFor="password">Mật khẩu *</Label>
+      <Input 
+        id="password" 
+        type="password"
+        placeholder="******" 
+        value={form.password ?? ""} 
+        onChange={(e) => setForm((s) => ({ ...s, password: e.target.value }))} 
+      />
+    </div>
+    <div>
+      <Label htmlFor="stationId">Station ID *</Label>
+      <Input 
+        id="stationId"
+        placeholder="Nhập Station ID" 
+        value={form.stationId ?? ""} 
+        onChange={(e) => setForm((s) => ({ ...s, stationId: e.target.value }))} 
+      />
+    </div>
+  </>
+)}
+
               <div>
                 <Label htmlFor="fullName">Họ tên *</Label>
                 <Input 

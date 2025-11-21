@@ -79,6 +79,7 @@ export interface CustomerCreatePayload {
   driveLicense: string
   role: 'CUSTOMER' | 'STAFF' | 'ADMIN'
   password: string
+  stationId: string
 }
 
 export interface CustomerUpdatePayload extends Partial<CustomerCreatePayload> {
