@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Car, Users, MapPin, TrendingUp, FileText, Home, Menu, LogOut } from "lucide-react"
+import { Car, Users, MapPin, TrendingUp, FileText, Menu, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
@@ -14,7 +14,6 @@ import {
   SidebarProvider
 } from "@/components/ui/sidebar"
 
-
 import { UserManagement } from "@/components/admin/UserManagement"
 import { VehicleManagement } from "@/components/admin/VehicleManagement"
 import { LocationManagement } from "@/components/admin/LocationManagement"
@@ -24,18 +23,20 @@ import IncidentReportManagement from "@/components/admin/IncidentReportAdmin"
 import { useAuth } from "@/components/auth-context"  
 import SystemConfigAdmin from "./SystemConfigAdmin"
 import RefundManagementPage from "./RefundManagementPage"
+
+import { useRouter } from "next/navigation"
+
 type ActivePage =  "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident" | "config" | "refund"
 
 const menuItems = [
-  
   { id: "users" as ActivePage, label: "Quản lý người dùng", icon: Users },
   { id: "vehicles" as ActivePage, label: "Quản lý xe", icon: Car },
   { id: "locations" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
   { id: "revenue" as ActivePage, label: "Doanh thu & Thống kê", icon: TrendingUp },
   { id: "orders" as ActivePage, label: "Quản lý đơn thuê", icon: FileText },
   { id: "incident" as ActivePage, label: "Báo cáo tai nạn", icon: FileText },
-   { id: "config" as ActivePage, label: "Cấu hình hệ thống", icon: FileText },
-   { id: "refund" as ActivePage, label: "Hoàn tiền booking", icon: FileText },
+  { id: "config" as ActivePage, label: "Cấu hình hệ thống", icon: FileText },
+  { id: "refund" as ActivePage, label: "Hoàn tiền booking", icon: FileText },
 ]
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {
@@ -126,14 +127,20 @@ function renderActivePage(activePage: ActivePage) {
       return <IncidentReportManagement />
     case "config":
       return <SystemConfigAdmin />
-     case "refund":
-      return <RefundManagementPage />  
+    case "refund":
+      return <RefundManagementPage />
   }
 }
 
 export default function AppAdmin() {
-  const [activePage, setActivePage] = useState<ActivePage>("dashboard")
+  const [activePage, setActivePage] = useState<ActivePage>("users") // <-- mặc định hợp lệ
   const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    logout()
+    router.push("http://localhost:3000") // redirect sau khi logout
+  }
 
   return (
     <SidebarProvider>
@@ -143,7 +150,6 @@ export default function AppAdmin() {
         </div>
 
         <div className="flex-1 flex flex-col min-h-screen">
-
           <header className="border-b bg-card px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MobileSidebar activePage={activePage} setActivePage={setActivePage} />
@@ -157,7 +163,7 @@ export default function AppAdmin() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={logout}
+                    onClick={handleLogout} // <-- dùng hàm mới
                     className="flex items-center gap-2 text-red-600"
                   >
                     <LogOut className="h-4 w-4" /> Đăng xuất

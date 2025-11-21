@@ -23,6 +23,7 @@ import IncidentReportStaff  from "./IcidentReportStaff"
 import { useAuth } from "@/components/auth-context"
 import { AuthModal } from "@/components/auth-modal"
 import { Dashboard } from "./DashboardStaff"
+import { useRouter } from "next/navigation"
 
 type ActivePage = "dashboard" | "users" | "station" | "booking" | "rental" | "endrental" | "incident"
 
@@ -132,6 +133,12 @@ export default function AppStaff() {
   const [activePage, setActivePage] = useState<ActivePage>("dashboard")
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    logout()
+    router.push("http://localhost:3000") // redirect sau khi logout
+  }
 
   return (
     <SidebarProvider>
@@ -141,14 +148,12 @@ export default function AppStaff() {
         </div>
 
         <div className="flex-1 flex flex-col min-h-screen">
-          {/* header riêng, dùng cho admin và staff */}
           <header className="border-b bg-card px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MobileSidebar activePage={activePage} setActivePage={setActivePage} />
               <h1 className="text-lg font-semibold">Ứng dụng nhân viên</h1>
             </div>
 
-          
             <div className="flex items-center gap-3">
               {user ? (
                 <>
@@ -156,7 +161,7 @@ export default function AppStaff() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={logout}
+                    onClick={handleLogout} // dùng hàm mới
                     className="flex items-center gap-2 text-red-600"
                   >
                     <LogOut className="h-4 w-4" /> Đăng xuất
@@ -175,10 +180,8 @@ export default function AppStaff() {
             </div>
           </header>
 
-         
           <AuthModal isOpen={isAuthOpen} onOpenChange={setIsAuthOpen} initialTab="signin" />
 
-       
           <main className="flex-1 w-full overflow-visible relative z-0">
             {renderActivePage(activePage)}
           </main>
