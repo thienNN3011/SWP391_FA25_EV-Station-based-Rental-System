@@ -161,7 +161,7 @@ export async function deleteStation(id: number): Promise<void> {
 
 // === Vehicle Model APIs ===
 export async function getActiveStations(): Promise<StationResponse[]> {
-  const res = await api.get<ApiResponse<StationResponse[]>>('/showactivestation')
+  const res = await api.get<ApiResponse<StationResponse[]>>('/station/showall')
   return res.data.data
 }
 
