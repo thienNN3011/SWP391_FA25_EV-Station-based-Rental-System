@@ -25,7 +25,7 @@ public interface BookingService {
     void updateBooking(Booking booking);
     Payment cancelBooking(Long bookingId, String bankName, String bankAccount);
     void cancelBookingForSystem(Long bookingId);
-    void endTimeRenting(Long bookingId);
+    StopRentingTimeResponse endTimeRenting(Long bookingId);
     BigDecimal getMyTotalRevenue();
     List<BookingRefundResponse> listCancelledBookingRefund();
     boolean isRefundWhenCancel(Long bookingId);

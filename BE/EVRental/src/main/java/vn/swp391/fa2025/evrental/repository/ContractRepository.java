@@ -7,4 +7,5 @@ import vn.swp391.fa2025.evrental.entity.Contract;
 @Repository
 public interface ContractRepository extends JpaRepository<Contract,Long> {
     public Contract findByToken(String token);
+    Contract findByBooking_BookingId(Long bookingId);
 }

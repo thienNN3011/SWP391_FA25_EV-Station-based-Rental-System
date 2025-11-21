@@ -485,7 +485,7 @@ public class BookingServiceImpl implements  BookingService{
 
     @Override
     @Transactional
-    public void endTimeRenting(Long bookingId) {
+    public StopRentingTimeResponse endTimeRenting(Long bookingId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String staffname = authentication.getName();
         User staff=userRepository.findByUsername(staffname);
@@ -498,7 +498,36 @@ public class BookingServiceImpl implements  BookingService{
         if (!booking.getStatus().toString().equalsIgnoreCase("RENTING"))
             throw new RuntimeException("Booking không ở trạng thái RENTING");
         booking.setActualEndTime(LocalDateTime.now());
+        Long overtime = 0L;
+        if (booking.getActualEndTime().isAfter(booking.getEndTime())) {
+            overtime = TimeUtils.ceilTimeDiff(
+                    booking.getActualEndTime(),
+                    booking.getEndTime(),
+                    booking.getTariff().getType()
+            );
+        }
+
+        BigDecimal extraFee = BigDecimal.ZERO;
+        if (overtime > 0) {
+            int extraRateInt = Integer.parseInt(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue());
+            BigDecimal extraRate = BigDecimal.valueOf(extraRateInt).divide(BigDecimal.valueOf(100));
+
+            extraFee = BigDecimal.valueOf(overtime)
+                    .multiply(
+                            booking.getTariff().getPrice()
+                                    .add(booking.getTariff().getPrice().multiply(extraRate))
+                    );
+
+            booking.setTotalAmount(booking.getTotalAmount().add(extraFee));
+        }
         bookingRepository.save(booking);
+        StopRentingTimeResponse response= StopRentingTimeResponse.builder()
+                .endTime(booking.getEndTime())
+                .actualEndTime(booking.getActualEndTime())
+                .extraFee(extraFee)
+                .totalAmount(booking.getTotalAmount().add(extraFee))
+                .build();
+        return response;
     }
 
     @Override
