@@ -36,7 +36,11 @@ public class StationServiceImpl implements StationService {
 
     @Autowired
     private StationMapper stationMapper;
-
+    @Override
+    public List<StationShowAllResponse> showAllStation() {
+        List<Station> stations = stationRepository.findAll();
+        return stationMapper.toStationShowAllResponses(stations);
+    }
 
     @Override
     public List<StationResponse> showActiveStation() {

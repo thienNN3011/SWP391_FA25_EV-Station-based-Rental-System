@@ -46,6 +46,16 @@ public class StationController {
         return response;
     }
 
+    @GetMapping("/station/showall")
+    public ApiResponse<List<StationShowAllResponse>> showAllStations() {
+        ApiResponse<List<StationShowAllResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin tất cả trạm thành công");
+        response.setData(stationService.showAllStation());
+        response.setCode(200);
+        return response;
+    }
+
     @PostMapping("/station/create")
     public ApiResponse<StationResponse> createStation(@Valid @RequestBody StationCreateRequest request) {
         ApiResponse<StationResponse> response = new ApiResponse<>();

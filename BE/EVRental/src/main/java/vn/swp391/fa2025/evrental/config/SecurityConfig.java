@@ -72,7 +72,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/vehiclemodel/delete/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vehiclemodel/deleteimage/**").hasAuthority("ADMIN")
 
-
+                        .requestMatchers(HttpMethod.GET, "/station/showall").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/station/create").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/station/update/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/station/delete/**").hasAuthority("ADMIN")
