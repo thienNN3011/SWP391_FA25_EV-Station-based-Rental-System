@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ImageWithFallback } from "@/components/figma/ImageWithFallback"
 import { api } from "@/lib/api"
+import { supabase } from "@/lib/supabaseClient"
 
 interface VehicleModel {
   modelId: number
@@ -41,12 +42,39 @@ export function VehicleManagement() {
     modelId: "",
     stationId: ""
   })
+  const [showCreateModel, setShowCreateModel] = useState(false)
+  const [newModel, setNewModel] = useState({
+  name: "",
+  brand: "",
+  batteryCapacity: "",
+  range: "",
+  seat: "",
+  description: "",
+  images: [] as { file: File; color: string }[]
+})
+const uploadImageToSupabase = async (file: File) => {
+  const fileName = `vehicles/${Date.now()}_${file.name}` 
+
+  const { data, error } = await supabase.storage
+    .from("uploads")          
+    .upload(fileName, file)   
+
+  if (error) throw error
+
+  const { data: url } = supabase.storage
+    .from("uploads")
+    .getPublicUrl(fileName)
+
+  return url.publicUrl
+}
+
+
 
 
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const res = await api.get("/showactivestation")
+        const res = await api.get("/station/showall")
         if (res.data.success) setStations(res.data.data ?? [])
       } catch (err) {
         console.error(err)
@@ -73,30 +101,52 @@ export function VehicleManagement() {
   }
 
 
-  const createVehicleModel = async () => {
-    try {
-      const payload = {
-        name: "VinFast F8",
-        brand: "VinFast",
-        batteryCapacity: 87700,
-        range: 471,
-        seat: 5,
-        description: "SUV điện",
-        images: [
-          { imageUrl: "https://subspace.com/vf8-red.png", color: "RED" },
-          { imageUrl: "https://subspace.com/vf8-blue.png", color: "BLUE" }
-        ]
-      }
-
-      const res = await api.post("/vehiclemodel/create", payload)
-      if (!res.data.success) throw new Error(res.data.message)
-
-      alert("Tạo model thành công!")
-      if (selectedStation) loadVehicles(selectedStation)
-    } catch (err: any) {
-      alert(err.message)
+const createVehicleModel = async () => {
+  try {
+    if (!newModel.name || !newModel.brand) {
+      alert("Vui lòng nhập tên & hãng xe!")
+      return
     }
+
+   
+    const uploadedImages = []
+
+    for (const img of newModel.images) {
+      const url = await uploadImageToSupabase(img.file)
+
+      uploadedImages.push({
+        imageUrl: url,
+        color: img.color.toUpperCase()
+      })
+    }
+
+    
+    const payload = {
+      name: newModel.name,
+      brand: newModel.brand,
+      batteryCapacity: Number(newModel.batteryCapacity),
+      range: Number(newModel.range),
+      seat: Number(newModel.seat),
+      description: newModel.description,
+      images: uploadedImages
+    }
+
+    const res = await api.post("/vehiclemodel/create", payload)
+
+    if (!res.data.success) throw new Error(res.data.message)
+
+    alert(`Tạo model xe thành công!\nModel ID: ${res.data.data.modelId}`)
+
+    setShowCreateModel(false)
+
+    if (selectedStation) loadVehicles(selectedStation)
+
+  } catch (err: any) {
+    console.error(err)
+    alert(err.message)
   }
+}
+
 
 
   const createVehicle = async () => {
@@ -151,9 +201,10 @@ export function VehicleManagement() {
 
         <div className="flex items-center gap-2">
 
-          <Button size="sm" onClick={createVehicleModel}>
-            + Tạo Model Xe
-          </Button>
+          <Button size="sm" onClick={() => setShowCreateModel(true)}>
+  + Tạo Model Xe
+</Button>
+
 
           <Button size="sm" variant="secondary" onClick={() => setShowCreateVehicle(true)}>
             + Tạo Xe
@@ -189,9 +240,77 @@ export function VehicleManagement() {
               onChange={e => setSearch(e.target.value)}
             />
           </div>
+        
+
         </div>
       </div>
+  {showCreateModel && (
+  <div className="p-4 border rounded bg-gray-100 space-y-3">
+    <h2 className="text-lg font-semibold">Tạo Model Xe</h2>
 
+    <Input placeholder="Tên model" value={newModel.name}
+      onChange={e => setNewModel({ ...newModel, name: e.target.value })}
+    />
+
+    <Input placeholder="Hãng xe" value={newModel.brand}
+      onChange={e => setNewModel({ ...newModel, brand: e.target.value })}
+    />
+
+    <Input placeholder="Dung lượng pin (mAh)" value={newModel.batteryCapacity}
+      onChange={e => setNewModel({ ...newModel, batteryCapacity: e.target.value })}
+    />
+
+    <Input placeholder="Tầm hoạt động (km)" value={newModel.range}
+      onChange={e => setNewModel({ ...newModel, range: e.target.value })}
+    />
+
+    <Input placeholder="Số ghế" value={newModel.seat}
+      onChange={e => setNewModel({ ...newModel, seat: e.target.value })}
+    />
+
+    <Input placeholder="Mô tả" value={newModel.description}
+      onChange={e => setNewModel({ ...newModel, description: e.target.value })}
+    />
+
+    {/* Upload ảnh */}
+    <div className="space-y-2">
+      <p className="font-medium">Ảnh + màu sắc</p>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (!file) return
+
+          const color = prompt("Nhập màu ảnh (VD: RED, BLUE, WHITE):") || "UNKNOWN"
+
+          setNewModel({
+            ...newModel,
+            images: [...newModel.images, { file, color }]
+          })
+        }}
+      />
+
+      {/* Hiển thị preview */}
+      <div className="flex gap-2">
+        {newModel.images.map((img, idx) => (
+          <div key={idx} className="text-sm">
+            <span className="block w-20 truncate">{img.file.name}</span>
+            <span className="text-gray-500">{img.color}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="flex gap-2">
+      <Button onClick={createVehicleModel}>Tạo Model</Button>
+      <Button variant="secondary" onClick={() => setShowCreateModel(false)}>
+        Hủy
+      </Button>
+    </div>
+  </div>
+)}
   
       {showCreateVehicle && (
         <div className="p-4 border rounded bg-gray-100 space-y-3">

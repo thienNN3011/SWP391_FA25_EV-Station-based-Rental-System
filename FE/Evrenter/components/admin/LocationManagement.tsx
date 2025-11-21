@@ -39,11 +39,12 @@ export function LocationManagement() {
   // edit/create
   const [editingId, setEditingId] = useState<number | null>(null)
   const [form, setForm] = useState<Partial<StationCreatePayload & { status?: string }>>({
-    stationName: "",
-    address: "",
-    openingHours: "07:00-21:00",
-    status: "ACTIVE",
-  })
+  stationName: "",
+  address: "",
+  openingHours: "07:00-21:00",
+  status: "OPEN", 
+})
+
 
   // vehicle models in station
   const [isVehicleDialogOpen, setIsVehicleDialogOpen] = useState(false)
@@ -270,8 +271,8 @@ async function handleSave() {
                     <SelectValue placeholder="Chọn trạng thái" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                    <SelectItem value="INACTIVE">INACTIVE</SelectItem>
+                    <SelectItem value="OPEN">OPEN</SelectItem>
+   
                   </SelectContent>
                 </Select>
               </div>

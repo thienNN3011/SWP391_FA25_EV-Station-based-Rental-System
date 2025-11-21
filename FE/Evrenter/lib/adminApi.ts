@@ -133,7 +133,7 @@ export interface StationCreatePayload {
   openingHours: string
 }
 export interface StationUpdatePayload extends StationCreatePayload {
-  status?: 'ACTIVE'|'INACTIVE'
+  status?: 'OPEN'|'CLOSED'
 }
 
 export async function getAllStations(): Promise<StationResponse[]> {
