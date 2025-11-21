@@ -60,6 +60,9 @@ public class ContractServiceImpl implements ContractService {
                     .status(ContractStatus.fromString("PENDING"))
                     .token(token)
                     .build();
+            if (contractRepository.findByBooking_BookingId(booking.getBookingId()) != null) {
+                throw new RuntimeException("Contract đã được lưu");
+            }
             return contractRepository.save(contract);
 
         } catch (IOException e) {
