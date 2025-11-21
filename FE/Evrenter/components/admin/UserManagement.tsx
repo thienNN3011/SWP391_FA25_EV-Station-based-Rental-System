@@ -23,6 +23,7 @@ import {
   CustomerCreatePayload,
   CustomerUpdatePayload
 } from "@/lib/adminApi"
+import { api } from "@/lib/api"
 
 export function UserManagement() {
   const [search, setSearch] = useState("")
@@ -181,28 +182,44 @@ export function UserManagement() {
     setIsEditDialogOpen(true)
   }
   
-  async function handleSave() {
-    if (!form.fullName || !form.email || !form.phone) {
-      alert("Vui lòng nhập đầy đủ thông tin bắt buộc")
-      return
-    }
-    
-    try {
-      if (editingUser) {
-        const payload: CustomerUpdatePayload = {
-          fullName: form.fullName,
-          email: form.email,
-          phone: form.phone,
-          idCard: form.idCard,
-          driveLicense: form.driveLicense,
-          status: form.status as any
-        }
-        await updateCustomer(editingUser.userId, payload)
+ async function handleSave() {
+  if (!form.fullName || !form.email || !form.phone) {
+    alert("Vui lòng nhập đầy đủ thông tin bắt buộc")
+    return
+  }
+
+  try {
+    if (editingUser) {
+      // Cập nhật user cũ
+      const payload: CustomerUpdatePayload = {
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        idCard: form.idCard,
+        driveLicense: form.driveLicense,
+        status: form.status as any
+      }
+      await updateCustomer(editingUser.userId, payload)
+    } else {
+      // Tạo mới
+      if (!form.username || !form.password) {
+        alert("Vui lòng nhập username và password")
+        return
+      }
+
+      if (form.role === "STAFF") {
+  const res = await api.post("/admin/staffs", {
+    username: form.username,
+    password: form.password,
+    fullName: form.fullName,
+    email: form.email,
+    phone: form.phone
+  })
+  if (res.data.success) {
+    alert(res.data.message || "Tạo staff thành công")
+  }
       } else {
-        if (!form.username || !form.password) {
-          alert("Vui lòng nhập username và password")
-          return
-        }
+        // Tạo CUSTOMER bình thường
         const payload: CustomerCreatePayload = {
           username: form.username!,
           fullName: form.fullName!,
@@ -215,12 +232,15 @@ export function UserManagement() {
         }
         await createCustomer(payload)
       }
-      setIsEditDialogOpen(false)
-      await loadAllData()
-    } catch (e: any) {
-      alert("Lỗi khi lưu: " + e.message)
     }
+
+    setIsEditDialogOpen(false)
+    await loadAllData()
+  } catch (e: any) {
+    alert("Lỗi khi lưu: " + e.message)
   }
+}
+
   
   async function handleDelete(userId: number) {
     if (!confirm("Xác nhận xóa người dùng này?")) return
@@ -280,7 +300,7 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
+                      <TableHead></TableHead>
                       <TableHead>Username</TableHead>
                       <TableHead>Họ tên</TableHead>
                       <TableHead>Email</TableHead>
@@ -346,7 +366,7 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
+                      <TableHead></TableHead>
                       <TableHead>Username</TableHead>
                       <TableHead>Họ tên</TableHead>
                       <TableHead>Email</TableHead>
@@ -419,12 +439,12 @@ export function UserManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
+                      <TableHead></TableHead>
                       <TableHead>Username</TableHead>
                       <TableHead>Họ tên</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>SĐT</TableHead>
-                      <TableHead>Vai trò</TableHead>
+                      <TableHead></TableHead>
                       <TableHead>Trạng thái</TableHead>
                       <TableHead className="text-right">Thao tác</TableHead>
                     </TableRow>

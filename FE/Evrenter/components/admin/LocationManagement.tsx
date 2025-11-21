@@ -27,6 +27,7 @@ import {
   VehicleModelResponse,
   VehicleModelDetailResponse,
 } from "@/lib/adminApi"
+import { api } from "@/lib/api"
 
 export function LocationManagement() {
   const [search, setSearch] = useState("")
@@ -86,35 +87,45 @@ export function LocationManagement() {
     setIsDialogOpen(true)
   }
 
-  async function handleSave() {
-    if (!form.stationName || !form.address || !form.openingHours) {
-      alert("Vui lòng nhập tên, địa chỉ và giờ hoạt động.")
-      return
-    }
-    try {
-      if (editingId) {
-        const payload: StationUpdatePayload = {
-          stationName: form.stationName!,
-          address: form.address!,
-          openingHours: form.openingHours!,
-          status: (form.status as "ACTIVE" | "INACTIVE") ?? undefined,
-        }
-        const updated = await updateStation(editingId, payload)
-        setStations((prev) => prev.map((p) => (p.stationId === editingId ? updated : p)))
-      } else {
-        const payload: StationCreatePayload = {
-          stationName: form.stationName!,
-          address: form.address!,
-          openingHours: form.openingHours!,
-        }
-        const created = await createStation(payload)
-        setStations((prev) => [created, ...prev])
-      }
-      setIsDialogOpen(false)
-    } catch (e) {
-      alert("Lỗi khi lưu trạm: " + (e as Error).message)
-    }
+async function handleSave() {
+  if (!form.stationName || !form.address || !form.openingHours) {
+    alert("Vui lòng nhập tên, địa chỉ và giờ hoạt động.")
+    return
   }
+
+  try {
+    if (editingId) {
+      // Edit trạm
+      const payload: StationUpdatePayload = {
+        stationName: form.stationName!,
+        address: form.address!,
+        openingHours: form.openingHours!,
+        status: (form.status as "ACTIVE" | "INACTIVE") ?? undefined,
+      }
+      const updated = await updateStation(editingId, payload)
+      setStations((prev) => prev.map((p) => (p.stationId === editingId ? updated : p)))
+      alert("Cập nhật trạm thành công: " + updated.stationName)
+    } else {
+      // Tạo mới trạm bằng axios
+      const payload = {
+        stationName: form.stationName!,
+        address: form.address!,
+        openingHours: form.openingHours!,
+      }
+      const { data } = await api.post("/station/create", payload)
+      if (!data.success) throw new Error(data.message || "Tạo trạm thất bại")
+      
+      setStations((prev) => [data.data, ...prev])
+      alert("Tạo trạm thành công: " + data.data.stationName)
+    }
+
+    setIsDialogOpen(false)
+  } catch (e) {
+    alert("Lỗi khi lưu trạm: " + (e as Error).message)
+  }
+}
+
+
 
   async function handleDelete(id: number) {
     if (!confirm("Xác nhận xóa trạm này?")) return

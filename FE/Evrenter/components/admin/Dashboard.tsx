@@ -4,7 +4,21 @@ import { useEffect, useState } from "react"
 import { Car, Users, UserCheck, DollarSign, TrendingUp, Calendar } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts"
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar
+} from "recharts"
+
 import { api } from "@/lib/api"
 import {
   Select,
@@ -39,28 +53,31 @@ const recentOrders = [
 export function Dashboard() {
 
   const [year, setYear] = useState("2025")
+  const [month, setMonth] = useState("11")
+
   const [stations, setStations] = useState<any[]>([])
   const [selectedStation, setSelectedStation] = useState<string>("")
 
-  const [revenueData, setRevenueData] = useState<{ month: string; revenue: number }[]>([])
+  const [revenueData, setRevenueData] = useState<any[]>([])
+  const [bookingStats, setBookingStats] = useState<any[]>([])
 
 
+  // LOAD STATIONS
   useEffect(() => {
     const loadStations = async () => {
       try {
         const res = await api.get("/showactivestation")
         if (res.data.success) {
-          setStations(res.data.data ?? [])
+          const list = res.data.data ?? []
+          setStations(list)
 
-       
           const saved = localStorage.getItem("selectedStation")
 
           if (saved) {
             setSelectedStation(saved)
-          } else if (res.data.data.length > 0) {
-            const first = res.data.data[0].stationName
-            setSelectedStation(first)
-            localStorage.setItem("selectedStation", first)
+          } else if (list.length > 0) {
+            setSelectedStation(list[0].stationName)
+            localStorage.setItem("selectedStation", list[0].stationName)
           }
         }
       } catch (err) {
@@ -71,19 +88,22 @@ export function Dashboard() {
   }, [])
 
 
+  // LOAD REVENUE
   useEffect(() => {
     if (!selectedStation) return
+    const station = stations.find(s => s.stationName === selectedStation)
 
     const loadRevenue = async () => {
       try {
         const res = await api.post("/payments/revenue", {
+          stationId: station?.stationId,
           stationName: selectedStation,
-          year: year,
+          year: year
         })
 
         const formatted = (res.data.data || []).map((item: any) => ({
           month: `T${item.month}`,
-          revenue: item.revenue / 1_000_000, 
+          revenue: item.revenue / 1_000_000,
         }))
 
         setRevenueData(formatted)
@@ -93,13 +113,46 @@ export function Dashboard() {
     }
 
     loadRevenue()
-  }, [selectedStation, year])
+  }, [selectedStation, year, stations])
+
+
+  // LOAD BOOKING COMPLETED
+  useEffect(() => {
+    if (!selectedStation || !month || !year) return
+    const station = stations.find(s => s.stationName === selectedStation)
+
+    const loadBookingStats = async () => {
+      try {
+        const res = await api.post("/bookings/stats/monthly-completed", {
+          stationId: station?.stationId,
+          stationName: selectedStation,
+          month: Number(month),
+          year: year,
+        })
+
+        const breakdown = res.data.data?.stationBreakdown ?? []
+
+        const formatted = breakdown.map((item: any) => ({
+          station: item.stationName.replace(/^Station\s+/i, "Trạm "),
+          completed: item.completedBookings,
+        }))
+
+        setBookingStats(formatted)
+      } catch (err) {
+        console.error("Lỗi load booking stats:", err)
+      }
+    }
+
+    loadBookingStats()
+  }, [selectedStation, year, month, stations])
+
+
 
   return (
     <div className="h-full w-full overflow-auto">
       <div className="p-4 md:p-6 space-y-6">
 
-    
+        {/* HEADER */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl">Trang chủ</h1>
@@ -118,7 +171,8 @@ export function Dashboard() {
           </div>
         </div>
 
-    
+
+        {/* STAT CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {statsData.map((stat, index) => (
             <Card key={index}>
@@ -139,10 +193,11 @@ export function Dashboard() {
           ))}
         </div>
 
-   
+
+        {/* MAIN CHARTS */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-       
+          {/* Revenue */}
           <Card>
             <CardHeader className="flex items-center justify-between">
               <div>
@@ -151,38 +206,53 @@ export function Dashboard() {
               </div>
 
               <div className="flex gap-3">
-               <Select
-  value={selectedStation}
-  onValueChange={(value) => {
-    setSelectedStation(value)
-    localStorage.setItem("selectedStation", value)
-  }}
->
-  <SelectTrigger className="w-[180px]">
-    <SelectValue placeholder="Chọn trạm" />
-  </SelectTrigger>
-  <SelectContent>
-    {stations.map((s: any) => (
-    <SelectItem key={s.stationId} value={s.stationName}>
-  {s.stationName.replace(/^Station\s+/i, "Trạm ")}
-</SelectItem>
+                
+                {/* Station select */}
+                <Select
+                  value={selectedStation}
+                  onValueChange={(value) => {
+                    setSelectedStation(value)
+                    localStorage.setItem("selectedStation", value)
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Chọn trạm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stations.map((s: any) => (
+                      <SelectItem key={s.stationId} value={s.stationName}>
+                        {s.stationName.replace(/^Station\s+/i, "Trạm ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-    ))}
-  </SelectContent>
-</Select>
-
-
-                <Select value={year} onValueChange={(v) => setYear(v)}>
+                {/* Year select */}
+                <Select value={year} onValueChange={setYear}>
                   <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder="Năm" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="2023">2023</SelectItem>
-                    <SelectItem value="2024">2024</SelectItem>
-                    <SelectItem value="2025">2025</SelectItem>
-                    <SelectItem value="2026">2026</SelectItem>
+                    {["2023", "2024", "2025", "2026"].map((y) => (
+                      <SelectItem key={y} value={y}>{y}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+
+                {/* Month select */}
+                <Select value={month} onValueChange={setMonth}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Tháng" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[...Array(12)].map((_, i) => (
+                      <SelectItem key={i+1} value={`${i+1}`}>
+                        Tháng {i+1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
               </div>
             </CardHeader>
 
@@ -199,37 +269,59 @@ export function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* PIE CHART Giữ nguyên */}
+
+          {/* BOOKING COMPLETED BAR CHART */}
           <Card>
             <CardHeader>
-              <CardTitle>Phân bố loại xe</CardTitle>
-              <CardDescription>Theo số lượng</CardDescription>
+              <CardTitle>Số đơn hoàn thành</CardTitle>
+              <CardDescription>Tháng {month}/{year}</CardDescription>
             </CardHeader>
+
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={vehicleTypeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    dataKey="value"
-                  >
-                    {vehicleTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
+                <BarChart data={bookingStats}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="station" />
+                  <YAxis />
                   <Tooltip />
-                </PieChart>
+                  <Bar dataKey="completed" fill="#10b981" />
+                </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
-
         </div>
 
-        {/* ĐƠN THUÊ GẦN ĐÂY (Giữ nguyên) */}
+
+        {/* PIE CHART */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Phân bố loại xe</CardTitle>
+            <CardDescription>Theo số lượng</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={vehicleTypeData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  dataKey="value"
+                >
+                  {vehicleTypeData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+
+        {/* RECENT ORDERS */}
         <Card>
           <CardHeader>
             <CardTitle>Đơn thuê gần đây</CardTitle>
@@ -249,6 +341,7 @@ export function Dashboard() {
                       <p className="text-xs text-muted-foreground">Xe thuê</p>
                     </div>
                   </div>
+
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
                       <p className="font-medium">{order.amount}</p>
@@ -265,11 +358,13 @@ export function Dashboard() {
                       </span>
                     </div>
                   </div>
+
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
+
 
       </div>
     </div>
