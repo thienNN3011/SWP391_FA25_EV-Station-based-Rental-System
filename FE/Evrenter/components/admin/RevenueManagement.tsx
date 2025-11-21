@@ -90,9 +90,9 @@ export function RevenueManagement() {
         // Gọi API từng tháng
         for (let m = 1; m <= 12; m++) {
           const res = await api.post("/bookings/stats/yearly-completed", {
-            stationId: station.stationId,
+            
             stationName: selectedStation,
-            month: m,
+            
             year
           })
          arr.push({
