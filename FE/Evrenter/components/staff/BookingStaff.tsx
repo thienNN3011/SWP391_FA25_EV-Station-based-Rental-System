@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { api } from "@/lib/api"
-import {Search,Eye,MoreHorizontal,Clock,Car,Calendar,User,DollarSign,FileText, Phone
+import {Search,Eye,MoreHorizontal,Clock,Car,Calendar,User,DollarSign,FileText, Phone, ChevronDown, ChevronUp
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,8 @@ import {DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle,
 } from "@/components/ui/dialog"
+import { TimeDisplay } from "./TimeDisplay"
+import { BookingDetailRow } from "./BookingDetailRow"
 
 
 
@@ -23,6 +25,7 @@ export function BookingStaff() {
   const [bookings, setBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
 
   const translateStatus = (status: string) => {
   switch (status?.toUpperCase()) {
@@ -44,6 +47,18 @@ export function BookingStaff() {
 }
 
 
+  const toggleRowExpansion = (bookingId: number) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(bookingId)) {
+        newSet.delete(bookingId)
+      } else {
+        newSet.add(bookingId)
+      }
+      return newSet
+    })
+  }
+
   const fetchBookings = async () => {
     setLoading(true)
     setError("")
@@ -52,12 +67,14 @@ export function BookingStaff() {
       if (res.data?.data) {
         const mapped = res.data.data.map((b: any) => ({
           bookingId: b.bookingId,
-          customerName: b.user.fullName,  
-          customerPhone: b.user.phone,          
-          modelName: b.vehicle?.modelName,     
-          stationName: b.station?.stationName, 
+          customerName: b.user.fullName,
+          customerPhone: b.user.phone,
+          modelName: b.vehicle?.modelName,
+          stationName: b.station?.stationName,
           startTime: b.startTime,
           endTime: b.endTime,
+          actualStartTime: b.actualStartTime,
+          actualEndTime: b.actualEndTime,
           price: b.tariff?.price,
           status: b.status
         }))
@@ -116,9 +133,6 @@ export function BookingStaff() {
         <Card>
           <CardHeader>
             <CardTitle>Danh sách Booking</CardTitle>
-            <CardDescription>
-              Hiển thị các yêu cầu đặt xe có trạng thái <b>BOOKING</b>
-            </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -131,9 +145,10 @@ export function BookingStaff() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12"></TableHead>
                     <TableHead>Mã Booking</TableHead>
                     <TableHead>Khách hàng</TableHead>
-                    <TableHead>Số điện thoại</TableHead> 
+                    <TableHead>Số điện thoại</TableHead>
                     <TableHead>Xe</TableHead>
                     <TableHead>Trạm</TableHead>
                     <TableHead>Thời gian</TableHead>
@@ -144,93 +159,108 @@ export function BookingStaff() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map((bk) => (
-                    <TableRow key={bk.bookingId}>
-                      <TableCell className="font-medium">{bk.bookingId}</TableCell>
+                    <>
+                      <TableRow key={bk.bookingId}>
+                        {/* Expand/Collapse Button */}
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleRowExpansion(bk.bookingId)}
+                          >
+                            {expandedRows.has(bk.bookingId) ? (
+                              <ChevronUp className="size-4" />
+                            ) : (
+                              <ChevronDown className="size-4" />
+                            )}
+                          </Button>
+                        </TableCell>
 
-                      <TableCell>
-  <div className="flex items-center gap-2">
-    <User className="size-4 text-primary" />
-    <div>{bk.customerName || "Ẩn danh"}</div>
-  </div>
-</TableCell>
-<TableCell>
-  <div className="flex items-center gap-2">
-    <User className="size-4 text-primary" />
-    <div>{bk.customerPhone || "Ẩn danh"}</div>
-  </div>
-</TableCell>
+                        <TableCell className="font-medium">{bk.bookingId}</TableCell>
 
-{/* Cột xe */}
-<TableCell>
-  <div className="flex items-center gap-2">
-    <Car className="size-4 text-blue-500" />
-    <div>{bk.modelName || "Không rõ"}</div>
-  </div>
-</TableCell>
-                      
-                      <TableCell>{bk.stationName || "Không rõ"}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <User className="size-4 text-primary" />
+                            <div>{bk.customerName || "Ẩn danh"}</div>
+                          </div>
+                        </TableCell>
 
-                      
-                      <TableCell className="text-sm text-muted-foreground">
-                        <div className="flex flex-col">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="size-4" /> {bk.startTime}
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Phone className="size-4 text-primary" />
+                            <div>{bk.customerPhone || "Ẩn danh"}</div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Car className="size-4 text-blue-500" />
+                            <div>{bk.modelName || "Không rõ"}</div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell>{bk.stationName || "Không rõ"}</TableCell>
+
+                        {/* Time Display - Using new TimeDisplay component */}
+                        <TableCell>
+                          <TimeDisplay booking={bk} />
+                        </TableCell>
+
+                        <TableCell className="flex items-center gap-1">
+                          <DollarSign className="size-4 text-green-600" />
+                          {bk.price ? `${bk.price.toLocaleString()} VND` : "—"}
+                        </TableCell>
+
+                        <TableCell>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              bk.status === "BOOKING"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : bk.status === "RENTING"
+                                ? "bg-blue-100 text-blue-700"
+                                : bk.status === "CANCELLED"
+                                ? "bg-red-100 text-red-700"
+                                : bk.status === "COMPLETED"
+                                ? "bg-green-100 text-green-700"
+                                : bk.status === "NO_SHOW"
+                                ? "bg-orange-100 text-orange-700"
+                                : bk.status === "UNCONFIRMED"
+                                ? "bg-gray-200 text-gray-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {translateStatus(bk.status)}
                           </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="size-4" /> {bk.endTime}
-                          </span>
-                        </div>
-                      </TableCell>
+                        </TableCell>
 
-                  
-                      <TableCell className="flex items-center gap-1">
-                        <DollarSign className="size-4 text-green-600" />
-                        {bk.price ? `${bk.price.toLocaleString()} VND` : "—"}
-                      </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem className="flex items-center gap-2">
+                                <Eye className="size-4" /> Xem chi tiết
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="flex items-center gap-2">
+                                <FileText className="size-4" /> Hợp đồng
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
 
-                      
-                      <TableCell>
-  <span
-    className={`px-2 py-1 rounded-full text-xs font-medium ${
-      bk.status === "BOOKING"
-        ? "bg-yellow-100 text-yellow-700"
-        : bk.status === "RENTING"
-        ? "bg-blue-100 text-blue-700"
-        : bk.status === "CANCELLED"
-        ? "bg-red-100 text-red-700"
-        : bk.status === "COMPLETED"
-        ? "bg-green-100 text-green-700"
-        : bk.status === "NO_SHOW"
-        ? "bg-orange-100 text-orange-700"
-        : bk.status === "UNCONFIRMED"
-        ? "bg-gray-200 text-gray-700"
-        : "bg-gray-100 text-gray-600"
-    }`}
-  >
-    {translateStatus(bk.status)}
-  </span>
-</TableCell>
-
-
-    
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="size-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="flex items-center gap-2">
-                              <Eye className="size-4" /> Xem chi tiết
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="flex items-center gap-2">
-                              <FileText className="size-4" /> Hợp đồng
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
+                      {/* Expandable Detail Row */}
+                      {expandedRows.has(bk.bookingId) && (
+                        <TableRow key={`${bk.bookingId}-detail`}>
+                          <TableCell colSpan={10} className="p-0">
+                            <BookingDetailRow booking={bk} />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   ))}
                 </TableBody>
               </Table>

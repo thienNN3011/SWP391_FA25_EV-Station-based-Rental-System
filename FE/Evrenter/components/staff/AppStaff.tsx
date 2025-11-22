@@ -128,7 +128,7 @@ function renderActivePage(activePage: ActivePage) {
 }
 
 export default function AppStaff() {
-
+  const [activePage, setActivePage] = useState<ActivePage>("users")
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const { user, logout } = useAuth()
   const router = useRouter()
@@ -142,13 +142,13 @@ export default function AppStaff() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <div className="hidden md:block w-64 border-r bg-card">
-         
+          <AdminSidebar activePage={activePage} setActivePage={setActivePage} />
         </div>
 
         <div className="flex-1 flex flex-col min-h-screen">
           <header className="border-b bg-card px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-           
+              <MobileSidebar activePage={activePage} setActivePage={setActivePage} />
               <h1 className="text-lg font-semibold">Ứng dụng nhân viên</h1>
             </div>
 
@@ -159,7 +159,7 @@ export default function AppStaff() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleLogout} 
+                    onClick={handleLogout}
                     className="flex items-center gap-2 text-red-600"
                   >
                     <LogOut className="h-4 w-4" /> Đăng xuất
@@ -181,7 +181,7 @@ export default function AppStaff() {
           <AuthModal isOpen={isAuthOpen} onOpenChange={setIsAuthOpen} initialTab="signin" />
 
           <main className="flex-1 w-full overflow-visible relative z-0">
-           
+            {renderActivePage(activePage)}
           </main>
         </div>
       </div>
