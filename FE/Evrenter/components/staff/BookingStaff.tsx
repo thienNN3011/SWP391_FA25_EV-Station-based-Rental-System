@@ -26,6 +26,7 @@ export function BookingStaff() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
+  const [activeTab, setActiveTab] = useState("ALL")
 
   const translateStatus = (status: string) => {
   switch (status?.toUpperCase()) {
@@ -99,7 +100,14 @@ export function BookingStaff() {
     fetchBookings()
   }, [])
 
-  const filtered = bookings.filter((b) => {
+  // Filter by tab first
+  const tabFiltered = bookings.filter((b) => {
+    if (activeTab === "ALL") return true
+    return b.status?.toUpperCase() === activeTab
+  })
+
+  // Then filter by search
+  const filtered = tabFiltered.filter((b) => {
     const text = search.toLowerCase()
     return (
       b.customerName?.toLowerCase().includes(text) ||
@@ -109,13 +117,23 @@ export function BookingStaff() {
     )
   })
 
+  const tabs = [
+    { key: "ALL", label: "Tất cả" },
+    { key: "COMPLETED", label: "Đã hoàn tất cọc" },
+    { key: "UNCONFIRMED", label: "Chưa xác nhận" },
+    { key: "RENTING", label: "Đang thuê" },
+    { key: "BOOKING", label: "Hoàn thành" },
+    { key: "CANCELLED", label: "Đã hủy" },
+    { key: "NO_SHOW", label: "Không đến" },
+  ]
+
   return (
     <div className="h-full w-full overflow-auto">
       <div className="p-4 md:p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl">Quản lý Booking</h1>
-            <p className="text-muted-foreground">Theo dõi và quản lý các yêu cầu đặt xe</p>
+            <h1 className="text-3xl">Quản lý đơn thuê</h1>
+            <p className="text-muted-foreground">Theo dõi và xử lý đơn</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -128,6 +146,24 @@ export function BookingStaff() {
               />
             </div>
           </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 flex-wrap">
+          {tabs.map((tab) => (
+            <Button
+              key={tab.key}
+              variant={activeTab === tab.key ? "default" : "outline"}
+              onClick={() => setActiveTab(tab.key)}
+              className={
+                activeTab === tab.key
+                  ? "bg-teal-500 hover:bg-teal-600 text-white"
+                  : "hover:bg-gray-100"
+              }
+            >
+              {tab.label}
+            </Button>
+          ))}
         </div>
 
         <Card>
