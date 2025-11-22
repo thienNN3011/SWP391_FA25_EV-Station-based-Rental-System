@@ -25,10 +25,10 @@ import { AuthModal } from "@/components/auth-modal"
 import { Dashboard } from "./DashboardStaff"
 import { useRouter } from "next/navigation"
 
-type ActivePage = "dashboard" | "users" | "station" | "booking" | "rental" | "endrental" | "incident"
+type ActivePage =  | "users" | "station" | "booking" | "rental" | "endrental" | "incident"
 
 const menuItems = [
-  { id: "dashboard" as ActivePage, label: "Trang chủ", icon: Home },
+  
   { id: "users" as ActivePage, label: "Quản lý khách hàng", icon: Users },
   { id: "station" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
   { id: "booking" as ActivePage, label: "Quản lý booking", icon: MapPin },
@@ -110,8 +110,6 @@ function MobileSidebar({ activePage, setActivePage }: { activePage: ActivePage; 
 
 function renderActivePage(activePage: ActivePage) {
   switch (activePage) {
-    case "dashboard":
-      return <Dashboard />
     case "users":
       return <UserManagementStaff />
     case "station":
@@ -125,12 +123,12 @@ function renderActivePage(activePage: ActivePage) {
     case "incident":
       return <IncidentReportStaff />  
     default:
-      return <Dashboard />
+      return <UserManagementStaff />
   }
 }
 
 export default function AppStaff() {
-  const [activePage, setActivePage] = useState<ActivePage>("dashboard")
+
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const { user, logout } = useAuth()
   const router = useRouter()
@@ -144,13 +142,13 @@ export default function AppStaff() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <div className="hidden md:block w-64 border-r bg-card">
-          <AdminSidebar activePage={activePage} setActivePage={setActivePage} />
+         
         </div>
 
         <div className="flex-1 flex flex-col min-h-screen">
           <header className="border-b bg-card px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MobileSidebar activePage={activePage} setActivePage={setActivePage} />
+           
               <h1 className="text-lg font-semibold">Ứng dụng nhân viên</h1>
             </div>
 
@@ -183,7 +181,7 @@ export default function AppStaff() {
           <AuthModal isOpen={isAuthOpen} onOpenChange={setIsAuthOpen} initialTab="signin" />
 
           <main className="flex-1 w-full overflow-visible relative z-0">
-            {renderActivePage(activePage)}
+           
           </main>
         </div>
       </div>

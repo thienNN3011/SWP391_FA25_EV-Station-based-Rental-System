@@ -10,6 +10,14 @@ export interface VehicleResponse {
   vehicleId: number; modelId: number; modelName: string; brand: string;
   stationId: number; stationName: string; color: string; status: string; plateNumber: string;
 }
+export interface StaffResponse {
+  userId: number
+  username: string
+  fullName: string
+  email: string
+  phone: string
+  stationId: number
+}
 
 export interface StationResponse {
   stationId?: number

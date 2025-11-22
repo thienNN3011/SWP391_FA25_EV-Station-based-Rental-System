@@ -20,8 +20,8 @@ import {
   updateCustomer,
   deleteCustomer,
   CustomerResponse,
-  CustomerCreatePayload,
-  CustomerUpdatePayload
+  CustomerUpdatePayload,
+  StaffResponse
 } from "@/lib/adminApi"
 import { api } from "@/lib/api"
 
@@ -29,6 +29,7 @@ export function UserManagement() {
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState("pending")
   
+  const [users, setUsers] = useState<StaffResponse[]>([])
   // Pending accounts
   const [pendingAccounts, setPendingAccounts] = useState<CustomerResponse[]>([])
   
@@ -47,19 +48,65 @@ export function UserManagement() {
   
   // Create/Edit dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editingUser, setEditingUser] = useState<CustomerResponse | null>(null)
-  const [form, setForm] = useState<Partial<CustomerCreatePayload & { status?: string }>>({
+const [editingUser, setEditingUser] = useState<StaffResponse | null>(null)
+  interface UserForm {
+  username: string
+  password: string
+  fullName: string
+  email: string
+  phone: string
+  stationId: string
+}
+
+const [form, setForm] = useState<UserForm>({
+  username: "",
+  password: "",
+  fullName: "",
+  email: "",
+  phone: "",
+  stationId: ""
+})
+
+function openCreateDialog() {
+  setEditingUser(null)
+  setForm({
     username: "",
+    password: "",
     fullName: "",
     email: "",
     phone: "",
-    idCard: "",
-    driveLicense: "",
-    role: "CUSTOMER",
-    password: "",
-    status: "ACTIVE",
     stationId: ""
   })
+  setIsEditDialogOpen(true)
+}
+async function createStaff() {
+  try {
+    await api.post("/admin/staffs", {
+      username: form.username,
+      password: form.password,
+      fullName: form.fullName,
+      email: form.email,
+      phone: form.phone,
+      stationId: form.stationId
+    })
+
+    alert("Tạo nhân viên thành công!")
+    setIsEditDialogOpen(false)
+    await loadAllData()
+  } catch (err: any) {
+    alert("Lỗi tạo staff: " + (err.response?.data?.message || err.message))
+  }
+}
+
+async function handleSave() {
+  if (!editingUser) {
+    await createStaff()
+  } else {
+    
+  }
+}
+
+
 
   useEffect(() => {
     loadAllData()
@@ -151,64 +198,25 @@ export function UserManagement() {
     }
   }
   
-  function openCreateDialog() {
-  setEditingUser(null)
+
+
+  
+function openEditDialog(user: StaffResponse) {
+  setEditingUser(user)
   setForm({
-    username: "",
+    username: user.username,
     password: "",
-    fullName: "",
-    email: "",
-    phone: "",
-    stationId: ""
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    stationId: user.stationId.toString()
   })
   setIsEditDialogOpen(true)
 }
 
-  
-  function openEditDialog(user: CustomerResponse) {
-    setEditingUser(user)
-    setForm({
-      username: user.username,
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      idCard: user.idCard,
-      driveLicense: user.driveLicense,
-      role: user.role as any,
-      password: "",
-      status: user.status
-    })
-    setIsEditDialogOpen(true)
-  }
-  
-async function handleSave() {
-  if (!form.username || !form.password || !form.fullName || !form.email || !form.phone || !form.stationId) {
-    alert("Vui lòng nhập đầy đủ thông tin bắt buộc")
-    return
-  }
 
-  try {
-    const payload = {
-      username: form.username,
-      password: form.password,
-      fullName: form.fullName,
-      email: form.email,
-      phone: form.phone,
-      stationId: form.stationId
-    }
+  
 
-    const res = await api.post("/admin/staffs", payload)
-    if (res.data.success) {
-      alert(res.data.message || "Tạo staff thành công")
-      setIsEditDialogOpen(false)
-      await loadAllData()
-    } else {
-      alert(res.data.message || "Tạo staff thất bại")
-    }
-  } catch (e: any) {
-    alert("Lỗi khi tạo staff: " + (e.response?.data?.message || e.message))
-  }
-}
 
 
 
@@ -550,103 +558,71 @@ async function handleSave() {
     </DialogHeader>
 
     <div className="grid grid-cols-2 gap-4">
-    {!editingUser && (
-  <>
-    <div>
-      <Label htmlFor="username">Username *</Label>
-      <Input
-        id="username"
-        placeholder="username123"
-        value={form.username ?? ""}
-        onChange={(e) => setForm((s) => ({ ...s, username: e.target.value }))}
-      />
-    </div>
-    <div>
-      <Label htmlFor="password">Mật khẩu *</Label>
-      <Input
-        id="password"
-        type="password"
-        placeholder="******"
-        value={form.password ?? ""}
-        onChange={(e) => setForm((s) => ({ ...s, password: e.target.value }))}
-      />
-    </div>
-    <div>
-      <Label htmlFor="fullName">Họ tên *</Label>
-      <Input
-        id="fullName"
-        placeholder="Nguyễn Văn A"
-        value={form.fullName ?? ""}
-        onChange={(e) => setForm((s) => ({ ...s, fullName: e.target.value }))}
-      />
-    </div>
-    <div>
-      <Label htmlFor="email">Email *</Label>
-      <Input
-        id="email"
-        type="email"
-        placeholder="email@example.com"
-        value={form.email ?? ""}
-        onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
-      />
-    </div>
-    <div>
-      <Label htmlFor="phone">Số điện thoại *</Label>
-      <Input
-        id="phone"
-        placeholder="0901234567"
-        value={form.phone ?? ""}
-        onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
-      />
-    </div>
-    <div>
-      <Label htmlFor="stationId">Station ID *</Label>
-      <Input
-        id="stationId"
-        placeholder="Nhập Station ID"
-        value={form.stationId ?? ""}
-        onChange={(e) => setForm((s) => ({ ...s, stationId: e.target.value }))}
-      />
-    </div>
-  </>
-)}
+
+      {!editingUser && (
+        <>
+          <div>
+            <Label>Username *</Label>
+            <Input
+              value={form.username}
+              onChange={(e) => setForm(s => ({ ...s, username: e.target.value }))}
+            />
+          </div>
+
+          <div>
+            <Label>Password *</Label>
+            <Input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm(s => ({ ...s, password: e.target.value }))}
+            />
+          </div>
+        </>
+      )}
 
       <div>
-        <Label htmlFor="fullName">Họ tên *</Label>
-        <Input 
-          id="fullName" 
-          placeholder="Nguyễn Văn Test312" 
-          value={form.fullName ?? ""} 
-          onChange={(e) => setForm((s) => ({ ...s, fullName: e.target.value }))} 
+        <Label>Họ tên *</Label>
+        <Input
+          value={form.fullName}
+          onChange={(e) => setForm(s => ({ ...s, fullName: e.target.value }))}
         />
       </div>
+
       <div>
-        <Label htmlFor="email">Email *</Label>
-        <Input 
-          id="email" 
+        <Label>Email *</Label>
+        <Input
           type="email"
-          placeholder="stafftest01223@evrental.com" 
-          value={form.email ?? ""} 
-          onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))} 
+          value={form.email}
+          onChange={(e) => setForm(s => ({ ...s, email: e.target.value }))}
         />
       </div>
+
       <div>
-        <Label htmlFor="phone">Số điện thoại *</Label>
-        <Input 
-          id="phone" 
-          placeholder="0901235557" 
-          value={form.phone ?? ""} 
-          onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))} 
+        <Label>Số điện thoại *</Label>
+        <Input
+          value={form.phone}
+          onChange={(e) => setForm(s => ({ ...s, phone: e.target.value }))}
         />
       </div>
+
+      <div>
+        <Label>Station ID *</Label>
+        <Input
+          value={form.stationId}
+          onChange={(e) => setForm(s => ({ ...s, stationId: e.target.value }))}
+        />
+      </div>
+
     </div>
 
     <div className="flex justify-end gap-2 pt-4">
       <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Hủy</Button>
       <Button onClick={handleSave}>{editingUser ? "Cập nhật" : "Tạo mới"}</Button>
     </div>
+
   </DialogContent>
 </Dialog>
+
 
       </div>
     </div>
