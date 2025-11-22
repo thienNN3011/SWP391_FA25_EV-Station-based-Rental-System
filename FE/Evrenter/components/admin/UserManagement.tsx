@@ -249,7 +249,7 @@ function openEditDialog(user: StaffResponse) {
             </div>
             {activeTab !== "pending" && (
               <Button onClick={openCreateDialog}>
-                <Plus className="size-4 mr-2" /> Thêm người dùng
+                <Plus className="size-4 mr-2" /> Thêm tài khoản nhân viên
               </Button>
             )}
             <Button variant="outline" onClick={loadAllData}>Tải lại</Button>
