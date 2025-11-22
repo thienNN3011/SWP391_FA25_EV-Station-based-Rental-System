@@ -1,29 +1,20 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { api } from "@/lib/api"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Car, Clock, MapPin } from "lucide-react"
-import toast, { Toaster } from "react-hot-toast"
-import { Header } from "@/components/header"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-
-
-type Booking = {
-  bookingId: number
-  vehicleModel: string
-  vehicleColor: string
-  plateNumber: string
-  stationName: string
-  stationAddress: string
-  startTime: string
-  endTime: string
-  totalAmount: number
-  status: string
-}
+import { Car, Clock, MapPin, Search, Eye, Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { Toaster } from "react-hot-toast"
+import { Header } from "@/components/header"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useBookings, type Booking } from "@/hooks/use-bookings"
+import { BookingDetailModal } from "@/components/booking-detail-modal"
+import { CancelBookingDialog } from "@/components/cancel-booking-dialog"
+import { useRouter } from "next/navigation"
+import { getErrorMessage } from "@/lib/error-utils"
+import toast from "react-hot-toast"
 
 const STATUS_TABS = [
   { key: "ALL", label: "Tất cả" },
@@ -34,6 +25,15 @@ const STATUS_TABS = [
   { key: "CANCELLED", label: "Đã hủy" },
   { key: "NO_SHOW", label: "Không đến" },
 ]
+
+const STATUS_COLORS: Record<string, string> = {
+  BOOKING: "bg-yellow-400 text-black",
+  RENTING: "bg-blue-500 text-white",
+  COMPLETED: "bg-green-600 text-white",
+  CANCELLED: "bg-red-500 text-white",
+  NO_SHOW: "bg-red-500 text-white",
+  UNCONFIRMED: "bg-red-500 text-white",
+}
 
 const colorMap: Record<string, string> = {
   red: "Đỏ",
@@ -49,238 +49,254 @@ const colorMap: Record<string, string> = {
 }
 
 export default function BookingHistoryPage() {
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [loading, setLoading] = useState(true)
+  const router = useRouter()
   const [tab, setTab] = useState("ALL")
+  const [page, setPage] = useState(0)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null)
+  const [cancelBooking, setCancelBooking] = useState<Booking | null>(null)
 
+  // Debounce search
   useEffect(() => {
-    fetchBookings()
-  }, [])
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setPage(0) // Reset to first page on search
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
-  const fetchBookings = async () => {
-    try {
-      setLoading(true)
-      const res = await api.post("/bookings/showbookingbystatus", { bookingStatus: "ALL" })
+  // Reset page when tab changes
+  useEffect(() => {
+    setPage(0)
+  }, [tab])
 
-      if (res.data.success) {
-        const simplified: Booking[] = res.data.data.map((b: any) => ({
-          bookingId: b.bookingId,
-          vehicleModel: b.vehicle.modelName,
-          vehicleColor: b.vehicle.color,
-          plateNumber: b.vehicle.plateNumber,
-          stationName: b.station.stationName,
-          stationAddress: b.station.address,
-          startTime: b.startTime,
-          endTime: b.endTime,
-          totalAmount: b.totalAmount,
-          status: b.status,
-        }))
-        setBookings(simplified)
-      } else {
-        toast.error("Lỗi backend: " + res.data.message)
-      }
-    } catch (err: any) {
-      console.error(err.response || err.message)
-      toast.error("Vui lòng đăng nhập lại.")
-    } finally {
-      setLoading(false)
+  // Fetch bookings with React Query
+  const { data, isLoading, error } = useBookings({
+    status: tab,
+    page,
+    size: 20,
+    searchQuery: debouncedSearch,
+  })
+
+  // Handle error
+  useEffect(() => {
+    if (error) {
+      const message = getErrorMessage(error)
+      toast.error(message)
+    }
+  }, [error])
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return {
+      date: date.toLocaleDateString("vi-VN"),
+      time: date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
     }
   }
-  const [cancelBookingId, setCancelBookingId] = useState<number | null>(null)
-const [bankAccount, setBankAccount] = useState("")
-const [bankName, setBankName] = useState("")
-
-
-  const handleCancel = async (bookingId: number) => {
-    try {
-      const res = await api.post("/bookings/cancelbooking", { bookingId })
-      if (res.data.success) {
-        setBookings((prev) => prev.map((b) => b.bookingId === bookingId ? { ...b, status: "CANCELLED" } : b))
-        toast.success("Hủy booking thành công!")
-      } else {
-        toast.error("Hủy booking thất bại: " + res.data.message)
-      }
-    } catch {
-      toast.error("Có lỗi xảy ra khi hủy booking")
-    }
-  }
-
-  const filtered = bookings.filter((b) => (tab === "ALL" ? true : b.status === tab))
-
-  const statusColor = (s: string) => {
-    switch (s) {
-      case "BOOKING": return "bg-yellow-400 text-black"
-      case "RENTING": return "bg-blue-500 text-white"
-      case "COMPLETED": return "bg-green-600 text-white"
-      case "CANCELLED": 
-      case "NO_SHOW": 
-      case "UNCONFIRMED": return "bg-red-500 text-white"
-      default: return "bg-gray-300 text-black"
-    }
-  }
-
-  if (loading) return <div className="text-center p-6">Đang tải đơn...</div>
-const submitCancelBooking = async () => {
-  if (!bankAccount || !bankName) {
-    toast.error("Vui lòng nhập đầy đủ thông tin.")
-    return
-  }
-
-  try {
-    const res = await api.post("/bookings/cancelbooking", {
-      bookingId: cancelBookingId,
-      bankAccount: bankAccount,
-      bankName: bankName,
-    })
-
-    if (res.data.success) {
-      toast.success(res.data.message)
-
-      
-      setBookings(prev => 
-        prev.map(b => b.bookingId === cancelBookingId 
-          ? { ...b, status: "CANCELLED" } 
-          : b
-        )
-      )
-    } else {
-      toast.error(res.data.message)
-    }
-  } catch (err) {
-    toast.error("Lỗi khi hủy booking.")
-  }
-
- 
-  setCancelBookingId(null)
-}
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto p-4">
       <Header />
       <Toaster position="top-right" />
 
-     
+      {/* Header with New Booking Button */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Lịch sử đơn thuê</h1>
+          <p className="text-muted-foreground">Quản lý và theo dõi các đơn thuê xe của bạn</p>
+        </div>
+        <Button onClick={() => router.push("/booking")} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Đặt xe mới
+        </Button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Tìm kiếm theo mã đơn, biển số, mẫu xe..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {/* Status Tabs */}
       <div className="flex gap-2 overflow-x-auto py-3 mb-4">
         {STATUS_TABS.map((t) => (
           <Button
             key={t.key}
             variant={tab === t.key ? "default" : "outline"}
             onClick={() => setTab(t.key)}
+            className="whitespace-nowrap"
           >
             {t.label}
           </Button>
         ))}
       </div>
 
+      {/* Bookings List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Car className="h-5 w-5 text-secondary" />
-            Lịch sử đơn thuê xe
+            Danh sách đơn thuê
           </CardTitle>
-          <CardDescription>Xem lại tất cả đơn bạn đã đặt</CardDescription>
+          <CardDescription>
+            {data && `Hiển thị ${data.bookings.length} / ${data.totalElements} đơn`}
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
-          {filtered.length === 0 ? (
-            <div className="text-center text-muted-foreground py-4">
-              Không có đơn trong mục này
-            </div>
-          ) : (
+          {isLoading ? (
             <div className="space-y-4">
-              {filtered.map((b) => (
-                <div
-                  key={b.bookingId}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                      <Car className="h-6 w-6 text-secondary" />
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="font-medium">
-                        Booking số {b.bookingId} — {b.vehicleModel} (
-                          {colorMap[b.vehicleColor?.trim().toLowerCase()] || b.vehicleColor}
-                        ) - {b.plateNumber}
-                      </div>
-
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> {b.stationName}
-                        </div>
-                        <div className="flex items-center gap-1">
-  <Clock className="h-3 w-3" />
-  {new Date(b.startTime).toLocaleDateString("vi-VN")}{" "}
-  ({new Date(b.startTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })})
-  {" - "}
-  {new Date(b.endTime).toLocaleDateString("vi-VN")}{" "}
-  ({new Date(b.endTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })})
-</div>
-
-                      </div>
-
-                      <div className="text-xs text-muted-foreground">{b.stationAddress}</div>
-                    </div>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
+                  <Skeleton className="w-12 h-12 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-3 w-2/3" />
                   </div>
-
-                  <div className="text-right space-y-1">
-                    <div className="font-medium text-secondary">{b.totalAmount.toLocaleString()}₫</div>
-
-                    <Badge className={`${statusColor(b.status)} text-xs`}>
-                      {STATUS_TABS.find(t => t.key === b.status)?.label ?? b.status}
-                    </Badge>
-
-                   {b.status === "BOOKING" && (
-  <Button 
-    size="sm" 
-    variant="destructive" 
-    onClick={() => {
-      setCancelBookingId(b.bookingId)
-      setBankAccount("")
-      setBankName("")
-    }}
-  >
-    Hủy
-  </Button>
-)}
-
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-6 w-20" />
                   </div>
                 </div>
               ))}
             </div>
+          ) : !data || data.bookings.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              {searchQuery ? "Không tìm thấy đơn thuê phù hợp" : "Không có đơn trong mục này"}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {data.bookings.map((b) => {
+                const start = formatDateTime(b.startTime)
+                const end = formatDateTime(b.endTime)
+
+                return (
+                  <div
+                    key={b.bookingId}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition cursor-pointer"
+                    onClick={() => setSelectedBookingId(b.bookingId)}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Car className="h-6 w-6 text-secondary" />
+                      </div>
+
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="font-medium flex items-center gap-2">
+                          <span>#{b.bookingId}</span>
+                          <span className="text-muted-foreground">•</span>
+                          <span>
+                            {b.vehicleModel} ({colorMap[b.vehicleColor?.trim().toLowerCase()] || b.vehicleColor})
+                          </span>
+                          <span className="text-muted-foreground">•</span>
+                          <span className="font-mono">{b.plateNumber}</span>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{b.stationName}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3 flex-shrink-0" />
+                            <span>
+                              {start.date} {start.time} - {end.date} {end.time}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      <div className="text-right space-y-2">
+                        <div className="font-semibold text-lg text-secondary">{b.totalAmount.toLocaleString()}₫</div>
+                        <Badge className={STATUS_COLORS[b.status] || "bg-gray-300"}>
+                          {STATUS_TABS.find((t) => t.key === b.status)?.label ?? b.status}
+                        </Badge>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedBookingId(b.bookingId)
+                          }}
+                          className="gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          Chi tiết
+                        </Button>
+
+                        {b.status === "BOOKING" && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setCancelBooking(b)
+                            }}
+                          >
+                            Hủy đơn
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {data && data.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Trang {data.currentPage + 1} / {data.totalPages}
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={!data.hasPrevious || isLoading}
+                  className="gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Trước
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={!data.hasNext || isLoading}
+                  className="gap-1"
+                >
+                  Sau
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
-      <Dialog open={cancelBookingId !== null} onOpenChange={() => setCancelBookingId(null)}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Hủy đặt cọc</DialogTitle>
-    </DialogHeader>
 
-    <div className="space-y-3">
-      <Input 
-        placeholder="Số tài khoản ngân hàng"
-        value={bankAccount}
-        onChange={(e) => setBankAccount(e.target.value)}
-      />
-
-      <Input 
-        placeholder="Tên ngân hàng (VD: Vietcombank)"
-        value={bankName}
-        onChange={(e) => setBankName(e.target.value)}
-      />
-
-      <Button 
-        className="w-full mt-2" 
-        onClick={submitCancelBooking}
-      >
-        Xác nhận hủy cọc
-      </Button>
-    </div>
-  </DialogContent>
-</Dialog>
-
+      {/* Modals */}
+      <BookingDetailModal bookingId={selectedBookingId} onClose={() => setSelectedBookingId(null)} />
+      <CancelBookingDialog booking={cancelBooking} onClose={() => setCancelBooking(null)} />
     </div>
   )
 }
+

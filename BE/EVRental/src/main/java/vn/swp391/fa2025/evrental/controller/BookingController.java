@@ -58,6 +58,22 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Xem booking theo trạng thái (Phân trang)", description = "Lấy danh sách booking với phân trang và tìm kiếm")
+    @PostMapping("/showbookingbystatus/paged")
+    ApiResponse<PagedBookingResponse> showBookingByStatusPaged(@Valid @RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
+        ApiResponse<PagedBookingResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        PagedBookingResponse data = bookingService.getBookingByStatusPaged(request);
+        if (data.getBookings().isEmpty()) {
+            response.setMessage("Không có booking nào với trạng thái đã cho");
+        } else {
+            response.setMessage("Lấy thông tin booking theo trạng thái thành công");
+        }
+        response.setData(data);
+        response.setCode(200);
+        return response;
+    }
+
     @Operation(summary = "Xem chi tiết booking", description = "Lấy thông tin chi tiết một booking")
     @PostMapping("/showdetailbooking")
     ApiResponse<BookingResponse> showBookingDetail(@Valid @RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {

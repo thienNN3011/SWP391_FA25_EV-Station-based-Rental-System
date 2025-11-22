@@ -4,7 +4,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { Inter } from "next/font/google"
-import { AuthProvider } from "@/components/auth-context" 
+import { AuthProvider } from "@/components/auth-context"
+import { QueryProvider } from "@/components/providers/query-provider"
 
 
 const inter = Inter({
@@ -29,13 +30,12 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={inter.className}>
-
-        <AuthProvider>
-    
-          <Suspense fallback={null}>{children}</Suspense>
-          <Analytics />
-        </AuthProvider>
-     
+        <QueryProvider>
+          <AuthProvider>
+            <Suspense fallback={null}>{children}</Suspense>
+            <Analytics />
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   )

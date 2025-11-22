@@ -16,7 +16,7 @@ export default function BookingSummary() {
     if (data) {
       setBooking(JSON.parse(data))
     } else {
-      router.push("/") 
+      router.push("/")
     }
   }, [router])
 

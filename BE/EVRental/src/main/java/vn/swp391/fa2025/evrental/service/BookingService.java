@@ -18,6 +18,7 @@ import java.util.List;
 public interface BookingService {
     AfterBookingResponse bookVehicle(HttpServletRequest req, BookingRequest bookingRequest);
     List<BookingResponse> getBookingByStatus(ShowBookingRequest request);
+    PagedBookingResponse getBookingByStatusPaged(ShowBookingRequest request);
     BookingResponse getBookingById(Long id);
     String startRental(Long bookingId, String vehicleStatus, Long startOdo);
     EndRentingResponse endRental(HttpServletRequest request, Long bookingId, String vehicleStatus, Long endOdo, LocalDateTime transactionDate, String referanceCode);

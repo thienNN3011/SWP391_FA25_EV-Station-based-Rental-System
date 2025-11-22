@@ -2,6 +2,10 @@ package vn.swp391.fa2025.evrental.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -158,7 +162,6 @@ public class BookingServiceImpl implements  BookingService{
 
     @Override
     public List<BookingResponse> getBookingByStatus(ShowBookingRequest request) {
-        List<BookingResponse> bookings= new ArrayList<>();
         if (request.getStatus()==null) request.setStatus("ALL");
         String[] statuss={"BOOKING","RENTING","COMPLETED","CANCELLED", "ALL"};
         boolean checkStatus= false;
@@ -195,6 +198,88 @@ public class BookingServiceImpl implements  BookingService{
         }
         bookingList.sort(comparator);
         return bookingMapper.toBookingResponse(bookingList);
+    }
+
+    @Override
+    public PagedBookingResponse getBookingByStatusPaged(ShowBookingRequest request) {
+        // Validate status
+        if (request.getStatus() == null) request.setStatus("ALL");
+        String[] validStatuses = {"BOOKING", "RENTING", "COMPLETED", "CANCELLED", "NO_SHOW", "UNCONFIRMED", "ALL"};
+        boolean isValidStatus = Arrays.asList(validStatuses).contains(request.getStatus().toUpperCase());
+        if (!isValidStatus) throw new RuntimeException("Trạng thái không hợp lệ");
+
+        // Get authentication info
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+
+        // Create pageable with sorting
+        Sort sort = getSortForStatus(request.getStatus());
+        Pageable pageable = PageRequest.of(
+            request.getPage() != null ? request.getPage() : 0,
+            request.getSize() != null ? request.getSize() : 20,
+            sort
+        );
+
+        // Fetch data based on role
+        Page<Booking> bookingPage;
+        if (role.equalsIgnoreCase("STAFF")) {
+            User user = userRepository.findByUsername(username);
+            Long stationId = user.getStation().getStationId();
+            if (!request.getStatus().equalsIgnoreCase("ALL")) {
+                bookingPage = bookingRepository.findByStatusAndVehicle_Station_StationId(
+                    BookingStatus.fromString(request.getStatus()),
+                    stationId,
+                    pageable
+                );
+            } else {
+                bookingPage = bookingRepository.findByVehicle_Station_StationId(stationId, pageable);
+            }
+        } else if (role.equalsIgnoreCase("RENTER")) {
+            if (!request.getStatus().equalsIgnoreCase("ALL")) {
+                bookingPage = bookingRepository.findByStatusAndUser_Username(
+                    BookingStatus.fromString(request.getStatus()),
+                    username,
+                    pageable
+                );
+            } else {
+                bookingPage = bookingRepository.findByUser_Username(username, pageable);
+            }
+        } else if (role.equalsIgnoreCase("ADMIN")) {
+            if (!request.getStatus().equalsIgnoreCase("ALL")) {
+                bookingPage = bookingRepository.findByStatus(
+                    BookingStatus.fromString(request.getStatus()),
+                    pageable
+                );
+            } else {
+                bookingPage = bookingRepository.findAll(pageable);
+            }
+        } else {
+            throw new RuntimeException("Role không hợp lệ");
+        }
+
+        // Convert to response
+        List<BookingResponse> bookingResponses = bookingMapper.toBookingResponse(bookingPage.getContent());
+
+        return PagedBookingResponse.builder()
+            .bookings(bookingResponses)
+            .currentPage(bookingPage.getNumber())
+            .totalPages(bookingPage.getTotalPages())
+            .totalElements(bookingPage.getTotalElements())
+            .pageSize(bookingPage.getSize())
+            .hasNext(bookingPage.hasNext())
+            .hasPrevious(bookingPage.hasPrevious())
+            .build();
+    }
+
+    private Sort getSortForStatus(String status) {
+        return switch (status.toUpperCase()) {
+            case "BOOKING" -> Sort.by(Sort.Direction.ASC, "startTime");
+            case "RENTING" -> Sort.by(Sort.Direction.ASC, "actualStartTime");
+            case "COMPLETED" -> Sort.by(Sort.Direction.DESC, "actualEndTime");
+            case "CANCELLED" -> Sort.by(Sort.Direction.DESC, "createdDate");
+            default -> Sort.by(Sort.Direction.DESC, "createdDate");
+        };
     }
 
     @Override

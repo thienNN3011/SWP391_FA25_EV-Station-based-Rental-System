@@ -16,5 +16,6 @@ import java.math.BigDecimal;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EndRentingResponse {
     private String qr;
+    private String paymentUrl;
     private BookingResponse bookingResponse;
 }

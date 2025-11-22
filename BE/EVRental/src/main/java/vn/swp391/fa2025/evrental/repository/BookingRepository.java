@@ -1,5 +1,7 @@
 package vn.swp391.fa2025.evrental.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +27,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByVehicle_Station_StationId(Long stationId);
     List<Booking> findByUser_Username(String username);
     List<Booking> findByStatus(BookingStatus status);
+
+    // Pagination support for renter
+    Page<Booking> findByUser_Username(String username, Pageable pageable);
+    Page<Booking> findByStatusAndUser_Username(BookingStatus status, String username, Pageable pageable);
+
+    // Pagination support for staff
+    Page<Booking> findByVehicle_Station_StationId(Long stationId, Pageable pageable);
+    Page<Booking> findByStatusAndVehicle_Station_StationId(BookingStatus status, Long stationId, Pageable pageable);
+
+    // Pagination support for admin
+    Page<Booking> findByStatus(BookingStatus status, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE LOWER(b.user.username) = LOWER(:username)")
     BigDecimal getTotalRevenueByUsername(@Param("username") String username);
