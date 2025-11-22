@@ -286,7 +286,7 @@ public class BookingServiceImpl implements  BookingService{
     • Xe: <b>%s - %s</b><br>
     • Màu sắc: <b>%s</b><br>
     • Bắt đầu: <b>%s</b><br>
-    • Kết thúc: <b>%s</b><br>
+    • Dự kiến kết thúc thuê xe: <b>%s</b><br>
     • Giá thuê: <b>%,.0f VND</b><br>
     • Đặt cọc: <b>%,.0f VND</b><br><br>
     Nhấn vào một trong các nút bên dưới để xác nhận hoặc từ chối hợp đồng:<br><br>
