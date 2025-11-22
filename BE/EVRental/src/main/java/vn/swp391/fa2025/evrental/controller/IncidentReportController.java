@@ -11,6 +11,11 @@ import vn.swp391.fa2025.evrental.service.IncidentReportService;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+@Tag(name = "Incident Report Management", description = "Quản lý báo cáo sự cố")
 @RestController
 @RequestMapping("/incidentreport")
 public class IncidentReportController {
@@ -18,6 +23,7 @@ public class IncidentReportController {
     @Autowired
     private IncidentReportService incidentReportService;
 
+    @Operation(summary = "Tạo báo cáo sự cố", description = "Staff tạo báo cáo sự cố cho booking")
     @PostMapping("/create")
     public ApiResponse<IncidentReportResponse> createIncidentReport(
             @Valid @RequestBody IncidentReportCreateRequest request) {
@@ -29,6 +35,7 @@ public class IncidentReportController {
         return response;
     }
 
+    @Operation(summary = "Xem tất cả báo cáo sự cố", description = "Lấy danh sách tất cả báo cáo")
     @GetMapping("/showall")
     public ApiResponse<List<IncidentReportResponse>> getAllIncidentReports() {
         ApiResponse<List<IncidentReportResponse>> response = new ApiResponse<>();
@@ -39,6 +46,7 @@ public class IncidentReportController {
         return response;
     }
 
+    @Operation(summary = "Xem báo cáo theo trạm", description = "Lấy các báo cáo sự cố của một trạm")
     @GetMapping("/showbystation/{stationId}")
     public ApiResponse<List<IncidentReportResponse>> getIncidentReportsByStation(
             @PathVariable Long stationId) {
@@ -50,6 +58,7 @@ public class IncidentReportController {
         return response;
     }
 
+    @Operation(summary = "Cập nhật báo cáo sự cố", description = "Staff cập nhật thông tin báo cáo")
     @PutMapping("/update")
     public ApiResponse<IncidentReportResponse> updateIncidentReport(
             @Valid @RequestBody IncidentReportUpdateRequest request) {

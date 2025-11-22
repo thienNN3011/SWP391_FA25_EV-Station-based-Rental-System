@@ -9,12 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import jakarta.validation.Valid;
 
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Tag(name = "Authentication", description = "Xác thực")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -22,20 +26,16 @@ public class AuthController {
     @Autowired
     private AuthService authService;
     
-    /**
-     * Login endpoint for user authentication
-     * @param loginRequest the login credentials (validated automatically)
-     * @return ResponseEntity with login response
-     */
+    @Operation(summary = "Đăng nhập", description = "Xác thực và trả về JWT token")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        // Authenticate user - exceptions will be handled by GlobalExceptionHandler
         LoginResponse response = authService.authenticateUser(
             loginRequest.getUsername(),
             loginRequest.getPassword()
         );
         return ResponseEntity.ok(response);
     }
+    @Operation(summary = "Đăng xuất", security = @SecurityRequirement(name = "Bearer Authentication"))
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         Map<String, Object> response = new HashMap<>();
@@ -44,10 +44,9 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+    @Operation(summary = "Quên mật khẩu", description = "Gửi email reset password")
     @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, String>> forgotPassword(
-            @Valid @RequestBody ForgotPasswordRequest request) {
-
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.requestPasswordReset(request.getEmail());
 
         Map<String, String> response = new HashMap<>();
@@ -60,10 +59,9 @@ public class AuthController {
 
 
 
+    @Operation(summary = "Đặt lại mật khẩu", description = "Reset password bằng token")
     @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, String>> resetPassword(
-            @Valid @RequestBody ResetPasswordRequest request) {
-
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request.getToken(), request.getNewPassword());
 
         Map<String, String> response = new HashMap<>();

@@ -86,7 +86,19 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("endDate") LocalDateTime endDate
     );
 
-    // Count completed bookings for a specific station in a month
+    /**
+     * Đếm số lượng booking đã hoàn thành của một trạm trong một khoảng thời gian
+     *
+     * Query này sử dụng JPQL để:
+     * 1. Lọc booking có status = 'COMPLETED' (đã hoàn thành)
+     * 2. Lọc booking có thời gian kết thúc thực tế (actualEndTime) nằm trong khoảng [startDate, endDate)
+     * 3. Lọc booking mà xe thuộc trạm cụ thể (thông qua relationship: Booking → Vehicle → Station)
+     *
+     * @param startDate Thời điểm bắt đầu của khoảng thời gian (VD: 2025-03-01 00:00:00)
+     * @param endDate Thời điểm kết thúc của khoảng thời gian (VD: 2025-04-01 00:00:00)
+     * @param stationId ID của trạm cần thống kê
+     * @return Số lượng booking đã hoàn thành
+     */
     @Query("""
         SELECT COUNT(b)
         FROM Booking b

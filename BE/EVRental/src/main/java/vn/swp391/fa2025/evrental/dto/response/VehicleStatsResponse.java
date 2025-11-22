@@ -7,8 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * VehicleStatsResponse
- * Purpose: Aggregate statistics for a single vehicle in user activity reports.
+ * DTO chứa thống kê của 1 xe trong báo cáo hoạt động user
+ * Phần tử trong mảng vehicles của UserStatsResponse
  */
 @Data
 @Builder
@@ -16,11 +16,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VehicleStatsResponse {
-    private String plateNumber;
-    private String stationName;
-    private String modelName;
-    private String brand;
-    private long bookingsCount;
-    private double distanceKm;
+    private String plateNumber;     // Biển số xe
+    private String stationName;     // Tên trạm
+    private String modelName;       // Tên model
+    private String brand;           // Hãng xe
+    private long bookingsCount;     // Số lần user thuê xe này
+    private double distanceKm;      // Tổng km đã đi với xe này
 }
 

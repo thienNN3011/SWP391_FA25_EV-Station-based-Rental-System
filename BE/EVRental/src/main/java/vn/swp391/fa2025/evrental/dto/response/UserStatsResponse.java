@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * UserStatsResponse
- * Purpose: Top-level DTO for user activity statistics exposed via /users/me/stats.
+ * DTO chứa thống kê hoạt động của user
+ * Response cho API GET /users/me/stats
  */
 @Data
 @Builder
@@ -17,9 +17,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserStatsResponse {
-    private long totalBookingCompleted;
-    private double totalDistanceKm;
-    private long totalDurationMinutes;
-    private List<VehicleStatsResponse> vehicles;
+    private long totalBookingCompleted;    // Tổng số booking đã hoàn thành
+    private double totalDistanceKm;        // Tổng quãng đường (km)
+    private long totalDurationMinutes;     // Tổng thời gian thuê (phút)
+    private List<VehicleStatsResponse> vehicles;  // Top 10 xe được thuê nhiều nhất
 }
 

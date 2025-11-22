@@ -682,41 +682,61 @@ public class BookingServiceImpl implements  BookingService{
         }
     }
 
+    /**
+     * Lấy thống kê số lượng booking đã hoàn thành theo từng tháng trong năm của một trạm
+     *
+     * @param stationName Tên trạm cần thống kê
+     * @param year Năm cần thống kê (VD: 2025)
+     * @return Danh sách thống kê theo từng tháng, mỗi tháng chứa số lượng booking đã hoàn thành
+     * @throws RuntimeException nếu trạm không tồn tại
+     */
     @Override
     public List<StationCompletedBookingsResponse> getYearlyCompletedBookingsByStation(String stationName, int year) {
-        // Validate station exists
+        // Bước 1: Kiểm tra trạm có tồn tại trong database không
         Station station = stationRepository.findByStationName(stationName);
         if (station == null) {
             throw new RuntimeException("Station không tồn tại");
         }
 
+        // Khởi tạo danh sách kết quả để chứa thống kê của từng tháng
         List<StationCompletedBookingsResponse> result = new ArrayList<>();
 
-        // Determine current month (if current year, only go up to current month)
+        // Bước 2: Xác định số tháng cần thống kê
+        // - Nếu là năm hiện tại: chỉ lấy từ tháng 1 đến tháng hiện tại (không lấy tháng tương lai)
+        // - Nếu là năm trước: lấy đủ 12 tháng
+        // VD: Năm 2025, tháng hiện tại là 11 → currentMonth = 11
+        //     Năm 2024 → currentMonth = 12
         int currentMonth = (year == LocalDate.now().getYear())
                 ? LocalDate.now().getMonthValue()
                 : 12;
 
-        // Loop through each month
+        // Bước 3: Lặp qua từng tháng để đếm số booking đã hoàn thành
         for (int month = 1; month <= currentMonth; month++) {
-            // Calculate start and end date for the month
+            // Tính ngày bắt đầu của tháng (ngày 1, giờ 00:00:00)
+            // VD: Tháng 3/2025 → startDate = 2025-03-01 00:00:00
             LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0, 0);
+
+            // Tính ngày kết thúc của tháng (= ngày đầu tháng tiếp theo)
+            // VD: Tháng 3/2025 → endDate = 2025-04-01 00:00:00
+            // Query sẽ lấy booking có actualEndTime >= startDate AND < endDate
             LocalDateTime endDate = startDate.plusMonths(1);
 
-            // Count completed bookings for this station in this month
+            // Gọi repository để đếm số booking COMPLETED trong khoảng thời gian này
+            // Điều kiện: status = 'COMPLETED' AND actualEndTime trong [startDate, endDate) AND xe thuộc trạm này
             Long count = bookingRepository.countCompletedBookingsByMonthAndStation(
                     startDate, endDate, station.getStationId());
 
-            // Add to result
+            // Tạo response object cho tháng này và thêm vào danh sách kết quả
             result.add(new StationCompletedBookingsResponse(
-                    station.getStationId(),
-                    station.getStationName(),
-                    month,
-                    year,
-                    count
+                    station.getStationId(),      // ID của trạm
+                    station.getStationName(),    // Tên trạm
+                    month,                       // Tháng (1-12)
+                    year,                        // Năm
+                    count                        // Số lượng booking đã hoàn thành
             ));
         }
 
+        // Trả về danh sách thống kê (12 tháng hoặc ít hơn nếu là năm hiện tại)
         return result;
     }
 

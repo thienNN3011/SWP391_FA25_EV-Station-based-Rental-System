@@ -8,6 +8,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Booking Entity - Đơn thuê xe
+ * Lifecycle: BOOKING → UNCONFIRMED → RENTING → COMPLETED / CANCELLED / NO_SHOW
+ */
 @Entity
 @Table(name = "bookings")
 @NoArgsConstructor
@@ -29,13 +33,13 @@ public class Booking {
     private Vehicle vehicle;
 
     @Column(nullable = false)
-    private LocalDateTime startTime;
+    private LocalDateTime startTime;        // Thời gian dự kiến bắt đầu
 
     @Column(nullable = false)
-    private LocalDateTime endTime;
+    private LocalDateTime endTime;          // Thời gian dự kiến kết thúc
 
-    private LocalDateTime actualStartTime;
-    private LocalDateTime actualEndTime;
+    private LocalDateTime actualStartTime;  // Thời gian thực tế bắt đầu (khi staff giao xe)
+    private LocalDateTime actualEndTime;    // Thời gian thực tế kết thúc (khi staff nhận xe)
 
     @ManyToOne
     @JoinColumn(name = "tariffId", nullable = false)
@@ -44,11 +48,11 @@ public class Booking {
     @Column(nullable = false)
     private BigDecimal totalAmount;
 
-    private Long startOdo;
-    private Long endOdo;
+    private Long startOdo;  // Số km đồng hồ lúc bắt đầu thuê
+    private Long endOdo;    // Số km đồng hồ lúc trả xe (quãng đường = endOdo - startOdo)
 
-    private String beforeRentingStatus;
-    private String afterRentingStatus;
+    private String beforeRentingStatus;  // Tình trạng xe trước khi thuê
+    private String afterRentingStatus;   // Tình trạng xe sau khi trả
 
     @Column(nullable = false)
     private LocalDateTime createdDate;
@@ -67,8 +71,8 @@ public class Booking {
     private List<IncidentReport> incidentReports;
 
     @Column
-    private String bankName;
+    private String bankName;     // Tên ngân hàng (để hoàn tiền)
 
     @Column
-    private String bankAccount;
+    private String bankAccount;  // Số tài khoản (để hoàn tiền)
 }

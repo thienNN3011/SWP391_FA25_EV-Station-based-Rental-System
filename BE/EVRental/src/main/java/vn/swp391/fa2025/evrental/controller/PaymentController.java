@@ -30,7 +30,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.IOException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
+@Tag(name = "Payment Management", description = "Quản lý thanh toán")
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
@@ -46,6 +50,7 @@ public class PaymentController {
     @Autowired
     private EmailUtils emailUtils;
 
+    @Operation(summary = "VNPay callback", description = "Xử lý kết quả thanh toán từ VNPay")
     @GetMapping("/vnpay-return")
     public void returnPayment(@RequestParam Map<String, String> params, HttpServletResponse response) throws IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -177,6 +182,7 @@ public class PaymentController {
         response.getWriter().write(page);
     }
 
+    @Operation(summary = "Thống kê doanh thu", description = "Xem doanh thu theo trạm và năm")
     @PostMapping("/revenue")
     public ApiResponse<List<StationRevenueResponse>> showRevenue(@Valid @RequestBody StationRevenueRequest request) {
         ApiResponse<List<StationRevenueResponse>> response = new ApiResponse<>();
@@ -187,6 +193,7 @@ public class PaymentController {
         return response;
     }
 
+    @Operation(summary = "Hoàn tiền booking", description = "Staff hoàn tiền cho booking đã hủy")
     @PostMapping("/refund")
     public ApiResponse<String> refundBooking(@Valid @RequestBody RefundCancelledBookingRequest request) {
         ApiResponse<String> response= new ApiResponse<>();

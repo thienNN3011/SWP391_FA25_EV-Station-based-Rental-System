@@ -18,6 +18,11 @@ import vn.swp391.fa2025.evrental.util.EmailUtils;
 import java.net.URI;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+@Tag(name = "User Management", description = "Quản lý người dùng")
 @RestController
 public class UserController {
 
@@ -33,14 +38,14 @@ public class UserController {
     @Autowired
     private EmailUtils emailUtils;
 
-    @PostMapping(value = "/users", consumes = MediaType.APPLICATION_JSON_VALUE) //fix de nhan json
-public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomerRequest req) {
-    CustomerResponse res = registrationService.registerCustomer(req);
-    return ResponseEntity.created(URI.create("/users/" + res.getUserId())).body(res);
-}
+    @Operation(summary = "Đăng ký tài khoản", description = "Khách hàng đăng ký tài khoản mới")
+    @PostMapping(value = "/users", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomerRequest req) {
+        CustomerResponse res = registrationService.registerCustomer(req);
+        return ResponseEntity.created(URI.create("/users/" + res.getUserId())).body(res);
+    }
 
-
-
+    @Operation(summary = "Xem tài khoản chờ duyệt", description = "Admin xem danh sách tài khoản pending")
     @GetMapping("/showpendingaccount")
     public ApiResponse<List<CustomerResponse>> showPendingAccount() {
         ApiResponse<List<CustomerResponse>> response = new ApiResponse<>();
@@ -51,6 +56,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Chi tiết tài khoản chờ duyệt", description = "Admin xem chi tiết một tài khoản pending")
     @PostMapping("/showdetailofpendingaccount")
     public ApiResponse<CustomerResponse> showDetailOfPendingAccount(@Valid @RequestBody ShowUserDetailRequest request) {
         ApiResponse<CustomerResponse> response = new ApiResponse<>();
@@ -61,6 +67,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Thay đổi trạng thái tài khoản", description = "Admin duyệt/từ chối/khóa tài khoản")
     @PatchMapping("/changeaccountstatus")
     public ApiResponse<Boolean> changeAccountStatus(@Valid @RequestBody ChangeUserStatusRequest request) {
         ApiResponse<Boolean> response = new ApiResponse<>();
@@ -73,6 +80,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Xem tất cả staff", description = "Admin xem danh sách toàn bộ nhân viên")
     @GetMapping("/showallstaffs")
     public ApiResponse<List<StaffListResponse>> showAllStaffs() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -86,6 +94,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Tạo tài khoản staff", description = "Admin tạo tài khoản nhân viên mới")
     @PostMapping(value = "/admin/staffs", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ApiResponse<StaffResponse> createStaff(@Valid @RequestBody CreateStaffRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -98,6 +107,8 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         response.setCode(201);
         return response;
     }
+
+    @Operation(summary = "Xem tất cả khách hàng", description = "Admin xem danh sách toàn bộ renter")
     @GetMapping("/showallrenters")
     public ApiResponse<List<RenterListResponse>> showAllRenters() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -111,9 +122,9 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Cập nhật thông tin user", description = "User cập nhật thông tin cá nhân")
     @PutMapping("/updateuser")
     public ApiResponse<UserUpdateResponse> updateUser(@RequestBody UserUpdateRequest request) {
-        // Lấy username từ token
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
 
@@ -125,6 +136,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Xóa user", description = "Admin xóa tài khoản user")
     @DeleteMapping("/deleteuser/{username}")
     public ApiResponse<Boolean> deleteUser(@PathVariable String username) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -138,6 +150,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Thống kê hoạt động user", description = "User xem thống kê booking, km, thời gian thuê")
     @GetMapping("/users/me/stats")
     public ApiResponse<UserStatsResponse> getCurrentUserStats() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -153,9 +166,9 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Xem thông tin cá nhân", description = "User xem thông tin tài khoản của mình")
     @GetMapping("/showuserinfo")
     public ApiResponse<CustomerResponse> showUserInfo() {
-
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
@@ -166,6 +179,8 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         response.setCode(200);
         return response;
     }
+
+    @Operation(summary = "Cập nhật tài khoản bị từ chối", description = "User cập nhật lại thông tin sau khi bị reject")
     @PutMapping("/updaterejecteduser")
     public ApiResponse<String> updateRejectedUser(@RequestBody UserRejectedUpdateRequest request) {
         userService.updateRejectedUser(request);
@@ -177,6 +192,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Danh sách staff tại trạm", description = "Lấy thông tin staff ở một trạm để chuyển đổi")
     @PostMapping("/changestaffstationreq")
     public ApiResponse<ChangeStaffStationResponse> changeStaffStation(@Valid @RequestBody StationRequest request){
         ApiResponse<ChangeStaffStationResponse> response = new ApiResponse<>();
@@ -187,6 +203,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Chuyển staff sang trạm khác", description = "Admin chuyển nhân viên sang trạm mới")
     @PostMapping("/dochangestaffstation")
     public ApiResponse<String> doChangeStaffStation(@Valid @RequestBody ChangeStaffStationRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
@@ -207,6 +224,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Thống kê staff theo trạm", description = "Xem hiệu suất làm việc của staff tại trạm")
     @PostMapping("/showstaffstats")
     public ApiResponse<List<StaffStatsResponse>> showStaffStats(@Valid @RequestBody ShowStaffStatsRequest request){
         ApiResponse<List<StaffStatsResponse>> response = new ApiResponse<>();
@@ -217,6 +235,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Xem staff theo trạm", description = "Admin xem tất cả staff làm việc tại một trạm")
     @PostMapping("/showstaffstation")
     public ApiResponse<List<StaffResponse>> showStaffStation(@RequestBody StationRequest request){
         ApiResponse<List<StaffResponse>> response = new ApiResponse<>();
@@ -227,6 +246,7 @@ public ResponseEntity<CustomerResponse> createUser(@RequestBody RegisterCustomer
         return response;
     }
 
+    @Operation(summary = "Danh sách user rủi ro cao", description = "Admin xem user có nhiều vi phạm")
     @GetMapping("/usersrisk")
     public ApiResponse<List<UserRiskResponse>> getUsersAtRisk() {
         ApiResponse<List<UserRiskResponse>> response = new ApiResponse<>();

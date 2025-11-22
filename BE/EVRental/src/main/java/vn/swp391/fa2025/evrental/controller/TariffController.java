@@ -12,6 +12,11 @@ import vn.swp391.fa2025.evrental.service.TariffService;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+@Tag(name = "Tariff Management", description = "Quản lý bảng giá")
 @RestController
 @RequestMapping("/tariff")
 public class TariffController {
@@ -19,6 +24,7 @@ public class TariffController {
     @Autowired
     private TariffService tariffService;
 
+    @Operation(summary = "Xem tất cả bảng giá", description = "Lấy danh sách tất cả bảng giá")
     @GetMapping("/showall")
     public ApiResponse<List<TariffResponse>> showAllTariff() {
         ApiResponse<List<TariffResponse>> response = new ApiResponse<>();
@@ -29,6 +35,7 @@ public class TariffController {
         return response;
     }
 
+    @Operation(summary = "Xem bảng giá theo ID", description = "Lấy thông tin chi tiết một bảng giá")
     @GetMapping("/showbyid/{id}")
     public ApiResponse<TariffResponse> getTariffById(@PathVariable Long id) {
         ApiResponse<TariffResponse> response = new ApiResponse<>();
@@ -39,6 +46,7 @@ public class TariffController {
         return response;
     }
 
+    @Operation(summary = "Tạo bảng giá", description = "Admin tạo bảng giá cho mẫu xe tại trạm")
     @PostMapping("/create")
     public ApiResponse<TariffResponse> createTariff(@Valid @RequestBody TariffCreateRequest request) {
         ApiResponse<TariffResponse> response = new ApiResponse<>();
@@ -49,6 +57,7 @@ public class TariffController {
         return response;
     }
 
+    @Operation(summary = "Cập nhật bảng giá", description = "Admin cập nhật giá thuê xe")
     @PutMapping("/update/{id}")
     public ApiResponse<TariffUpdateResponse> updateTariff(
             @PathVariable Long id,
@@ -61,6 +70,7 @@ public class TariffController {
         return response;
     }
 
+    @Operation(summary = "Xóa bảng giá", description = "Admin xóa bảng giá")
     @DeleteMapping("/delete/{id}")
     public ApiResponse<Void> deleteTariff(@PathVariable Long id) {
         ApiResponse<Void> response = new ApiResponse<>();

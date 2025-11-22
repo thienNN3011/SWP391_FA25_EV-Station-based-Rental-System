@@ -17,44 +17,45 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * JWT Authentication Filter to process JWT tokens in requests
+ * Filter xử lý JWT token trong mỗi request
+ * Validate token, extract username/role, set vào SecurityContext
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
+
     @Autowired
-    private JwtService jwtService;
-    
+    private JwtService jwtService;  // Service xử lý JWT (validate, extract claims)
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                  HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request,
+                                  HttpServletResponse response,
                                   FilterChain filterChain) throws ServletException, IOException {
-        
+
+        // Lấy JWT token từ header Authorization (format: "Bearer <token>")
         String authHeader = request.getHeader("Authorization");
-        
-        // Check for Bearer token
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             try {
-                String token = authHeader.substring(7);
-                
-                // Validate token and extract claims
+                String token = authHeader.substring(7);  // Cắt bỏ "Bearer "
+
+                // Validate token và extract thông tin user
                 if (jwtService.isValidToken(token)) {
                     Claims claims = jwtService.extractClaims(token);
                     String username = claims.getSubject();
                     String role = claims.get("role", String.class);
                     String fullName = claims.get("fullName", String.class);
-                    
-                    // Set authentication in SecurityContext
+
+                    // Tạo Authentication object và set vào SecurityContext
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                             username, null, List.of(new SimpleGrantedAuthority(role)));
-                    
+
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (Exception e) {
-                // Ignore invalid tokens and continue
+                // Ignore invalid token (endpoint public không cần token)
             }
         }
-        
+
         filterChain.doFilter(request, response);
     }
 }

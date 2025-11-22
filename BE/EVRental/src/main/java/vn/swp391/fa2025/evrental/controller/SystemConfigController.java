@@ -10,12 +10,18 @@ import vn.swp391.fa2025.evrental.service.SystemConfigServiceImpl;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+@Tag(name = "System Configuration", description = "Cấu hình hệ thống")
 @RestController
 @RequestMapping("/systemconfig")
 public class SystemConfigController {
     @Autowired
     private SystemConfigServiceImpl systemConfigService;
 
+    @Operation(summary = "Xem tất cả cấu hình", description = "Lấy danh sách tất cả cấu hình hệ thống")
     @GetMapping("/showallconfig")
     ApiResponse<List<SystemConfigResponse>> showAllConfig(){
         ApiResponse<List<SystemConfigResponse>> apiResponse = new ApiResponse<>();
@@ -26,6 +32,7 @@ public class SystemConfigController {
         return apiResponse;
     }
 
+    @Operation(summary = "Cập nhật cấu hình", description = "Admin cập nhật giá trị cấu hình hệ thống")
     @PostMapping("/updateconfig")
     ApiResponse<SystemConfigResponse> updateConfig(@Valid @RequestBody SystemConfigRequest request){
         ApiResponse<SystemConfigResponse> apiResponse = new ApiResponse<>();

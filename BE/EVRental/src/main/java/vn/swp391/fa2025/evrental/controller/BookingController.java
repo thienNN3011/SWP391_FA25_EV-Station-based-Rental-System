@@ -1,27 +1,26 @@
 package vn.swp391.fa2025.evrental.controller;
 
-import com.beust.ah.A;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import jakarta.servlet.http.HttpServletResponse;
 import vn.swp391.fa2025.evrental.dto.request.*;
 import vn.swp391.fa2025.evrental.dto.response.*;
-import vn.swp391.fa2025.evrental.entity.Contract;
 import vn.swp391.fa2025.evrental.service.BookingServiceImpl;
 import vn.swp391.fa2025.evrental.service.ContractServiceImpl;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.io.IOException;
-import java.net.URLEncoder;
 
-
+@Tag(name = "Booking Management", description = "Quản lý đặt xe")
 @RestController
 @RequestMapping("/bookings")
 public class BookingController {
@@ -32,6 +31,7 @@ public class BookingController {
     @Autowired
     private EmailUtils emailUtils;
     
+    @Operation(summary = "Tạo booking mới", description = "Khách hàng đặt xe")
     @PostMapping("/createbooking")
     ApiResponse<AfterBookingResponse> createBooking(HttpServletRequest request, @Valid @RequestBody BookingRequest bookingRequest){
         ApiResponse<AfterBookingResponse> response = new ApiResponse<>();
@@ -41,6 +41,8 @@ public class BookingController {
         response.setCode(200);
         return response;
     }
+
+    @Operation(summary = "Xem booking theo trạng thái", description = "Staff xem danh sách booking theo status")
     @PostMapping("/showbookingbystatus")
     ApiResponse<java.util.List<BookingResponse>> showBookingByStatusForStaff(@Valid @RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
         ApiResponse<java.util.List<BookingResponse>> response = new ApiResponse<>();
@@ -55,6 +57,8 @@ public class BookingController {
         response.setCode(200);
         return response;
     }
+
+    @Operation(summary = "Xem chi tiết booking", description = "Lấy thông tin chi tiết một booking")
     @PostMapping("/showdetailbooking")
     ApiResponse<BookingResponse> showBookingDetail(@Valid @RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
         ApiResponse<BookingResponse> response = new ApiResponse<>();
@@ -65,6 +69,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Bắt đầu thuê xe", description = "Staff xác nhận bắt đầu cho thuê")
     @PostMapping("/startrental")
     ApiResponse<String> startRental(@Valid @RequestBody StartRentingRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
@@ -75,6 +80,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Xác nhận booking", description = "Khách hàng xác nhận hợp đồng qua email")
     @GetMapping("/confirm")
     public void confirmBooking(@RequestParam("token") String token, HttpServletResponse response) throws IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -86,8 +92,7 @@ public class BookingController {
         }
     }
 
-
-
+    @Operation(summary = "Từ chối booking", description = "Khách hàng từ chối hợp đồng qua email")
     @GetMapping("/reject")
     public void rejectBooking(@RequestParam("token") String token, HttpServletResponse response) throws IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -99,6 +104,7 @@ public class BookingController {
         }
     }
 
+    @Operation(summary = "Kết thúc thuê xe", description = "Staff xác nhận kết thúc và tính tiền")
     @PostMapping("/endrental")
     ApiResponse<EndRentingResponse> endRental(HttpServletRequest req, @Valid @RequestBody EndRentingRequest request) {
         ApiResponse<EndRentingResponse> response = new ApiResponse<>();
@@ -109,6 +115,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Hủy booking", description = "Khách hàng hủy booking và nhận hoàn tiền")
     @PostMapping("/cancelbooking")
     ApiResponse<String> cancelRental(@Valid @RequestBody CancelBookingRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
@@ -120,6 +127,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Dừng tính thời gian thuê", description = "Dừng đồng hồ tính giờ thuê xe")
     @PostMapping("/stoprentingtime")
     ApiResponse<StopRentingTimeResponse> stopRentingTime(@Valid @RequestBody StopRentingRequest request) {
         ApiResponse<StopRentingTimeResponse> response = new ApiResponse<>();
@@ -129,6 +137,7 @@ public class BookingController {
         response.setCode(200);
         return response;
     }
+    @Operation(summary = "Tổng doanh thu của user", description = "Tính tổng tiền từ tất cả booking đã hoàn thành")
     @GetMapping("/total-revenue")
     ApiResponse<BigDecimal> getTotalRevenue() {
         ApiResponse<BigDecimal> response = new ApiResponse<>();
@@ -139,6 +148,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Danh sách booking cần hoàn tiền", description = "Lấy các booking đã hủy cần hoàn trả")
     @GetMapping("/showbookingsrefund")
     ApiResponse<List<BookingRefundResponse>> showBookingsRefund(){
         ApiResponse<List<BookingRefundResponse>> response = new ApiResponse<>();
@@ -149,6 +159,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Kiểm tra điều kiện hoàn tiền", description = "Kiểm tra booking có được hoàn tiền khi hủy không")
     @PostMapping("/isrefund")
     ApiResponse<Boolean> isRefundWhenCancel(@Valid @RequestBody StopRentingRequest request){
         ApiResponse<Boolean> response= new ApiResponse<>();
@@ -159,6 +170,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Cập nhật xe cho booking", description = "Thay đổi xe được gán cho booking")
     @PostMapping("/updatebookingvehicle")
     ApiResponse<String> updateBookingVehicle(@Valid @RequestBody UpdateBookingVehicleRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
@@ -170,6 +182,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Staff hủy booking", description = "Staff hủy booking thay khách hàng")
     @PostMapping("/cancelbookingbystaff")
     ApiResponse<String> cancelBookingByStaff(@Valid @RequestBody CancelBookingByStaffRequest request) {
         ApiResponse<String> response = new ApiResponse<>();
@@ -181,6 +194,7 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Thống kê booking theo tháng", description = "Lấy số lượng booking hoàn thành theo tháng/năm")
     @PostMapping("/stats/monthly-completed")
     ApiResponse<MonthlyBookingStatsResponse> getMonthlyCompletedBookingsStats(
             @Valid @RequestBody MonthlyBookingStatsRequest request) {
@@ -203,12 +217,16 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Thống kê booking theo năm", description = "Lấy số lượng booking hoàn thành theo năm")
     @PostMapping("/stats/yearly-completed")
     public ApiResponse<List<StationCompletedBookingsResponse>> getYearlyCompletedBookingsStats(
             @Valid @RequestBody StationCompletedBookingsRequest request) {
         ApiResponse<List<StationCompletedBookingsResponse>> response = new ApiResponse<>();
         response.setSuccess(true);
-        response.setData(bookingService.getYearlyCompletedBookingsByStation(request.getStationName(), request.getYear()));
+        response.setData(bookingService.getYearlyCompletedBookingsByStation(
+                request.getStationName(),
+                request.getYear()
+        ));
         response.setCode(200);
         response.setMessage("Thống kê booking hoàn thành theo năm thành công");
         return response;
