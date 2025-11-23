@@ -19,10 +19,4 @@ public class EndRentingRequest {
     @NotBlank(message = "Tình trạng xe không được để trống")
     private String vehicleStatus; // ví dụ: "GOOD", "DAMAGED", "NEEDS_MAINTENANCE"
 
-    @NotBlank(message = "Mã tham chiếu giao dịch không được để trống")
-    private String referenceCode;
-
-    @NotNull(message = "Thời gian giao dịch không được để trống")
-   
-    private LocalDateTime transactionDate;
 }

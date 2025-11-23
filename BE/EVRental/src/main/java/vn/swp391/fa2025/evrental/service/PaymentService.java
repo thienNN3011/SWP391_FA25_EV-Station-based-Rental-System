@@ -1,6 +1,7 @@
 package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.stereotype.Service;
+import vn.swp391.fa2025.evrental.dto.response.PaymentResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
 import vn.swp391.fa2025.evrental.entity.Payment;
 
@@ -14,4 +15,5 @@ public interface PaymentService {
     List<StationRevenueResponse> getMonthlyRevenueByStation(int month, int year);
     List<StationRevenueResponse> getYearlyRevenueByStation(String stationName, int year);
     public void refundCancelledBooking(Long bookingId, String referenceCode, LocalDateTime transactionDate);
+    List<PaymentResponse> viewOwnPayment();
 }

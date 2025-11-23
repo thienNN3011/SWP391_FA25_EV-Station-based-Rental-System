@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import vn.swp391.fa2025.evrental.dto.request.RefundCancelledBookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.StationRevenueRequest;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
+import vn.swp391.fa2025.evrental.dto.response.PaymentResponse;
 import vn.swp391.fa2025.evrental.dto.response.PaymentReturnResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
@@ -202,6 +203,17 @@ public class PaymentController {
         response.setMessage("Hoàn tiền thành công");
         response.setData("Hoàn tiền thành công");
         response.setCode(200);
+        return response;
+    }
+
+    @Operation(summary = "Lịch sử giao dịch", description = "Khách hàng xem lịch sử giao dịch")
+    @GetMapping("/history")
+    private ApiResponse<List<PaymentResponse>> viewOwnPayment(){
+        ApiResponse<List<PaymentResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(paymentService.viewOwnPayment());
+        response.setCode(200);
+        response.setMessage("Lấy lịch sử giao dịch thành công");
         return response;
     }
 }

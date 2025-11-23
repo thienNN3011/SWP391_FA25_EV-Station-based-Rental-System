@@ -412,7 +412,7 @@ public class BookingServiceImpl implements  BookingService{
     @Override
     @Transactional
     public EndRentingResponse endRental(HttpServletRequest request, Long bookingId, String vehicleStatus,
-                                        Long endOdo, LocalDateTime transactionDate, String referanceCode) {
+                                        Long endOdo) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String staffname = authentication.getName();
         User staff=userRepository.findByUsername(staffname);
@@ -453,7 +453,7 @@ public class BookingServiceImpl implements  BookingService{
 
             booking.setTotalAmount(booking.getTotalAmount().add(extraFee));
         }
-
+        booking.setTotalAmount(booking.getTotalAmount().subtract(booking.getTariff().getDepositAmount()));
         String paymentUrl;
         try {
             paymentUrl = vnPayService.createPaymentUrl(
@@ -472,16 +472,6 @@ public class BookingServiceImpl implements  BookingService{
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        if (paymentRepository.findByReferenceCode(referanceCode)!=null) throw new RuntimeException("Mã thanh toán đã tồn tại");
-        if (transactionDate.isBefore(LocalDateTime.now().minusMinutes(10))) throw new RuntimeException("Thời gian giao dịch không được quá 10p so với thời điểm hiện tại");
-        paymentRepository.save(Payment.builder()
-                .transactionDate(transactionDate)
-                .booking(booking)
-                .paymentType(PaymentType.fromString("REFUND_DEPOSIT"))
-                .amount(paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), PaymentType.fromString("DEPOSIT")).getAmount())
-                .referenceCode(referanceCode)
-                .method(PaymentMethod.fromString("VIETCOMBANK"))
-                .build());
 
         EndRentingResponse response = EndRentingResponse.builder()
                 .bookingResponse(bookingMapper.toEndBookingResponse(booking))

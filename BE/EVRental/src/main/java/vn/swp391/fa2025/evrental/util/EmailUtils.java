@@ -214,7 +214,7 @@ public class EmailUtils {
             • Xe: <b>%s</b><br>
             • Bắt đầu: <b>%s</b><br>
             • Kết thúc: <b>%s</b><br>
-            • Tổng tiền: <b>%s VND</b><br><br>
+            • Tổng tiền đặt cọc đã thanh toán: <b>%s VND</b><br><br>
             <b>Chính sách:</b><br>
             - Bạn có thể hủy trước <b>%s phút</b> để được hoàn <b>%s%% tiền đặt cọc</b>.<br>
             - Nếu đến muộn hơn <b>%s phút</b> kể từ thời gian bắt đầu, đơn sẽ bị hủy và không hoàn cọc.<br>
