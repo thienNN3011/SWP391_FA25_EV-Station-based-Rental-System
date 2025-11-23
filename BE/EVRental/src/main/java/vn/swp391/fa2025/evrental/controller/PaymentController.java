@@ -3,15 +3,20 @@ package vn.swp391.fa2025.evrental.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
+import vn.swp391.fa2025.evrental.dto.request.DashboardMetricsRequest;
 import vn.swp391.fa2025.evrental.dto.request.RefundCancelledBookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.StationRevenueRequest;
+import vn.swp391.fa2025.evrental.dto.request.TransactionFilterRequest;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
 import vn.swp391.fa2025.evrental.dto.response.PaymentResponse;
+import vn.swp391.fa2025.evrental.dto.response.DashboardMetricsResponse;
 import vn.swp391.fa2025.evrental.dto.response.PaymentReturnResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
+import vn.swp391.fa2025.evrental.dto.response.TransactionResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.enums.BookingStatus;
@@ -50,6 +55,17 @@ public class PaymentController {
     private String vnp_HashSecret;
     @Autowired
     private EmailUtils emailUtils;
+
+    @Operation(summary = "Filter transactions", description = "Xem lịch sử giao dịch có lọc")
+    @PostMapping("/transactions")
+    public ApiResponse<Page<TransactionResponse>> getTransactions(@RequestBody TransactionFilterRequest request) {
+        ApiResponse<Page<TransactionResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(paymentService.getTransactions(request));
+        response.setCode(200);
+        response.setMessage("Lấy danh sách giao dịch thành công");
+        return response;
+    }
 
     @Operation(summary = "VNPay callback", description = "Xử lý kết quả thanh toán từ VNPay")
     @GetMapping("/vnpay-return")
@@ -214,6 +230,17 @@ public class PaymentController {
         response.setData(paymentService.viewOwnPayment());
         response.setCode(200);
         response.setMessage("Lấy lịch sử giao dịch thành công");
+        return response;
+    }
+  
+    @Operation(summary = "Dashboard metrics", description = "Lấy các chỉ số tổng quan cho dashboard admin")
+    @PostMapping("/dashboard-metrics")
+    public ApiResponse<DashboardMetricsResponse> getDashboardMetrics(@RequestBody DashboardMetricsRequest request) {
+        ApiResponse<DashboardMetricsResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(paymentService.getDashboardMetrics(request));
+        response.setCode(200);
+        response.setMessage("Lấy chỉ số dashboard thành công");
         return response;
     }
 }

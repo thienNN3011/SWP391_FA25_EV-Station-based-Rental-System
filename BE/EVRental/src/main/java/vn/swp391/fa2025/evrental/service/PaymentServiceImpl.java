@@ -5,7 +5,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.swp391.fa2025.evrental.dto.response.PaymentResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vn.swp391.fa2025.evrental.dto.request.DashboardMetricsRequest;
+import vn.swp391.fa2025.evrental.dto.request.TransactionFilterRequest;
+import vn.swp391.fa2025.evrental.dto.response.DashboardMetricsResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
+import vn.swp391.fa2025.evrental.dto.response.TransactionResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.entity.Station;
@@ -52,6 +61,34 @@ public class PaymentServiceImpl implements PaymentService {
     private PaymentMapper paymentMapper;
 
     @Override
+    public Page<TransactionResponse> getTransactions(TransactionFilterRequest request) {
+        LocalDateTime start = request.getStartDate() != null ? request.getStartDate().atStartOfDay() : null;
+        LocalDateTime end = request.getEndDate() != null ? request.getEndDate().atTime(23, 59, 59) : null;
+
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+
+        Page<Payment> payments = paymentRepository.searchTransactions(
+                start,
+                end,
+                request.getStationId(),
+                request.getPaymentType(),
+                pageable
+        );
+
+        return payments.map(payment -> TransactionResponse.builder()
+                .paymentId(payment.getPaymentId())
+                .bookingId(payment.getBooking().getBookingId())
+                .customerName(payment.getBooking().getUser().getFullName())
+                .amount(payment.getAmount())
+                .paymentType(payment.getPaymentType())
+                .transactionDate(payment.getTransactionDate())
+                .method(payment.getMethod())
+                .referenceCode(payment.getReferenceCode())
+                .stationName(payment.getBooking().getVehicle().getStation().getStationName())
+                .build());
+    }
+
+    @Override
     @Transactional
     public void createPayment(Payment payment) {
         paymentRepository.save(payment);
@@ -67,19 +104,21 @@ public class PaymentServiceImpl implements PaymentService {
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDateTime startDate = yearMonth.atDay(1).atStartOfDay();
         LocalDateTime endDate = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+        
+        // Get all payments in this month
         List<Payment> monthlyPayments = paymentRepository.findAllByTransactionDateBetween(startDate, endDate);
         if (monthlyPayments.isEmpty()) return Collections.emptyList();
-        Set<Long> bookingIds = monthlyPayments.stream()
-                .map(p -> p.getBooking().getBookingId())
-                .collect(Collectors.toSet());
-        List<Payment> allPaymentsOfBookings = paymentRepository.findAllByBooking_BookingIdIn(bookingIds);
-        List<Payment> validPayments = allPaymentsOfBookings.stream()
+        
+        // Filter only payments with valid booking status (COMPLETED, CANCELLED, NO_SHOW)
+        List<Payment> validPayments = monthlyPayments.stream()
                 .filter(p -> {
                     Booking b = p.getBooking();
                     String status = b.getStatus().toString();
                     return "COMPLETED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status) || "NO_SHOW".equalsIgnoreCase(status);
                 })
                 .collect(Collectors.toList());
+        
+        // Calculate revenue by station for THIS MONTH ONLY
         Map<Station, BigDecimal> revenueByStation = new HashMap<>();
         for (Payment p : validPayments) {
             Station station = p.getBooking().getVehicle().getStation();
@@ -90,6 +129,7 @@ public class PaymentServiceImpl implements PaymentService {
             };
             revenueByStation.merge(station, amount, BigDecimal::add);
         }
+        
         return revenueByStation.entrySet().stream()
                 .map(e -> new StationRevenueResponse(
                         e.getKey().getStationId(),
@@ -173,5 +213,91 @@ public class PaymentServiceImpl implements PaymentService {
         return payments.stream()
                 .map(paymentMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+  
+    public DashboardMetricsResponse getDashboardMetrics(DashboardMetricsRequest request) {
+        // Determine date range
+        LocalDateTime startDate;
+        LocalDateTime endDate;
+        String period;
+        
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            // Custom date range
+            startDate = request.getStartDate().atStartOfDay();
+            endDate = request.getEndDate().atTime(23, 59, 59);
+            period = request.getStartDate() + " - " + request.getEndDate();
+        } else if (request.getYear() != null && request.getMonth() != null) {
+            // Specific month
+            YearMonth yearMonth = YearMonth.of(request.getYear(), request.getMonth());
+            startDate = yearMonth.atDay(1).atStartOfDay();
+            endDate = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+            period = "Tháng " + request.getMonth() + "/" + request.getYear();
+        } else if (request.getYear() != null) {
+            // Entire year
+            startDate = LocalDateTime.of(request.getYear(), 1, 1, 0, 0, 0);
+            endDate = LocalDateTime.of(request.getYear(), 12, 31, 23, 59, 59);
+            period = "Năm " + request.getYear();
+        } else {
+            // Default: current month
+            YearMonth currentMonth = YearMonth.now();
+            startDate = currentMonth.atDay(1).atStartOfDay();
+            endDate = currentMonth.atEndOfMonth().atTime(23, 59, 59);
+            period = "Tháng " + currentMonth.getMonthValue() + "/" + currentMonth.getYear();
+        }
+        
+        // Get all payments in the date range
+        List<Payment> allPayments = paymentRepository.findAllByTransactionDateBetween(startDate, endDate);
+        
+        // Filter by station if specified
+        if (request.getStationId() != null) {
+            allPayments = allPayments.stream()
+                    .filter(p -> p.getBooking().getVehicle().getStation().getStationId().equals(request.getStationId()))
+                    .collect(Collectors.toList());
+        }
+        
+        // Filter only payments with valid booking status (COMPLETED, CANCELLED, NO_SHOW)
+        List<Payment> validPayments = allPayments.stream()
+                .filter(p -> {
+                    Booking b = p.getBooking();
+                    String status = b.getStatus().toString();
+                    return "COMPLETED".equalsIgnoreCase(status) 
+                        || "CANCELLED".equalsIgnoreCase(status) 
+                        || "NO_SHOW".equalsIgnoreCase(status);
+                })
+                .collect(Collectors.toList());
+        
+        // Calculate metrics
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        BigDecimal totalRefunds = BigDecimal.ZERO;
+        
+        for (Payment p : validPayments) {
+            String paymentType = p.getPaymentType().toString();
+            if ("DEPOSIT".equals(paymentType) || "FINAL_PAYMENT".equals(paymentType)) {
+                totalRevenue = totalRevenue.add(p.getAmount());
+            } else if ("REFUND_DEPOSIT".equals(paymentType)) {
+                totalRefunds = totalRefunds.add(p.getAmount());
+            }
+        }
+        
+        BigDecimal netCashFlow = totalRevenue.subtract(totalRefunds);
+        Long transactionCount = (long) validPayments.size();
+        
+        // Get station name if filtered by station
+        String stationName = null;
+        if (request.getStationId() != null) {
+            Station station = stationRepository.findById(request.getStationId()).orElse(null);
+            if (station != null) {
+                stationName = station.getStationName();
+            }
+        }
+        
+        return DashboardMetricsResponse.builder()
+                .totalRevenue(totalRevenue)
+                .totalRefunds(totalRefunds)
+                .netCashFlow(netCashFlow)
+                .transactionCount(transactionCount)
+                .stationName(stationName)
+                .period(period)
+                .build();
     }
 }

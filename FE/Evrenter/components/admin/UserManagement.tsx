@@ -164,9 +164,9 @@ async function handleSave() {
   }
 
   const filtered = getCurrentList().filter((c) => 
-    c.fullName.toLowerCase().includes(search.toLowerCase()) || 
-    c.email.toLowerCase().includes(search.toLowerCase()) ||
-    c.username.toLowerCase().includes(search.toLowerCase())
+    (c.fullName || "").toLowerCase().includes(search.toLowerCase()) || 
+    (c.email || "").toLowerCase().includes(search.toLowerCase()) ||
+    (c.username || "").toLowerCase().includes(search.toLowerCase())
   )
 
   const approve = async (username: string) => {

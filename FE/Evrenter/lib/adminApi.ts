@@ -146,7 +146,7 @@ export interface StationUpdatePayload extends StationCreatePayload {
 }
 
 export async function getAllStations(): Promise<StationResponse[]> {
-  const res = await api.get<ApiResponse<StationResponse[]>>('/stations/showall')
+  const res = await api.get<ApiResponse<StationResponse[]>>('/station/showall')
   return res.data.data
 }
 export async function getStationById(id: number): Promise<StationResponse> {
@@ -168,6 +168,40 @@ export async function deleteStation(id: number): Promise<void> {
   return res.data.data
 }
 
+export interface TransactionResponse {
+  paymentId: number
+  bookingId: number
+  customerName: string
+  amount: number
+  paymentType: 'DEPOSIT' | 'REFUND_DEPOSIT' | 'FINAL_PAYMENT'
+  transactionDate: string
+  method: string
+  referenceCode: string
+  stationName: string
+}
+
+export interface TransactionFilterRequest {
+  startDate?: string | null
+  endDate?: string | null
+  stationId?: number | null
+  paymentType?: string | null
+  page: number
+  size: number
+}
+
+export interface PageResponse<T> {
+  content: T[]
+  totalPages: number
+  totalElements: number
+  number: number
+  size: number
+}
+
+export async function getTransactions(payload: TransactionFilterRequest): Promise<PageResponse<TransactionResponse>> {
+  const res = await api.post<ApiResponse<PageResponse<TransactionResponse>>>('/payments/transactions', payload)
+  return res.data.data
+}
+
 // === Vehicle Model APIs ===
 export async function getActiveStations(): Promise<StationResponse[]> {
   const res = await api.get<ApiResponse<StationResponse[]>>('/station/showall')
@@ -181,5 +215,28 @@ export async function getVehicleModelsByStation(stationName: string): Promise<Ve
 
 export async function getVehicleModelDetail(modelId: number, stationName: string): Promise<VehicleModelDetailResponse> {
   const res = await api.post<ApiResponse<VehicleModelDetailResponse>>('/vehiclemodel/getvehicelmodeldetail', { modelId, stationName })
+  return res.data.data
+}
+
+// === Dashboard Metrics APIs ===
+export interface DashboardMetricsRequest {
+  startDate?: string | null
+  endDate?: string | null
+  stationId?: number | null
+  year?: number | null
+  month?: number | null
+}
+
+export interface DashboardMetricsResponse {
+  totalRevenue: number
+  totalRefunds: number
+  netCashFlow: number
+  transactionCount: number
+  stationName?: string | null
+  period: string
+}
+
+export async function getDashboardMetrics(payload: DashboardMetricsRequest): Promise<DashboardMetricsResponse> {
+  const res = await api.post<ApiResponse<DashboardMetricsResponse>>('/payments/dashboard-metrics', payload)
   return res.data.data
 }
