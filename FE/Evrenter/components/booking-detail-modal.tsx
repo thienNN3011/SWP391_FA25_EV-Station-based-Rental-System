@@ -31,6 +31,42 @@ const STATUS_COLORS: Record<string, string> = {
   UNCONFIRMED: "bg-red-500 text-white",
 }
 
+// Calculate estimated total based on planned rental duration
+function calculateEstimatedTotal(booking: any): number {
+  const startTime = new Date(booking.startTime)
+  const endTime = new Date(booking.endTime)
+  const diffMs = endTime.getTime() - startTime.getTime()
+  const diffMinutes = diffMs / (1000 * 60)
+
+  const tariffType = booking.tariff.type.toLowerCase()
+  const price = booking.tariff.price
+
+  let units = 0
+
+  switch (tariffType) {
+    case "hour":
+    case "hourly":
+      units = Math.ceil(diffMinutes / 60)
+      break
+    case "day":
+    case "daily":
+      units = Math.ceil(diffMinutes / (60 * 24))
+      break
+    case "week":
+    case "weekly":
+      units = Math.ceil(diffMinutes / (60 * 24 * 7))
+      break
+    case "month":
+    case "monthly":
+      units = Math.ceil(diffMinutes / (60 * 24 * 30))
+      break
+    default:
+      units = 0
+  }
+
+  return units * price
+}
+
 export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalProps) {
   const { data: booking, isLoading } = useBookingDetail(bookingId)
 
@@ -181,8 +217,14 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
                 </div>
                 <Separator />
                 <div className="flex justify-between items-center text-lg">
-                  <span className="font-semibold">Tổng cộng</span>
-                  <span className="font-bold text-primary">{booking.totalAmount.toLocaleString()}₫</span>
+                  <span className="font-semibold">
+                    {booking.totalAmount > 0 ? "Tổng cộng" : "Tổng cộng (dự kiến)"}
+                  </span>
+                  <span className="font-bold text-primary">
+                    {booking.totalAmount > 0
+                      ? booking.totalAmount.toLocaleString()
+                      : calculateEstimatedTotal(booking).toLocaleString()}₫
+                  </span>
                 </div>
               </CardContent>
             </Card>
