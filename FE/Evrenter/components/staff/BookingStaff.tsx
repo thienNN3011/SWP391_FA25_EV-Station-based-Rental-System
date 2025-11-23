@@ -31,7 +31,7 @@ export function BookingStaff() {
   const translateStatus = (status: string) => {
   switch (status?.toUpperCase()) {
     case "BOOKING":
-      return "Đã đặt"
+      return "Đã đặt (Đã nhận cọc)"
     case "RENTING":
       return "Đang thuê"
     case "CANCELLED":

@@ -21,6 +21,7 @@ public interface StationMapper {
     List<StationResponse> toStationResponseList(List<Station> stations);
 
     @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "stationId", source = "stationId")
     @Mapping(target = "stationName", source = "stationName")
     @Mapping(target = "address", source = "address")
     @Mapping(target = "openingHours", source = "openingHours")

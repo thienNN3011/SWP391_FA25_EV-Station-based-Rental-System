@@ -13,8 +13,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StationShowAllResponse {
+    private Long stationId;
     private String stationName;
     private String address;
     private String openingHours;
-    private  String status;
+    private String status;
 }

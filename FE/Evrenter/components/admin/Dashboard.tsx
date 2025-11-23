@@ -52,7 +52,7 @@ const recentOrders = [
 
 export function Dashboard() {
 
-  const [year, setYear] = useState("2025")
+  const [year, setYear] = useState(2025)
   const [month, setMonth] = useState("11")
 
   const [stations, setStations] = useState<any[]>([])
@@ -98,7 +98,7 @@ export function Dashboard() {
         const res = await api.post("/payments/revenue", {
           stationId: station?.stationId,
           stationName: selectedStation,
-          year: year
+          year: parseInt(year.toString())
         })
 
         const formatted = (res.data.data || []).map((item: any) => ({
@@ -107,8 +107,10 @@ export function Dashboard() {
         }))
 
         setRevenueData(formatted)
-      } catch (err) {
+      } catch (err: any) {
         console.error("Lỗi API:", err)
+        console.error("Response:", err.response?.data)
+        setRevenueData([])
       }
     }
 
@@ -228,13 +230,13 @@ export function Dashboard() {
                 </Select>
 
                 {/* Year select */}
-                <Select value={year} onValueChange={setYear}>
+                <Select value={year.toString()} onValueChange={(v) => setYear(parseInt(v))}>
                   <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder="Năm" />
                   </SelectTrigger>
                   <SelectContent>
-                    {["2023", "2024", "2025", "2026"].map((y) => (
-                      <SelectItem key={y} value={y}>{y}</SelectItem>
+                    {[2023, 2024, 2025, 2026].map((y) => (
+                      <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -262,7 +264,9 @@ export function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip 
+                    formatter={(value: number) => [`${(value * 1_000_000).toLocaleString('vi-VN')} VNĐ`, 'Doanh thu']}
+                  />
                   <Line type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
