@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, Download } from "lucide-react"
+import { CalendarDays, Download, DollarSign, RefreshCw, TrendingUp, Activity } from "lucide-react"
+import { MetricCard } from "./MetricCard"
 import {
   ResponsiveContainer,
   BarChart,
@@ -16,6 +17,7 @@ import {
   Line
 } from "recharts"
 import { api } from "@/lib/api"
+import { getDashboardMetrics, DashboardMetricsResponse } from "@/lib/adminApi"
 
 import {
   Select,
@@ -28,17 +30,18 @@ import {
 export function RevenueManagement() {
   const [stations, setStations] = useState<any[]>([])
   const [selectedStation, setSelectedStation] = useState<string>("")
-  const [year, setYear] = useState("2025")
+  const [year, setYear] = useState(2025)
   const [month, setMonth] = useState("1")
 
-  const [revenueData, setRevenueData] = useState<{ month: string; revenue: number }[]>([])
   const [orderData, setOrderData] = useState<{ month: string; orders: number }[]>([])
+  const [metrics, setMetrics] = useState<DashboardMetricsResponse | null>(null)
+  const [metricsLoading, setMetricsLoading] = useState(false)
 
   // Load stations
   useEffect(() => {
     const loadStations = async () => {
       try {
-        const res = await api.get("/showactivestation")
+        const res = await api.get("/station/showall")
         if (res.data.success) {
           setStations(res.data.data ?? [])
           const first = res.data.data?.[0]?.stationName
@@ -51,64 +54,60 @@ export function RevenueManagement() {
     loadStations()
   }, [])
 
-  // Load revenue
+  // Load dashboard metrics
+  useEffect(() => {
+    const loadMetrics = async () => {
+      setMetricsLoading(true)
+      try {
+        const station = stations.find(s => s.stationName === selectedStation)
+        const data = await getDashboardMetrics({
+          year,
+          stationId: station?.stationId || null
+        })
+        setMetrics(data)
+      } catch (err) {
+        console.error("Lỗi load metrics:", err)
+      } finally {
+        setMetricsLoading(false)
+      }
+    }
+    if (selectedStation) loadMetrics()
+  }, [selectedStation, year, stations])
+
+  // Load orders
   useEffect(() => {
     if (!selectedStation) return
     const station = stations.find(s => s.stationName === selectedStation)
     if (!station) return
 
-    const loadRevenue = async () => {
+    const loadOrders = async () => {
       try {
-        const res = await api.post("/payments/revenue", {
-          stationId: station.stationId,
+        const res = await api.post("/bookings/stats/yearly-completed", {
           stationName: selectedStation,
           year
         })
-        const formatted = (res.data.data || []).map((item: any) => ({
-          month: `T${item.month}`,
-          revenue: item.revenue / 1_000_000, // Triệu VNĐ
-        }))
-        setRevenueData(formatted)
-      } catch (err) {
-        console.error("Lỗi API revenue:", err)
+
+        const arr: { month: string; orders: number }[] = []
+
+        // Map dữ liệu từng tháng
+        for (let m = 1; m <= 12; m++) {
+          const monthData = res.data.data.find((d: any) => d.month === m)
+          arr.push({
+            month: `T${m}`,
+            orders: monthData?.completedBookings || 0
+          })
+        }
+
+        setOrderData(arr)
+      } catch (err: any) {
+        console.error("Lỗi API orders:", err)
+        console.error("Response:", err.response?.data)
+        setOrderData([]) // Clear data on error
       }
     }
 
-    loadRevenue()
+    loadOrders()
   }, [selectedStation, year, stations])
-
-  // Load orders
-useEffect(() => {
-  if (!selectedStation) return
-  const station = stations.find(s => s.stationName === selectedStation)
-  if (!station) return
-
-  const loadOrders = async () => {
-    try {
-      const res = await api.post("/bookings/stats/yearly-completed", {
-        stationName: selectedStation,
-        year
-      })
-
-      const arr: { month: string; orders: number }[] = []
-
-      // Map dữ liệu từng tháng
-      for (let m = 1; m <= 12; m++) {
-        const monthData = res.data.data.find((d: any) => d.month === m)
-        arr.push({
-          month: `T${m}`,
-          orders: monthData?.completedBookings || 0
-        })
-      }
-
-      setOrderData(arr)
-    } catch (err) {
-      console.error("Lỗi API orders:", err)
-    }
-  }
-
-  loadOrders()
-}, [selectedStation, year, stations])
 
 
   return (
@@ -129,6 +128,52 @@ useEffect(() => {
           </div>
         </div>
 
+        {/* Dashboard Metrics Cards */}
+        {metricsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader className="pb-2">
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-8 bg-gray-200 rounded w-32"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : metrics ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              title="Tổng Doanh Thu"
+              value={metrics.totalRevenue}
+              color="green"
+              icon={<DollarSign />}
+              formatValue={(val) => `${Number(val).toLocaleString()} VND`}
+            />
+            <MetricCard
+              title="Tổng Hoàn Tiền"
+              value={metrics.totalRefunds}
+              color="red"
+              icon={<RefreshCw />}
+              formatValue={(val) => `${Number(val).toLocaleString()} VND`}
+            />
+            <MetricCard
+              title="Dòng Tiền Ròng"
+              value={metrics.netCashFlow}
+              color="blue"
+              icon={<TrendingUp />}
+              formatValue={(val) => `${Number(val).toLocaleString()} VND`}
+            />
+            <MetricCard
+              title="Số Giao Dịch"
+              value={metrics.transactionCount}
+              color="purple"
+              icon={<Activity />}
+            />
+          </div>
+        ) : null}
+
         {/* Chọn Trạm & Năm */}
         <div className="flex gap-4 mb-4">
           <Select value={selectedStation} onValueChange={setSelectedStation}>
@@ -144,57 +189,38 @@ useEffect(() => {
             </SelectContent>
           </Select>
 
-          <Select value={year} onValueChange={setYear}>
+          <Select value={year.toString()} onValueChange={(v) => setYear(parseInt(v))}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Năm" />
             </SelectTrigger>
             <SelectContent>
-              {["2023","2024","2025","2026"].map(y => (
-                <SelectItem key={y} value={y}>{y}</SelectItem>
+              {[2023, 2024, 2025, 2026].map(y => (
+                <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Doanh thu theo tháng</CardTitle>
-              <CardDescription>Triệu VNĐ</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="revenue" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Orders */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Số đơn hoàn thành theo tháng</CardTitle>
-              <CardDescription>Đơn vị: đơn</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={orderData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Orders Chart - Full Width */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Số đơn hoàn thành theo tháng</CardTitle>
+            <CardDescription>Đơn vị: đơn</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={orderData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number) => [`${value} đơn`, 'Số đơn hoàn thành']}
+                />
+                <Line type="monotone" dataKey="orders" stroke="#10b981" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

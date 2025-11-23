@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Car, Users, MapPin, TrendingUp, FileText, Menu, LogOut } from "lucide-react"
+import { Car, Users, MapPin, TrendingUp, FileText, Menu, LogOut, Receipt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
@@ -18,6 +18,7 @@ import { UserManagement } from "@/components/admin/UserManagement"
 import { VehicleManagement } from "@/components/admin/VehicleManagement"
 import { LocationManagement } from "@/components/admin/LocationManagement"
 import { RevenueManagement } from "@/components/admin/RevenueManagement"
+import { TransactionManagement } from "@/components/admin/TransactionManagement"
 import { OrderManagement } from "@/components/admin/OrderManagement"
 import IncidentReportManagement from "@/components/admin/IncidentReportAdmin"
 import { useAuth } from "@/components/auth-context"  
@@ -26,18 +27,20 @@ import RefundManagementPage from "./RefundManagementPage"
 
 import { useRouter } from "next/navigation"
 
-type ActivePage =  "users" | "vehicles" | "locations" | "revenue" | "orders" | "incident" | "config" | "refund"
+type ActivePage =  "users" | "vehicles" | "locations" | "revenue" | "transactions" | "orders" | "incident" | "config" | "refund"
 
 const menuItems = [
   { id: "users" as ActivePage, label: "Quản lý người dùng", icon: Users },
   { id: "vehicles" as ActivePage, label: "Quản lý xe", icon: Car },
   { id: "locations" as ActivePage, label: "Quản lý điểm thuê", icon: MapPin },
   { id: "revenue" as ActivePage, label: "Doanh thu & Thống kê", icon: TrendingUp },
+  { id: "transactions" as ActivePage, label: "Quản lý dòng tiền", icon: Receipt },
   { id: "orders" as ActivePage, label: "Quản lý đơn thuê", icon: FileText },
   { id: "incident" as ActivePage, label: "Báo cáo tai nạn", icon: FileText },
   { id: "config" as ActivePage, label: "Cấu hình hệ thống", icon: FileText },
   { id: "refund" as ActivePage, label: "Hoàn tiền booking", icon: FileText },
 ]
+
 
 function AdminSidebar({ activePage, setActivePage }: { activePage: ActivePage; setActivePage: (page: ActivePage) => void }) {
   return (
@@ -121,6 +124,8 @@ function renderActivePage(activePage: ActivePage) {
       return <LocationManagement />
     case "revenue":
       return <RevenueManagement />
+    case "transactions":
+      return <TransactionManagement />
     case "orders":
       return <OrderManagement />
     case "incident":
