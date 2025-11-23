@@ -12,6 +12,7 @@ import vn.swp391.fa2025.evrental.dto.request.RefundCancelledBookingRequest;
 import vn.swp391.fa2025.evrental.dto.request.StationRevenueRequest;
 import vn.swp391.fa2025.evrental.dto.request.TransactionFilterRequest;
 import vn.swp391.fa2025.evrental.dto.response.ApiResponse;
+import vn.swp391.fa2025.evrental.dto.response.PaymentResponse;
 import vn.swp391.fa2025.evrental.dto.response.DashboardMetricsResponse;
 import vn.swp391.fa2025.evrental.dto.response.PaymentReturnResponse;
 import vn.swp391.fa2025.evrental.dto.response.StationRevenueResponse;
@@ -221,6 +222,17 @@ public class PaymentController {
         return response;
     }
 
+    @Operation(summary = "Lịch sử giao dịch", description = "Khách hàng xem lịch sử giao dịch")
+    @GetMapping("/history")
+    private ApiResponse<List<PaymentResponse>> viewOwnPayment(){
+        ApiResponse<List<PaymentResponse>> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setData(paymentService.viewOwnPayment());
+        response.setCode(200);
+        response.setMessage("Lấy lịch sử giao dịch thành công");
+        return response;
+    }
+  
     @Operation(summary = "Dashboard metrics", description = "Lấy các chỉ số tổng quan cho dashboard admin")
     @PostMapping("/dashboard-metrics")
     public ApiResponse<DashboardMetricsResponse> getDashboardMetrics(@RequestBody DashboardMetricsRequest request) {

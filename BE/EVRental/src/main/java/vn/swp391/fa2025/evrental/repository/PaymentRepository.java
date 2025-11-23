@@ -21,6 +21,7 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
     List<Payment> findAllByTransactionDateBetween(LocalDateTime start, LocalDateTime end);
     List<Payment> findAllByBooking_BookingIdIn(Set<Long> bookingIds);
     Payment findByMethodAndReferenceCode(PaymentMethod method, String referenceCode);
+    List<Payment> findAllByBooking_BookingIdInOrderByTransactionDateDesc(Set<Long> bookingIds);
 
     @Query("SELECT p FROM Payment p " +
             "JOIN p.booking b " +

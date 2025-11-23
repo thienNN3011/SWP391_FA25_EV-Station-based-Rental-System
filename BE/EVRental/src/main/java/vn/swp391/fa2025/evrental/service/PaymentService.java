@@ -2,6 +2,7 @@ package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import vn.swp391.fa2025.evrental.dto.response.PaymentResponse;
 import vn.swp391.fa2025.evrental.dto.request.DashboardMetricsRequest;
 import vn.swp391.fa2025.evrental.dto.request.TransactionFilterRequest;
 import vn.swp391.fa2025.evrental.dto.response.DashboardMetricsResponse;
@@ -19,6 +20,7 @@ public interface PaymentService {
     List<StationRevenueResponse> getMonthlyRevenueByStation(int month, int year);
     List<StationRevenueResponse> getYearlyRevenueByStation(String stationName, int year);
     public void refundCancelledBooking(Long bookingId, String referenceCode, LocalDateTime transactionDate);
+    List<PaymentResponse> viewOwnPayment();
     Page<TransactionResponse> getTransactions(TransactionFilterRequest request);
     DashboardMetricsResponse getDashboardMetrics(DashboardMetricsRequest request);
 }

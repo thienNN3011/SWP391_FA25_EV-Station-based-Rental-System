@@ -57,7 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/bookings/confirm", "/bookings/reject").permitAll()                //.hasAuthority("RENTER") test thu
                         .requestMatchers("/bookings/startrental", "/bookings/endrental", "vehicles/showbystatus", "/bookings/stoprentingtime").hasAuthority("STAFF")
                         .requestMatchers("/bookings/createbooking", "/bookings/cancelbooking", "/bookings/isrefund").hasAuthority("RENTER")
-                        .requestMatchers(HttpMethod.GET, "/bookings/total-revenue").hasAuthority("RENTER")
+                        .requestMatchers(HttpMethod.GET, "/bookings/total-revenue", "/payments/history").hasAuthority("RENTER")
                         .requestMatchers("bookings/showbookingbystatus", "bookings/showdetailbooking")
                         .hasAnyAuthority("RENTER",  "ADMIN", "STAFF")
                         //CRUD VEHICLE

@@ -47,8 +47,12 @@ public class TimeUtils {
             default:
                 throw new IllegalArgumentException("Đơn vị không hợp lệ: " + unit);
         }
-
-        return (long) Math.ceil(result);
+        long baseUnits = (long) result;
+        double fractionalPart = result - baseUnits;
+        if (fractionalPart > 0.5) {
+            baseUnits++;
+        }
+        return baseUnits;
     }
 
     public static LocalDateTime parsePayDate(String payDate) {

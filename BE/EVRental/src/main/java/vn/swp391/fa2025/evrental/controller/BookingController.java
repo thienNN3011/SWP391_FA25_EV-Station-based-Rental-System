@@ -126,7 +126,7 @@ public class BookingController {
         ApiResponse<EndRentingResponse> response = new ApiResponse<>();
         response.setSuccess(true);
         response.setMessage("Kết thúc thuê xe thành công");
-        response.setData(bookingService.endRental(req, request.getBookingId(), request.getVehicleStatus(), request.getEndOdo(), request.getTransactionDate(), request.getReferenceCode()));
+        response.setData(bookingService.endRental(req, request.getBookingId(), request.getVehicleStatus(), request.getEndOdo()));
         response.setCode(200);
         return response;
     }

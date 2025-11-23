@@ -1,6 +1,10 @@
 package vn.swp391.fa2025.evrental.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vn.swp391.fa2025.evrental.dto.response.PaymentResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,12 +18,15 @@ import vn.swp391.fa2025.evrental.dto.response.TransactionResponse;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.Payment;
 import vn.swp391.fa2025.evrental.entity.Station;
+import vn.swp391.fa2025.evrental.entity.User;
 import vn.swp391.fa2025.evrental.enums.BookingStatus;
 import vn.swp391.fa2025.evrental.enums.PaymentMethod;
 import vn.swp391.fa2025.evrental.enums.PaymentType;
+import vn.swp391.fa2025.evrental.mapper.PaymentMapper;
 import vn.swp391.fa2025.evrental.repository.BookingRepository;
 import vn.swp391.fa2025.evrental.repository.PaymentRepository;
 import vn.swp391.fa2025.evrental.repository.StationRepository;
+import vn.swp391.fa2025.evrental.repository.UserRepository;
 import vn.swp391.fa2025.evrental.util.BigDecimalUtils;
 import vn.swp391.fa2025.evrental.util.EmailUtils;
 
@@ -46,6 +53,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Autowired
     private EmailUtils emailUtils;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PaymentMapper paymentMapper;
 
     @Override
     public Page<TransactionResponse> getTransactions(TransactionFilterRequest request) {
@@ -188,6 +201,20 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public List<PaymentResponse> viewOwnPayment() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username);
+        if (user==null) throw new RuntimeException("Không tìm thấy người dùng");
+        List<Booking> userBookings = bookingRepository.findByUser_UserId(user.getUserId());
+        Set<Long> bookingIds = userBookings.stream()
+                .map(Booking::getBookingId)
+                .collect(Collectors.toSet());
+        List<Payment> payments = paymentRepository.findAllByBooking_BookingIdInOrderByTransactionDateDesc(bookingIds);
+        return payments.stream()
+                .map(paymentMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+  
     public DashboardMetricsResponse getDashboardMetrics(DashboardMetricsRequest request) {
         // Determine date range
         LocalDateTime startDate;

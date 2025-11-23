@@ -21,7 +21,7 @@ public interface BookingService {
     PagedBookingResponse getBookingByStatusPaged(ShowBookingRequest request);
     BookingResponse getBookingById(Long id);
     String startRental(Long bookingId, String vehicleStatus, Long startOdo);
-    EndRentingResponse endRental(HttpServletRequest request, Long bookingId, String vehicleStatus, Long endOdo, LocalDateTime transactionDate, String referanceCode);
+    EndRentingResponse endRental(HttpServletRequest request, Long bookingId, String vehicleStatus, Long endOdo);
     Booking findById(Long id);
     void updateBooking(Booking booking);
     Payment cancelBooking(Long bookingId, String bankName, String bankAccount);
