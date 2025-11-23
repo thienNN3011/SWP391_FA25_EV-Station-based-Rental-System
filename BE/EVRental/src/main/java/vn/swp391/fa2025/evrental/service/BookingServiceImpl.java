@@ -156,6 +156,7 @@ public class BookingServiceImpl implements  BookingService{
         AfterBookingResponse response= AfterBookingResponse.builder()
                 .bookingResponse(bookingResponse)
                 .qr(qr)
+                .paymentUrl(paymentUrl)
                 .build();
         return response;
     }

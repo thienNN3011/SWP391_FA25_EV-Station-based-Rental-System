@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 public class AfterBookingResponse {
     private BookingResponse bookingResponse;
     private String qr;
+    private String paymentUrl;
 }

@@ -6,6 +6,7 @@ import jakarta.mail.util.ByteArrayDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import vn.swp391.fa2025.evrental.entity.Booking;
 import vn.swp391.fa2025.evrental.entity.SystemConfig;
@@ -193,6 +194,7 @@ public class EmailUtils {
         );
     }
 
+    @Async
     public void sendBookingSuccessEmail(Booking booking) {
         String subject = "Xác nhận đặt xe thành công - EV Rental";
 
@@ -242,6 +244,7 @@ public class EmailUtils {
         sendEmailWithAttachment(booking.getUser().getEmail(), subject, body, null, null);
     }
 
+    @Async
     public void sendBookingCompletedEmail(Booking booking, BigDecimal refundedAmount) {
         String subject = "Hoàn tất chuyến thuê xe - EV Rental";
 

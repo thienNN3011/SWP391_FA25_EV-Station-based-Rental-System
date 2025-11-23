@@ -75,7 +75,10 @@ const handleBooking = async () => {
     try {
       const res = await api.post("/bookings/createbooking", body)
       if (res.status === 200 || res.status === 201) {
-        localStorage.setItem("bookingData", JSON.stringify(res.data.data))
+        const bookingData = res.data.data
+        localStorage.setItem("bookingData", JSON.stringify(bookingData))
+        
+        // Show booking summary first, let user review before payment
         setBookingSuccess(true)
       } else {
         setMessage("Có lỗi xảy ra, vui lòng thử lại.")
