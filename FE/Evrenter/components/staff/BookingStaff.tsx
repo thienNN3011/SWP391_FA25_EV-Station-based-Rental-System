@@ -119,10 +119,10 @@ export function BookingStaff() {
 
   const tabs = [
     { key: "ALL", label: "Tất cả" },
-    { key: "COMPLETED", label: "Đã hoàn tất cọc" },
+    { key: "BOOKING", label: "Đã hoàn tất cọc" },
     { key: "UNCONFIRMED", label: "Chưa xác nhận" },
     { key: "RENTING", label: "Đang thuê" },
-    { key: "BOOKING", label: "Hoàn thành" },
+    { key: "COMPLETED", label: "Hoàn thành" },
     { key: "CANCELLED", label: "Đã hủy" },
     { key: "NO_SHOW", label: "Không đến" },
   ]
