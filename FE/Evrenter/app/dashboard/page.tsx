@@ -1,7 +1,6 @@
 import { Header } from "@/components/header"
 import { DashboardOverview } from "@/components/dashboard-overview"
-import { RentalHistory } from "@/components/rental-history"
-import { UserAnalytics } from "@/components/user-analytics"
+import { Sidebar } from "@/components/sidebar"
 
 export default function DashboardPage() {
   return (
@@ -13,16 +12,11 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Theo dõi hoạt động thuê xe và tác động môi trường của bạn</p>
         </div>
 
-        <div className="space-y-8">
-          <DashboardOverview />
+        <div className="grid lg:grid-cols-4 gap-8">
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-             
-            </div>
-            <div>
-             
-            </div>
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-8">
+            <DashboardOverview />
           </div>
         </div>
       </div>

@@ -19,57 +19,85 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   const [bookingSuccess, setBookingSuccess] = useState(false)
   const [message, setMessage] = useState("")
 
-
   useEffect(() => {
     const selected = localStorage.getItem("selectedVehicle")
-    if (selected) setVehicle(JSON.parse(selected))
-  }, [isOpen])  //isopen thay doi thi lay data xe tu storage ben list
-
-  useEffect(() => {
-    if (vehicle?.tariffs?.length) setSelectedTariff(vehicle.tariffs[0])
-  }, [vehicle])
-
-const handleBooking = async () => { //check data
-  if (!vehicle || !selectedTariff) return
-  setLoading(true)
-  setMessage("")
-
-  const body: any = {
-    stationName: vehicle.stationName,
-    modelId: vehicle.modelId.toString(),
-    color: vehicle.color,
-    tariffId: selectedTariff.tariffId,
-    startTime: startTime ? `${startTime}:00` : null,
-  }
-
-  if (endTime) {
-    body.endTime = `${endTime}:00`
-  }
-
-  console.log("Body gửi lên backend:", body)
-
-  try {
-    const res = await api.post("/bookings/createbooking", body)
-    if (res.status === 200 || res.status === 201) {
-      localStorage.setItem("bookingData", JSON.stringify(res.data.data))
-      setBookingSuccess(true)
-    } else {
-      setMessage("Có lỗi xảy ra, vui lòng thử lại.")
+    if (selected) {
+      const parsedVehicle = JSON.parse(selected)
+      console.log("Vehicle from localStorage:", parsedVehicle)
+      console.log("Tariffs:", parsedVehicle?.tariffs) // Debug tariffs
+      setVehicle(parsedVehicle)
     }
-  } catch (err: any) {
-    console.error("Booking error:", err)
+  }, [isOpen])
 
-    const serverMsg =
-      err.response?.data?.message || 
-      (err.response?.data?.errors?.endTime?.[0]) 
-    setMessage(serverMsg || "Vui lòng chọn đầy đủ thông tin")
-  } finally {
-    setLoading(false)
+  // Chỉ lấy tariff theo ngày
+  useEffect(() => {
+    if (vehicle?.tariffs?.length) {
+      const dailyTariffs = vehicle.tariffs.filter(
+        (t: any) => t.type.toUpperCase() === "DAILY" || t.type === "day"
+      )
+      console.log("Daily tariffs:", dailyTariffs)
+      if (dailyTariffs.length > 0) {
+        console.log("Selected tariff:", dailyTariffs[0]) // Debug selected tariff
+        setSelectedTariff(dailyTariffs[0])
+      }
+    }
+  }, [vehicle])
+const handleBooking = async () => {
+    if (!vehicle || !selectedTariff) {
+      setMessage("Vui lòng chọn đầy đủ thông tin")
+      return
+    }
+    setLoading(true)
+    setMessage("")
+
+    // Debug: Kiểm tra property của tariff
+    console.log("selectedTariff keys:", Object.keys(selectedTariff))
+    console.log("selectedTariff values:", selectedTariff)
+
+    // Tìm đúng property name cho tariff ID
+    const tariffId = selectedTariff.tarriffId || selectedTariff.tariffId || selectedTariff.id
+    console.log("Tariff ID to send:", tariffId)
+
+    const body: any = {
+      stationName: vehicle.stationName,
+      modelId: vehicle.modelId.toString(),
+      color: vehicle.color,
+      tariffId: tariffId, // Thay tarriffId thành tariffId (1 chữ f)
+      startTime: startTime ? `${startTime}:00` : null,
+    }
+
+    if (endTime) {
+      body.endTime = `${endTime}:00`
+    }
+
+    console.log("Body gửi lên backend:", body)
+
+    try {
+      const res = await api.post("/bookings/createbooking", body)
+      if (res.status === 200 || res.status === 201) {
+        localStorage.setItem("bookingData", JSON.stringify(res.data.data))
+        setBookingSuccess(true)
+      } else {
+        setMessage("Có lỗi xảy ra, vui lòng thử lại.")
+      }
+    } catch (err: any) {
+      console.error("Booking error:", err)
+
+      const serverMsg =
+        err.response?.data?.message || 
+        (err.response?.data?.errors?.tariffId?.[0]) 
+      setMessage(serverMsg || "Vui lòng chọn đầy đủ thông tin")
+    } finally {
+      setLoading(false)
+    }
   }
-}
-
 
   if (!vehicle) return null
+
+  // Lọc chỉ lấy tariff theo ngày
+  const dailyTariffs = vehicle.tariffs.filter(
+    (t: any) => t.type.toUpperCase() === "DAILY" || t.type === "day"
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -102,35 +130,38 @@ const handleBooking = async () => { //check data
             </Card>
 
             <div className="space-y-3">
-              <div>
-                <Label>Chọn loại giá</Label>
-                <select
-                  className="w-full border rounded p-2"
-                  value={selectedTariff?.tariffId}
-                  onChange={(e) => {
-                    const tariff = vehicle.tariffs.find(
-                      (t: any) => t.tariffId === Number(e.target.value)
-                    )
-                    setSelectedTariff(tariff)
-                  }}
-                >
-                  {vehicle.tariffs.map((t: any) => (
-                    <option key={t.tariffId} value={t.tariffId}>
-                      {t.type === "hour"
-                        ? "Giờ"
-                        : t.type === "day"
-                        ? "Ngày"
-                        : "Tháng"}{" "}
-                      - {t.price.toLocaleString()} VND
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Chỉ hiển thị nếu có tariff theo ngày */}
+              {dailyTariffs.length > 0 ? (
+                <div>
+                  <Label htmlFor="tariff-select">Chọn gói thuê</Label>
+                  <select
+                    id="tariff-select"
+                    value={selectedTariff?.tarriffId || selectedTariff?.tariffId || selectedTariff?.id || ""}
+                    onChange={(e) => {
+                      const tariff = dailyTariffs.find(
+                        t => (t.tarriffId || t.tariffId || t.id) === parseInt(e.target.value)
+                      )
+                      console.log("Selected tariff from dropdown:", tariff)
+                      setSelectedTariff(tariff)
+                    }}
+                    className="w-full border rounded p-2 bg-white cursor-pointer"
+                  >
+                    {dailyTariffs.map(t => (
+                      <option key={t.tarriffId || t.tariffId || t.id} value={t.tarriffId || t.tariffId || t.id}>
+                        {t.price.toLocaleString()} VND / ngày
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <p className="text-red-500 text-sm">Không có gói thuê theo ngày khả dụng.</p>
+              )}
 
               <div>
                 <Label>Bắt đầu nhận xe</Label>
                 <Input
                   type="datetime-local"
+                  value={startTime}
                   onChange={(e) => setStartTime(e.target.value.replace("T", " "))}
                 />
               </div>
@@ -139,20 +170,21 @@ const handleBooking = async () => { //check data
                 <Label>Kết thúc thuê xe</Label>
                 <Input
                   type="datetime-local"
+                  value={endTime}
                   onChange={(e) => setEndTime(e.target.value.replace("T", " "))}
                 />
               </div>
 
               <Button
                 onClick={handleBooking}
-                disabled={loading}
+                disabled={loading || dailyTariffs.length === 0}
                 className="w-full bg-sky-500 hover:bg-sky-600 text-white"
               >
                 <DollarSign className="mr-2 h-4 w-4" />
                 {loading ? "Đang xử lý..." : "Xác nhận đặt xe"}
               </Button>
 
-              {message && <p className="text-center text-sm mt-2">{message}</p>}
+              {message && <p className="text-center text-sm mt-2 text-red-500">{message}</p>}
             </div>
           </>
         )}

@@ -1,55 +1,80 @@
+"use client"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link";
+import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Zap, Leaf, MapPin, Clock } from "lucide-react"
 
 export function Hero() {
+  const [stationCount, setStationCount] = useState<number>(0)
+
+  // Fetch the number of active stations
+  useEffect(() => {
+    const fetchStationCount = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/EVRental/showactivestation")
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+        const result = await response.json()
+        if (result.success && result.data) {
+          setStationCount(result.data.length) 
+        }
+      } catch (error) {
+        console.error("Failed to fetch station count:", error)
+      }
+    }
+
+    fetchStationCount()
+  }, [])
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/5">
       <div className="container mx-auto px-4 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Section */}
           <div className="space-y-8">
             <div className="space-y-4">
               <h1 className="text-4xl md:text-6xl font-bold text-balance leading-tight">
-                Lái xe điện, <br></br>
-                <span className="text-secondary">  Lái xe sạch</span>
+                Lái xe điện, <br />
+                <span className="text-secondary">Lái xe sạch</span>
               </h1>
               <p className="text-lg text-muted-foreground text-pretty max-w-md">
-                Trải nghiệm phương tiện tương lai với dịch cho thuê xe điện của chúng tôi. 
+                Trải nghiệm phương tiện tương lai với dịch vụ cho thuê xe điện của chúng tôi.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="./booking">
-              <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
-                <MapPin className="mr-2 h-5 w-5" />
-                Tìm địa điểm thuê xe gần nhất
-              </Button>
+                <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
+                  <MapPin className="mr-2 h-5 w-5" />
+                  Tìm địa điểm thuê xe gần nhất
+                </Button>
               </Link>
               <Link href="./booking">
-              <Button variant="outline" size="lg">
-                <Zap className="mr-2 h-5 w-5" />
-                Chọn mẫu xe
-              </Button>
+                <Button variant="outline" size="lg">
+                  <Zap className="mr-2 h-5 w-5" />
+                  Chọn mẫu xe
+                </Button>
               </Link>
             </div>
 
+            {/* Statistics Section */}
             <div className="grid grid-cols-3 gap-6 pt-8">
               <div className="text-center">
-                <div className="text-2xl font-bold text-secondary">5</div>
+                <div className="text-3xl font-bold text-secondary">{stationCount}</div>
                 <div className="text-sm text-muted-foreground">Trạm thuê xe</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-secondary">100%</div>
+                <div className="text-3xl font-bold text-secondary">100%</div>
                 <div className="text-sm text-muted-foreground">Xe điện</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-secondary">24/7</div>
+                <div className="text-3xl font-bold text-secondary">24/7</div>
                 <div className="text-sm text-muted-foreground">Hoạt động</div>
               </div>
             </div>
           </div>
 
+          {/* Right Section */}
           <div className="relative">
             <div className="relative z-10">
               <img
@@ -63,6 +88,7 @@ export function Hero() {
           </div>
         </div>
 
+        {/* Features Section */}
         <div className="grid md:grid-cols-3 gap-6 mt-20">
           <Card className="p-6 text-center border-primary/20 bg-primary/5">
             <Leaf className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -83,6 +109,6 @@ export function Hero() {
           </Card>
         </div>
       </div>
-    </section>  
+    </section>
   )
 }

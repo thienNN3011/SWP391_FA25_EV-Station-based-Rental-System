@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { User, LogOut, Settings, Car, LayoutDashboard } from "lucide-react"
+import { User, LogOut, Settings, Car, LayoutDashboard, FileText } from "lucide-react" // Import thêm FileText icon
 import Link from "next/link"
 import Image from "next/image"
 import { AuthModal } from "./auth-modal"
@@ -20,21 +20,20 @@ import {
 
 export function Header() {
   const pathname = usePathname()
-  const router = useRouter() 
+  const router = useRouter()
   const [isAuthOpen, setIsAuthOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin")
   const { user, logout } = useAuth()
 
-  
   const handleLogout = () => {
-    logout()                
-    router.push("http://localhost:3000") 
+    logout()
+    router.push("http://localhost:3000")
   }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-      
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/unnamed.jpg"
@@ -52,23 +51,37 @@ export function Header() {
           </div>
         </Link>
 
+        {/* Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link href="/booking" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            href="/booking"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
             Đặt xe ngay
           </Link>
-          <Link href="/booking-history" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            href="/booking-history"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
             Booking
           </Link>
-          <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            href="/dashboard"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
             Tổng Quan
           </Link>
           {user?.role === "ADMIN" && (
-            <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/admin"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Admin
             </Link>
           )}
         </nav>
 
+        {/* User Dropdown */}
         <div className="flex items-center gap-3">
           {user ? (
             <DropdownMenu>
@@ -97,9 +110,15 @@ export function Header() {
                     <LayoutDashboard className="h-4 w-4" /> Bảng thống kê
                   </Link>
                 </DropdownMenuItem>
+                {/* New Transaction History Link */}
+                <DropdownMenuItem asChild>
+                  <Link href="/transactions" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Lịch sử giao dịch
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={handleLogout} 
+                  onClick={handleLogout}
                   className="text-red-500 focus:text-red-500"
                 >
                   <LogOut className="h-4 w-4" /> Đăng xuất

@@ -74,60 +74,60 @@ export function DashboardOverview() {
 
   return (
     <div className="space-y-8">
+      {/* Tổng quan */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng số lần thuê</CardTitle>
-            <Car className="h-4 w-4 text-muted-foreground" />
+            <Car className="h-5 w-5 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalBookingCompleted}</div>
+            <div className="text-2xl font-bold text-gray-800">{stats.totalBookingCompleted}</div>
             <p className="text-xs text-muted-foreground">+2 so với tháng trước</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng thời gian thuê</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="h-5 w-5 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalHours} giờ</div>
+            <div className="text-2xl font-bold text-gray-800">{totalHours} giờ</div>
             <p className="text-xs text-muted-foreground">{stats.totalDurationMinutes} phút tổng cộng</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng quãng đường</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <MapPin className="h-5 w-5 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalDistanceKm.toFixed(1)} km</div>
+            <div className="text-2xl font-bold text-gray-800">{stats.totalDistanceKm.toFixed(1)} km</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">CO₂ giảm thải</CardTitle>
-            <Leaf className="h-4 w-4 text-green-500" />
+            <Leaf className="h-5 w-5 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{co2SavedKg} kg</div>
+            <div className="text-2xl font-bold text-green-700">{co2SavedKg} kg</div>
             <p className="text-xs text-muted-foreground">
               Tương đương {Math.round(Number(co2SavedKg) / 20)} cây xanh 🌳
             </p>
           </CardContent>
         </Card>
 
-        
-        <Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng chi tiêu</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-5 w-5 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-gray-800">
               {totalRevenue !== null ? totalRevenue.toLocaleString() + " VND" : "-"}
             </div>
             <p className="text-xs text-muted-foreground">Tổng số tiền từ tất cả booking</p>
@@ -135,10 +135,10 @@ export function DashboardOverview() {
         </Card>
       </div>
 
-    
-      <Card>
+      {/* Xe đã thuê gần đây */}
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">Xe đã thuê gần đây</CardTitle>
+          <CardTitle className="text-base font-semibold text-gray-800">Xe đã thuê gần đây</CardTitle>
         </CardHeader>
         <CardContent>
           {stats.vehicles.length === 0 ? (
@@ -158,7 +158,7 @@ export function DashboardOverview() {
                 </thead>
                 <tbody>
                   {stats.vehicles.map((v) => (
-                    <tr key={v.plateNumber} className="border-b hover:bg-muted/50">
+                    <tr key={v.plateNumber} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-2 font-medium">{v.plateNumber}</td>
                       <td className="px-4 py-2">{v.modelName}</td>
                       <td className="px-4 py-2">{v.brand}</td>
