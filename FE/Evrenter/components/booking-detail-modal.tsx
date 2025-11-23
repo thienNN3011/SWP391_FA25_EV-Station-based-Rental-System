@@ -210,7 +210,7 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
                   <span className="font-medium">{booking.tariff.price.toLocaleString()}₫</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Tiền cọc đã đặt</span>
+                  <span className="text-muted-foreground">Tiền cọc đã thanh toán</span>
                   <span className="font-semibold text-green-600">
                     {booking.tariff.depositAmount.toLocaleString()}₫
                   </span>
