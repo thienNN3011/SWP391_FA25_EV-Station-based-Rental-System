@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, CheckCircle, Car, MapPin, DollarSign, QrCode } from "lucide-react"
+import { ArrowLeft, CheckCircle, Car, MapPin, DollarSign } from "lucide-react"
 
 export default function BookingSummary() {
   const [booking, setBooking] = useState<any>(null)
@@ -22,40 +21,39 @@ export default function BookingSummary() {
 
   if (!booking) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-500">Đang tải thông tin đặt xe...</p>
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <p className="text-gray-500 text-lg">Đang tải thông tin đặt xe...</p>
       </div>
     )
   }
 
   const info = booking.bookingResponse
-  const qr = booking.qr
   const paymentUrl = booking.paymentUrl
 
   const handlePayment = () => {
-    if (paymentUrl) {
-      window.location.href = paymentUrl
-    }
+    if (paymentUrl) window.location.href = paymentUrl
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-3xl shadow-lg border border-gray-200">
-        <CardHeader className="text-center bg-sky-100 rounded-t-lg p-6">
-          <CardTitle className="text-2xl font-bold text-sky-600 flex items-center justify-center gap-2">
-            <CheckCircle className="h-6 w-6 text-green-500" />
-            Xác nhận thông tin Booking!
-          </CardTitle>
-          <CardDescription className="text-gray-600 mt-2">
-            Vui lòng kiểm tra thông tin dưới đây và tiến hành thanh toán đặt cọc.
-          </CardDescription>
-        </CardHeader>
+      <Card className="w-full max-w-5xl shadow-2xl border border-gray-200 rounded-3xl">
+        {/* Header */}
+         <CardHeader className="text-center bg-gradient-to-r from-sky-100 to-sky-200 rounded-t-3xl p-8">
+    <CardTitle className="text-4xl font-bold text-sky-600 flex items-center justify-center gap-3">
+      <CheckCircle className="h-8 w-8 text-green-500" />
+      Booking thành công!
+    </CardTitle>
+    <CardDescription className="text-gray-700 mt-3 text-lg">
+      Vui lòng kiểm tra thông tin và tiến hành thanh toán đặt cọc.
+    </CardDescription>
+  </CardHeader>
 
+        {/* Content */}
         <CardContent className="space-y-6 p-6">
           {/* Vehicle Info */}
-          <div className="border rounded-lg p-4 bg-white shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-              <Car className="h-5 w-5 text-sky-500" />
+          <div className="border rounded-xl p-5 bg-white shadow-md hover:shadow-lg transition-shadow">
+            <h3 className="text-xl font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <Car className="h-6 w-6 text-sky-500" />
               Thông tin xe
             </h3>
             <p><strong>Tên xe:</strong> {info.vehicle.modelName}</p>
@@ -65,9 +63,9 @@ export default function BookingSummary() {
           </div>
 
           {/* Station Info */}
-          <div className="border rounded-lg p-4 bg-white shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-sky-500" />
+          <div className="border rounded-xl p-5 bg-white shadow-md hover:shadow-lg transition-shadow">
+            <h3 className="text-xl font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <MapPin className="h-6 w-6 text-sky-500" />
               Trạm cho thuê
             </h3>
             <p><strong>Tên trạm:</strong> {info.station.stationName}</p>
@@ -75,26 +73,26 @@ export default function BookingSummary() {
             <p><strong>Giờ mở cửa:</strong> {info.station.openingHours}</p>
           </div>
 
-          {/* Rental Package Info */}
-          <div className="border rounded-lg p-4 bg-white shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-sky-500" />
+          {/* Rental Info */}
+          <div className="border rounded-xl p-5 bg-white shadow-md hover:shadow-lg transition-shadow">
+            <h3 className="text-xl font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <DollarSign className="h-6 w-6 text-sky-500" />
               Gói thuê
             </h3>
             <p><strong>Loại:</strong> {info.tariff.type === "hour" ? "Theo giờ" : info.tariff.type === "day" ? "Theo ngày" : "Theo tháng"}</p>
             <p><strong>Giá thuê:</strong> {info.tariff.price.toLocaleString()} VND</p>
             <p><strong>Tiền cọc:</strong> {info.tariff.depositAmount.toLocaleString()} VND</p>
             <p><strong>Thời gian thuê:</strong></p>
-            <ul className="ml-4 list-disc text-gray-700">
+            <ul className="ml-5 list-disc text-gray-700">
               <li><strong>Bắt đầu:</strong> {new Date(info.startTime).toLocaleString()}</li>
               <li><strong>Kết thúc:</strong> {new Date(info.endTime).toLocaleString()}</li>
             </ul>
           </div>
 
           {/* Payment Section */}
-          <div className="border rounded-lg p-6 bg-gradient-to-br from-sky-50 to-blue-50 shadow-sm text-center">
-            <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center justify-center gap-2">
-              <DollarSign className="h-5 w-5 text-sky-500" />
+          <div className="border rounded-xl p-6 bg-gradient-to-r from-sky-50 to-blue-50 shadow-md text-center">
+            <h3 className="text-xl font-semibold text-gray-700 mb-3 flex items-center justify-center gap-2">
+              <DollarSign className="h-6 w-6 text-sky-500" />
               Thanh toán đặt cọc
             </h3>
             <p className="text-sm text-gray-600 mb-4">
@@ -102,10 +100,10 @@ export default function BookingSummary() {
             </p>
             <Button
               onClick={handlePayment}
-              className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3"
+              className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
             >
-              <DollarSign className="mr-2 h-5 w-5" />
-              Thanh toán ngay qua VNPay
+              <DollarSign className="h-5 w-5" />
+              Thanh toán ngay
             </Button>
             <p className="text-xs text-gray-500 mt-3">
               Bạn sẽ được chuyển đến trang thanh toán VNPay an toàn
@@ -113,18 +111,18 @@ export default function BookingSummary() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 mt-4">
             <Button
               onClick={() => router.push("/")}
               variant="outline"
               className="flex-1 flex items-center justify-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
               Quay lại trang chủ
             </Button>
             <Button
               onClick={handlePayment}
-              className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+              className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold"
             >
               Tiến hành thanh toán
             </Button>

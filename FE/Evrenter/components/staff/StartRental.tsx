@@ -16,7 +16,19 @@ export default function StartRentalStaff() {
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
 
- 
+ const formatDateTime = (isoString: string) => {
+  const date = new Date(isoString)
+
+  const d = date.getDate().toString().padStart(2, "0")
+  const m = (date.getMonth() + 1).toString().padStart(2, "0")
+  const y = date.getFullYear()
+
+  const hh = date.getHours().toString().padStart(2, "0")
+  const mm = date.getMinutes().toString().padStart(2, "0")
+
+  return `${d}/${m}/${y} – ${hh}:${mm}`
+}
+
   const handleFetchBooking = async () => {
     if (!bookingId) return
     setMessage("")
@@ -138,7 +150,11 @@ export default function StartRentalStaff() {
               <h2 className="font-semibold text-base flex items-center gap-2">
                 <Calendar className="size-4 text-green-500" /> Thông tin thuê
               </h2>
-              <p><strong>Thời gian thuê:</strong> {booking.startTime} → {booking.endTime}</p>
+              <p>
+  <strong>Thời gian thuê:</strong>{" "}
+  {formatDateTime(booking.startTime)} → {formatDateTime(booking.endTime)}
+</p>
+
            
               <p><strong>Tổng tiền:</strong> {booking.totalAmount.toLocaleString()} VND</p>
 
@@ -149,7 +165,13 @@ export default function StartRentalStaff() {
               </h2>
            
               <p><strong>Giá thuê:</strong> {booking.tariff.price.toLocaleString()} VND</p>
-              <p><strong>Tiền cọc:</strong> {booking.tariff.depositAmount.toLocaleString()} VND</p>
+              {booking.tariff.depositAmount > 0 && (
+  <p>
+    <strong>Tiền cọc:</strong>{" "}
+    {booking.tariff.depositAmount.toLocaleString()} VND
+    <span className="text-green-600 font-semibold ml-1">đã thanh toán</span>
+  </p>
+)} 
               <p><strong>Trạm:</strong> {booking.station.stationName}</p>
         
             

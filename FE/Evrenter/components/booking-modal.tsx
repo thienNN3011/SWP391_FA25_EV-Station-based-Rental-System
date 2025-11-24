@@ -3,46 +3,52 @@
 import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Zap, MapPin, DollarSign } from "lucide-react"
+import { Zap, MapPin, DollarSign, Calendar } from "lucide-react"
 import { api } from "@/lib/api"
 import BookingSummary from "@/components/BookingSummary"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 
 export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [vehicle, setVehicle] = useState<any>(null)
-  const [startTime, setStartTime] = useState("")
-  const [endTime, setEndTime] = useState("")
+  const [startTime, setStartTime] = useState<Date | null>(null)
+  const [endTime, setEndTime] = useState<Date | null>(null)
   const [selectedTariff, setSelectedTariff] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [bookingSuccess, setBookingSuccess] = useState(false)
   const [message, setMessage] = useState("")
 
+  function formatDateForBackend(date: Date | null) {
+    if (!date) return null
+    const yyyy = date.getFullYear()
+    const MM = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+    const hh = String(date.getHours()).padStart(2, "0")
+    const mm = String(date.getMinutes()).padStart(2, "0")
+    const ss = String(date.getSeconds()).padStart(2, "0")
+    return `${yyyy}-${MM}-${dd} ${hh}:${mm}:${ss}`
+  }
+
   useEffect(() => {
     const selected = localStorage.getItem("selectedVehicle")
     if (selected) {
       const parsedVehicle = JSON.parse(selected)
-      console.log("Vehicle from localStorage:", parsedVehicle)
-      console.log("Tariffs:", parsedVehicle?.tariffs) // Debug tariffs
       setVehicle(parsedVehicle)
     }
   }, [isOpen])
 
-  // Chỉ lấy tariff theo ngày
   useEffect(() => {
     if (vehicle?.tariffs?.length) {
       const dailyTariffs = vehicle.tariffs.filter(
         (t: any) => t.type.toUpperCase() === "DAILY" || t.type === "day"
       )
-      console.log("Daily tariffs:", dailyTariffs)
-      if (dailyTariffs.length > 0) {
-        console.log("Selected tariff:", dailyTariffs[0]) // Debug selected tariff
-        setSelectedTariff(dailyTariffs[0])
-      }
+      if (dailyTariffs.length > 0) setSelectedTariff(dailyTariffs[0])
     }
   }, [vehicle])
-const handleBooking = async () => {
+
+  const handleBooking = async () => {
     if (!vehicle || !selectedTariff) {
       setMessage("Vui lòng chọn đầy đủ thông tin")
       return
@@ -50,45 +56,27 @@ const handleBooking = async () => {
     setLoading(true)
     setMessage("")
 
-    // Debug: Kiểm tra property của tariff
-    console.log("selectedTariff keys:", Object.keys(selectedTariff))
-    console.log("selectedTariff values:", selectedTariff)
-
-    // Tìm đúng property name cho tariff ID
-    const tariffId = selectedTariff.tarriffId || selectedTariff.tariffId || selectedTariff.id
-    console.log("Tariff ID to send:", tariffId)
-
-    const body: any = {
+    const body = {
       stationName: vehicle.stationName,
       modelId: vehicle.modelId.toString(),
       color: vehicle.color,
-      tariffId: tariffId, // Thay tarriffId thành tariffId (1 chữ f)
-      startTime: startTime ? `${startTime}:00` : null,
+      tariffId: selectedTariff?.tariffId || selectedTariff?.id,
+      startTime: formatDateForBackend(startTime),
+      endTime: formatDateForBackend(endTime),
     }
-
-    if (endTime) {
-      body.endTime = `${endTime}:00`
-    }
-
-    console.log("Body gửi lên backend:", body)
 
     try {
       const res = await api.post("/bookings/createbooking", body)
       if (res.status === 200 || res.status === 201) {
-        const bookingData = res.data.data
-        localStorage.setItem("bookingData", JSON.stringify(bookingData))
-        
-        // Show booking summary first, let user review before payment
+        localStorage.setItem("bookingData", JSON.stringify(res.data.data))
         setBookingSuccess(true)
       } else {
         setMessage("Có lỗi xảy ra, vui lòng thử lại.")
       }
     } catch (err: any) {
-      console.error("Booking error:", err)
-
       const serverMsg =
-        err.response?.data?.message || 
-        (err.response?.data?.errors?.tariffId?.[0]) 
+        err.response?.data?.message ||
+        (err.response?.data?.errors?.tariffId?.[0])
       setMessage(serverMsg || "Vui lòng chọn đầy đủ thông tin")
     } finally {
       setLoading(false)
@@ -97,14 +85,13 @@ const handleBooking = async () => {
 
   if (!vehicle) return null
 
-  // Lọc chỉ lấy tariff theo ngày
   const dailyTariffs = vehicle.tariffs.filter(
     (t: any) => t.type.toUpperCase() === "DAILY" || t.type === "day"
   )
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-5xl w-full sm:w-full">
         {bookingSuccess ? (
           <BookingSummary />
         ) : (
@@ -126,56 +113,83 @@ const handleBooking = async () => {
               </CardHeader>
               <CardContent className="pt-0 text-sm text-muted-foreground">
                 <p>Hãng: {vehicle.brand}</p>
-                <p>
-                  Pin: {vehicle.batteryCapacity} kWh | Quãng đường: {vehicle.range} km
-                </p>
+                <p>Pin: {vehicle.batteryCapacity} kWh | Quãng đường: {vehicle.range} km</p>
               </CardContent>
             </Card>
 
             <div className="space-y-3">
-              {/* Chỉ hiển thị nếu có tariff theo ngày */}
+              {/* Tariff */}
               {dailyTariffs.length > 0 ? (
                 <div>
                   <Label htmlFor="tariff-select">Chọn gói thuê</Label>
                   <select
                     id="tariff-select"
-                    value={selectedTariff?.tarriffId || selectedTariff?.tariffId || selectedTariff?.id || ""}
+                    value={selectedTariff?.tariffId || selectedTariff?.id || ""}
                     onChange={(e) => {
                       const tariff = dailyTariffs.find(
-                        t => (t.tarriffId || t.tariffId || t.id) === parseInt(e.target.value)
+                        (t: any) => (t.tariffId || t.id) === parseInt(e.target.value)
                       )
-                      console.log("Selected tariff from dropdown:", tariff)
                       setSelectedTariff(tariff)
                     }}
                     className="w-full border rounded p-2 bg-white cursor-pointer"
                   >
-                    {dailyTariffs.map(t => (
-                      <option key={t.tarriffId || t.tariffId || t.id} value={t.tarriffId || t.tariffId || t.id}>
+                    {dailyTariffs.map((t: any) => (
+                      <option key={t.tariffId || t.id} value={t.tariffId || t.id}>
                         {t.price.toLocaleString()} VND / ngày
                       </option>
                     ))}
                   </select>
+                  {selectedTariff?.depositAmount != null && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Tiền cọc cần thanh toán:{" "}
+                      <span className="font-semibold text-secondary">
+                        {Number(selectedTariff.depositAmount).toLocaleString()} VND
+                      </span>
+                    </p>
+                  )}
                 </div>
               ) : (
                 <p className="text-red-500 text-sm">Không có gói thuê theo ngày khả dụng.</p>
               )}
 
+              {/* Start time */}
               <div>
                 <Label>Bắt đầu nhận xe</Label>
-                <Input
-                  type="datetime-local"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value.replace("T", " "))}
-                />
+                <div className="relative w-full">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                    <Calendar className="h-5 w-5" />
+                  </span>
+                  <DatePicker
+                    selected={startTime}
+                    onChange={(date: Date | null) => setStartTime(date)}
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={15}
+                    dateFormat="dd/MM/yyyy HH:mm"
+                    placeholderText="Chọn ngày giờ nhận xe"
+                    className="w-full border rounded p-2 pl-10 focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
+                  />
+                </div>
               </div>
 
+              {/* End time */}
               <div>
                 <Label>Kết thúc thuê xe</Label>
-                <Input
-                  type="datetime-local"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value.replace("T", " "))}
-                />
+                <div className="relative w-full">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                    <Calendar className="h-5 w-5" />
+                  </span>
+                  <DatePicker
+                    selected={endTime}
+                    onChange={(date: Date | null) => setEndTime(date)}
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={15}
+                    dateFormat="dd/MM/yyyy HH:mm"
+                    placeholderText="Chọn ngày giờ trả xe"
+                    className="w-full border rounded p-2 pl-10 focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
+                  />
+                </div>
               </div>
 
               <Button

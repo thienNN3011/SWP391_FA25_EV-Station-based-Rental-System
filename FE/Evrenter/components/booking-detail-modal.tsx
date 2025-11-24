@@ -46,14 +46,18 @@ function calculateLateReturnPenalty(booking: any): number {
 }
 
 function calculateRentalDays(booking: any): number {
-  const actualStartTime = booking.actualStartTime
+  const startTime = booking.actualStartTime
     ? new Date(booking.actualStartTime)
-    : new Date(booking.startTime); // Nếu không có thời gian thực tế nhận xe, dùng thời gian dự kiến
+    : new Date(booking.startTime)
 
-  const plannedEndTime = new Date(booking.endTime);
+  const endTime = booking.actualEndTime
+    ? new Date(booking.actualEndTime)
+    : new Date(booking.endTime)
 
-  const diffMs = plannedEndTime.getTime() - actualStartTime.getTime();
-  return Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // Chuyển đổi từ ms sang ngày
+  const diffMs = endTime.getTime() - startTime.getTime()
+  if (diffMs <= 0) return 0
+
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24))
 }
 
 // Calculate estimated total based on planned rental duration
@@ -140,25 +144,23 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Mẫu xe</p>
-                    <p className="font-medium">{booking.vehicle.modelName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Biển số</p>
-                    <p className="font-medium">{booking.vehicle.plateNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Màu sắc</p>
-                    <p className="font-medium">{booking.vehicle.color}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Trạng thái xe</p>
-                    <p className="font-medium">{booking.vehicle.status}</p>
-                  </div>
-                </div>
-              </CardContent>
+  <div className="grid grid-cols-3 gap-3 text-center">
+    <div>
+      <p className="text-sm text-muted-foreground">Mẫu xe</p>
+      <p className="font-medium">{booking.vehicle.modelName}</p>
+    </div>
+    <div>
+      <p className="text-sm text-muted-foreground">Biển số</p>
+      <p className="font-medium">{booking.vehicle.plateNumber}</p>
+    </div>
+    <div>
+      <p className="text-sm text-muted-foreground">Màu sắc</p>
+      <p className="font-medium">{booking.vehicle.color}</p>
+    </div>
+  </div>
+</CardContent>
+
+
             </Card>
 
             {/* Station Info */}
@@ -249,12 +251,12 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground">Tổng tiền thuê</span>
       <span className="font-medium">
-        {booking.totalAmount.toLocaleString()}₫
+        {(booking.tariff.price * calculateRentalDays(booking)).toLocaleString()}₫
       </span>
     </div>
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground">Tiền cọc đã thanh toán</span>
-      <span className="font-semibold text-green-600">
+      <span className="font-semibold text-red-600">
         -{booking.tariff.depositAmount.toLocaleString()}₫
       </span>
     </div>
@@ -269,13 +271,8 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
     <Separator />
     <div className="flex justify-between items-center text-lg">
       <span className="font-semibold">Tổng thanh toán cuối cùng</span>
-      <span className="font-bold text-primary">
-        {(
-          booking.totalAmount +
-          calculateLateReturnPenalty(booking) -
-          booking.tariff.depositAmount
-        ).toLocaleString()}
-        ₫
+      <span className="font-bold text-green-600">
+        {booking.totalAmount.toLocaleString()}₫
       </span>
     </div>
   </CardContent>
