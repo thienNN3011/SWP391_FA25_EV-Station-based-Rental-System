@@ -195,20 +195,22 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
                 </div>
                  <div className="relative space-y-2">
                   <Label htmlFor="signin-password">Mật khẩu</Label>
+                   <div className="relative">
                   <Input
                     id="signin-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     required
-                    className="pr-10 h-10"
+                    className="pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                    className="absolute top-1/2 -translate-y-1/2 right-3 text-gray-500 hover:text-gray-700"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
+                  </div>
                 </div>
 
                 {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -231,10 +233,12 @@ export function AuthModal({ isOpen, onOpenChange, initialTab = "signin" }: AuthM
 
    <div className="relative space-y-2">
       <Label htmlFor="password">Mật khẩu</Label>
-      <Input id="password" name="password" type={showPassword ? "text" : "password"} required className="pr-10 h-10" />
-      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
+       <div className="relative">
+      <Input id="password" name="password" type={showPassword ? "text" : "password"} required className="pr-10" />
+      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute top-1/2 -translate-y-1/2 right-3 text-gray-500 hover:text-gray-700">
         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
       </button>
+    </div>
     </div>
 
     <div className="space-y-2">
