@@ -314,8 +314,6 @@ public class BookingServiceImpl implements  BookingService{
         Vehicle vehicle = vehicleRepository
                 .findById(booking.getVehicle().getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Xe không tồn tại"));
-        long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
-        booking.setEndTime(booking.getActualStartTime().plusDays(amountOfDay));
         Map<String, String> data = new HashMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         data.put("contractDate", java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
@@ -334,6 +332,8 @@ public class BookingServiceImpl implements  BookingService{
         data.put("bookingId", String.valueOf(booking.getBookingId()));
         data.put("startOdo", String.valueOf(booking.getStartOdo()));
         booking.setActualStartTime(LocalDateTime.now());
+        long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
+        booking.setEndTime(booking.getActualStartTime().plusDays(amountOfDay));
         data.put("startTime", booking.getActualStartTime().format(formatter));
         data.put("endTime", booking.getEndTime().format(formatter));
         data.put("tariffPrice", booking.getTariff().getPrice() + " VND");
