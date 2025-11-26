@@ -314,6 +314,8 @@ public class BookingServiceImpl implements  BookingService{
         Vehicle vehicle = vehicleRepository
                 .findById(booking.getVehicle().getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Xe không tồn tại"));
+        long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
+        booking.setEndTime(booking.getActualStartTime().plusDays(amountOfDay));
         Map<String, String> data = new HashMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         data.put("contractDate", java.time.LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
@@ -337,8 +339,6 @@ public class BookingServiceImpl implements  BookingService{
         data.put("tariffPrice", booking.getTariff().getPrice() + " VND");
         data.put("tariffType", booking.getTariff().getType());
         data.put("depositAmount", booking.getTariff().getDepositAmount() + " VND");
-        long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
-        booking.setEndTime(booking.getActualStartTime().plusDays(amountOfDay));
         BigDecimal totalAmount = BigDecimal.valueOf(
                 TimeUtils.ceilTimeDiff(
                         booking.getEndTime(),
@@ -600,7 +600,6 @@ public class BookingServiceImpl implements  BookingService{
 
             booking.setTotalAmount(booking.getTotalAmount().add(extraFee));
         }
-        bookingRepository.save(booking);
         StopRentingTimeResponse response= StopRentingTimeResponse.builder()
                 .endTime(booking.getEndTime())
                 .actualEndTime(booking.getActualEndTime())
