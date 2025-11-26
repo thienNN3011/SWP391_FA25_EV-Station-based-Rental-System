@@ -245,11 +245,13 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground">Gói thuê</span>
       <span className="font-medium">
-        {booking.tariff.type === "hour"
-          ? "Theo giờ"
-          : booking.tariff.type === "day"
-          ? "Theo ngày"
-          : "Theo tháng"}
+        {(() => {
+          const type = booking.tariff.type.toLowerCase()
+          if (type === "hour" || type === "hourly") return "Theo giờ"
+          if (type === "day" || type === "daily") return "Theo ngày"
+          if (type === "week" || type === "weekly") return "Theo tuần"
+          return "Theo tháng"
+        })()}
       </span>
     </div>
     <div className="flex justify-between items-center">
@@ -265,7 +267,14 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground">Tổng tiền thuê</span>
       <span className="font-medium">
-        {booking.totalAmount.toLocaleString()}₫
+        {/*
+          - RENTING/trước đó: totalAmount = tiền thuê gốc (chưa trừ deposit)
+          - COMPLETED: totalAmount = tiền thuê - deposit (BE đã trừ deposit trong endRental)
+        */}
+        {booking.status === "COMPLETED"
+          ? (booking.totalAmount + booking.tariff.depositAmount).toLocaleString()
+          : booking.totalAmount.toLocaleString()
+        }₫
       </span>
     </div>
     <div className="flex justify-between items-center">
@@ -283,17 +292,20 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
       </div>
     )}
     <Separator />
-   <div className="flex justify-between items-center text-lg">
-  <span className="font-semibold">Tổng thanh toán cuối cùng</span>
-  <span className="font-bold text-primary">
-    {(
-      booking.totalAmount +
-      calculateLateReturnPenalty(booking) -
-      booking.tariff.depositAmount
-    ).toLocaleString()}
-    ₫
-  </span>
-</div>
+    <div className="flex justify-between items-center text-lg">
+      <span className="font-semibold">Tổng thanh toán cuối cùng</span>
+      <span className="font-bold text-primary">
+        {/*
+          - RENTING/trước đó: finalPayment = totalAmount - deposit + penalty
+          - COMPLETED: finalPayment = totalAmount + penalty (BE đã trừ deposit)
+        */}
+        {booking.status === "COMPLETED"
+          ? (booking.totalAmount + calculateLateReturnPenalty(booking)).toLocaleString()
+          : (booking.totalAmount - booking.tariff.depositAmount + calculateLateReturnPenalty(booking)).toLocaleString()
+        }
+        ₫
+      </span>
+    </div>
 
 {booking.status !== "COMPLETED" && (
   <p className="text-sm text-muted-foreground mt-1">

@@ -84,7 +84,13 @@ export default function BookingSummary() {
               <DollarSign className="h-6 w-6 text-sky-500" />
               Gói thuê
             </h3>
-            <p><strong>Loại:</strong> {info.tariff.type === "hour" ? "Theo giờ" : info.tariff.type === "day" ? "Theo ngày" : "Theo tháng"}</p>
+            <p><strong>Loại:</strong> {(() => {
+              const type = info.tariff.type.toLowerCase()
+              if (type === "hour" || type === "hourly") return "Theo giờ"
+              if (type === "day" || type === "daily") return "Theo ngày"
+              if (type === "week" || type === "weekly") return "Theo tuần"
+              return "Theo tháng"
+            })()}</p>
             <p><strong>Giá thuê:</strong> {info.tariff.price.toLocaleString()} VND</p>
             <p><strong>Tiền cọc:</strong> {info.tariff.depositAmount.toLocaleString()} VND</p>
             <p><strong>Thời gian thuê:</strong></p>
