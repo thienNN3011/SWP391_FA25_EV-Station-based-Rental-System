@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -329,12 +330,15 @@ public class BookingServiceImpl implements  BookingService{
         data.put("vehicleColor", vehicle.getColor());
         data.put("vehicleStatus", vehicleStatus);
         data.put("bookingId", String.valueOf(booking.getBookingId()));
+        data.put("startOdo", String.valueOf(booking.getStartOdo()));
         booking.setActualStartTime(LocalDateTime.now());
         data.put("startTime", booking.getActualStartTime().format(formatter));
         data.put("endTime", booking.getEndTime().format(formatter));
         data.put("tariffPrice", booking.getTariff().getPrice() + " VND");
         data.put("tariffType", booking.getTariff().getType());
         data.put("depositAmount", booking.getTariff().getDepositAmount() + " VND");
+        long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
+        booking.setEndTime(booking.getActualStartTime().plusDays(amountOfDay));
         BigDecimal totalAmount = BigDecimal.valueOf(
                 TimeUtils.ceilTimeDiff(
                         booking.getEndTime(),
