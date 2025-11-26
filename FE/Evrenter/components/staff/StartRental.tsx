@@ -83,7 +83,7 @@ export default function StartRentalStaff() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Car className="w-5 h-5 text-secondary" />
-            Nhận xe & Gửi hợp đồng
+            Gửi hợp đồng
           </CardTitle>
         </CardHeader>
 
@@ -206,7 +206,7 @@ export default function StartRentalStaff() {
             {loading ? "Đang xử lý..." : (
               <>
                 <FileText className="w-4 h-4 mr-2" />
-                Nhận xe & Gửi hợp đồng
+                Gửi hợp đồng
               </>
             )}
           </Button>

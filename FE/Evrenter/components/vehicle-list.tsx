@@ -96,24 +96,25 @@ export function VehicleList({ stationName, onSelectVehicle }: VehicleListProps) 
     }))
   }
 
-  const handleSelect = (modelId: number) => {
-    const vehicle = selectedVehicleByModel[modelId]
-    if (!vehicle) {
-      alert("Vui lòng chọn màu xe trước khi đặt.")
-      return
-    }
-
-    // Đảm bảo vehicle có đầy đủ tariffs trước khi lưu
-    const vehicleWithTariffs = {
-      ...vehicle,
-      tariffs: vehicle.tariffs || []
-    }
-
-    setSelectedVehicle(vehicleWithTariffs)
-    setIsModalOpen(true)
-    localStorage.setItem("selectedVehicle", JSON.stringify(vehicleWithTariffs))
-    onSelectVehicle?.(vehicleWithTariffs)
+const handleSelect = (modelId: number) => {
+  const vehicleWithColor = selectedVehicleByModel[modelId] || vehicles.find(v => v.modelId === modelId)
+  if (!vehicleWithColor) {
+    alert("Vui lòng chọn màu xe trước khi đặt.")
+    return
   }
+
+  const vehicleWithTariffs = {
+    ...vehicleWithColor,
+    tariffs: vehicleWithColor.tariffs || [],
+    color: vehicleWithColor.color || vehicleWithColor.colors?.[0] || "White"
+  }
+
+  setSelectedVehicle(vehicleWithTariffs)
+  setIsModalOpen(true)
+}
+
+
+
 
   const handleCloseModal = () => {
     setSelectedVehicle(null)

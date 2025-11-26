@@ -53,7 +53,7 @@ export default function EndRentalStaff() {
         startTime: formatDate(bookingInfo.startTime),
         endTime: formatDate(bookingInfo.endTime),
         actualStartTime: formatDate(bookingInfo.actualStartTime),
-        stoppedData: null, // chưa dừng thuê
+        stoppedData: null, 
       })
     } catch (err: any) {
       console.error("Lỗi xem booking:", err)
