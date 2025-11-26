@@ -11,10 +11,16 @@ import BookingSummary from "@/components/BookingSummary"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 
-export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [vehicle, setVehicle] = useState<any>(null)
+interface BookingModalProps {
+  isOpen: boolean
+  onClose: () => void
+  vehicle: any
+}
+
+export function BookingModal({ isOpen, onClose, vehicle }: BookingModalProps) {
   const [startTime, setStartTime] = useState<Date | null>(null)
   const [endTime, setEndTime] = useState<Date | null>(null)
+  const [duration, setDuration] = useState(1)   
   const [selectedTariff, setSelectedTariff] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [bookingSuccess, setBookingSuccess] = useState(false)
@@ -31,13 +37,6 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     return `${yyyy}-${MM}-${dd} ${hh}:${mm}:${ss}`
   }
 
-  useEffect(() => {
-    const selected = localStorage.getItem("selectedVehicle")
-    if (selected) {
-      const parsedVehicle = JSON.parse(selected)
-      setVehicle(parsedVehicle)
-    }
-  }, [isOpen])
 
   useEffect(() => {
     if (vehicle?.tariffs?.length) {
@@ -47,6 +46,14 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
       if (dailyTariffs.length > 0) setSelectedTariff(dailyTariffs[0])
     }
   }, [vehicle])
+
+  useEffect(() => {
+    if (startTime && duration) {
+      const t = new Date(startTime)
+       t.setDate(t.getDate() + duration)
+      setEndTime(t)
+    }
+  }, [startTime, duration])
 
   const handleBooking = async () => {
     if (!vehicle || !selectedTariff) {
@@ -65,22 +72,25 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
       endTime: formatDateForBackend(endTime),
     }
 
-    try {
-      const res = await api.post("/bookings/createbooking", body)
-      if (res.status === 200 || res.status === 201) {
-        localStorage.setItem("bookingData", JSON.stringify(res.data.data))
-        setBookingSuccess(true)
-      } else {
-        setMessage("Có lỗi xảy ra, vui lòng thử lại.")
-      }
-    } catch (err: any) {
-      const serverMsg =
-        err.response?.data?.message ||
-        (err.response?.data?.errors?.tariffId?.[0])
-      setMessage(serverMsg || "Vui lòng chọn đầy đủ thông tin")
-    } finally {
-      setLoading(false)
-    }
+   try {
+  console.log("Booking body:", body);
+  const res = await api.post("/bookings/createbooking", body);
+  console.log("Booking response:", res); 
+
+  if (res.status === 200 || res.status === 201) {
+    localStorage.setItem("bookingData", JSON.stringify(res.data.data));
+    setBookingSuccess(true);
+  } else {
+    setMessage("Có lỗi xảy ra, vui lòng thử lại.");
+  }
+} catch (err: any) {
+  console.error("Booking error:", err); 
+  const serverMsg =
+    err.response?.data?.message ||
+    (err.response?.data?.errors?.tariffId?.[0]);
+  setMessage(serverMsg || "Vui lòng chọn đầy đủ thông tin");
+}
+
   }
 
   if (!vehicle) return null
@@ -100,6 +110,7 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               <DialogTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-secondary" />
                 Đặt xe của bạn
+                <p>Kiểm tra kĩ các thông tin trước khi xác nhận và đặt cọc</p>
               </DialogTitle>
             </DialogHeader>
 
@@ -113,46 +124,30 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               </CardHeader>
               <CardContent className="pt-0 text-sm text-muted-foreground">
                 <p>Hãng: {vehicle.brand}</p>
+                <p>Màu: {vehicle.color}</p>
                 <p>Pin: {vehicle.batteryCapacity} kWh | Quãng đường: {vehicle.range} km</p>
               </CardContent>
             </Card>
 
             <div className="space-y-3">
-              {/* Tariff */}
-              {dailyTariffs.length > 0 ? (
-                <div>
-                  <Label htmlFor="tariff-select">Chọn gói thuê</Label>
-                  <select
-                    id="tariff-select"
-                    value={selectedTariff?.tariffId || selectedTariff?.id || ""}
-                    onChange={(e) => {
-                      const tariff = dailyTariffs.find(
-                        (t: any) => (t.tariffId || t.id) === parseInt(e.target.value)
-                      )
-                      setSelectedTariff(tariff)
-                    }}
-                    className="w-full border rounded p-2 bg-white cursor-pointer"
-                  >
-                    {dailyTariffs.map((t: any) => (
-                      <option key={t.tariffId || t.id} value={t.tariffId || t.id}>
-                        {t.price.toLocaleString()} VND / ngày
-                      </option>
-                    ))}
-                  </select>
-                  {selectedTariff?.depositAmount != null && (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Tiền cọc cần thanh toán:{" "}
-                      <span className="font-semibold text-secondary">
-                        {Number(selectedTariff.depositAmount).toLocaleString()} VND
-                      </span>
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-red-500 text-sm">Không có gói thuê theo ngày khả dụng.</p>
-              )}
+              
+              {/* Chọn số ngày */}
+              <div>
+                <Label>Số ngày thuê</Label>
+                <select
+                  className="w-full border rounded p-2 bg-white cursor-pointer"
+                  value={duration}
+                  onChange={(e) => setDuration(parseInt(e.target.value))}
+                >
+                  {[1, 3, 5, 7].map((d) => (
+                    <option key={d} value={d}>
+                      {d} ngày
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              {/* Start time */}
+              {/* Chọn thời gian bắt đầu */}
               <div>
                 <Label>Bắt đầu nhận xe</Label>
                 <div className="relative w-full">
@@ -172,29 +167,29 @@ export function BookingModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 </div>
               </div>
 
-              {/* End time */}
+              {/* End time — AUTO CALCULATED, DISABLED */}
               <div>
-                <Label>Kết thúc thuê xe</Label>
-                <div className="relative w-full">
+                <Label>Kết thúc thuê xe (tự động)</Label>
+                <div className="relative w-full opacity-70">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                     <Calendar className="h-5 w-5" />
                   </span>
                   <DatePicker
                     selected={endTime}
-                    onChange={(date: Date | null) => setEndTime(date)}
+                    onChange={() => {}}
+                    disabled
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={15}
                     dateFormat="dd/MM/yyyy HH:mm"
-                    placeholderText="Chọn ngày giờ trả xe"
-                    className="w-full border rounded p-2 pl-10 focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full border rounded p-2 pl-10"
                   />
                 </div>
               </div>
 
               <Button
                 onClick={handleBooking}
-                disabled={loading || dailyTariffs.length === 0}
+                disabled={loading}
                 className="w-full bg-sky-500 hover:bg-sky-600 text-white"
               >
                 <DollarSign className="mr-2 h-4 w-4" />

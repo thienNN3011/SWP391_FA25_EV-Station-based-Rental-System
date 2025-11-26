@@ -46,18 +46,14 @@ function calculateLateReturnPenalty(booking: any): number {
 }
 
 function calculateRentalDays(booking: any): number {
-  const startTime = booking.actualStartTime
+  const actualStartTime = booking.actualStartTime
     ? new Date(booking.actualStartTime)
-    : new Date(booking.startTime)
+    : new Date(booking.startTime); // Nếu không có thời gian thực tế nhận xe, dùng thời gian dự kiến
 
-  const endTime = booking.actualEndTime
-    ? new Date(booking.actualEndTime)
-    : new Date(booking.endTime)
+  const plannedEndTime = new Date(booking.endTime);
 
-  const diffMs = endTime.getTime() - startTime.getTime()
-  if (diffMs <= 0) return 0
-
-  return Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+  const diffMs = plannedEndTime.getTime() - actualStartTime.getTime();
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // Chuyển đổi từ ms sang ngày
 }
 
 // Calculate estimated total based on planned rental duration
@@ -251,12 +247,12 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground">Tổng tiền thuê</span>
       <span className="font-medium">
-        {(booking.tariff.price * calculateRentalDays(booking)).toLocaleString()}₫
+        {booking.totalAmount.toLocaleString()}₫
       </span>
     </div>
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground">Tiền cọc đã thanh toán</span>
-      <span className="font-semibold text-red-600">
+      <span className="font-semibold text-green-600">
         -{booking.tariff.depositAmount.toLocaleString()}₫
       </span>
     </div>
@@ -269,12 +265,24 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
       </div>
     )}
     <Separator />
-    <div className="flex justify-between items-center text-lg">
-      <span className="font-semibold">Tổng thanh toán cuối cùng</span>
-      <span className="font-bold text-green-600">
-        {booking.totalAmount.toLocaleString()}₫
-      </span>
-    </div>
+   <div className="flex justify-between items-center text-lg">
+  <span className="font-semibold">Tổng thanh toán cuối cùng</span>
+  <span className="font-bold text-primary">
+    {(
+      booking.totalAmount +
+      calculateLateReturnPenalty(booking) -
+      booking.tariff.depositAmount
+    ).toLocaleString()}
+    ₫
+  </span>
+</div>
+
+{booking.status !== "COMPLETED" && (
+  <p className="text-sm text-muted-foreground mt-1">
+    Lưu ý: Chi phí trên đây chưa phải là chi phí cuối cùng.
+  </p>
+)}
+
   </CardContent>
 </Card>
 
