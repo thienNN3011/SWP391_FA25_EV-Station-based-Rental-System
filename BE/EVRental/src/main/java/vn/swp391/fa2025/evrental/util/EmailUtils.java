@@ -17,6 +17,7 @@ import vn.swp391.fa2025.evrental.service.SystemConfigServiceImpl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 @Component
 public class EmailUtils {
@@ -206,16 +207,18 @@ public class EmailUtils {
         String refundRate = refundRateConfig != null ? refundRateConfig.getValue() : "70";
         String lateCheckin = lateCheckinConfig != null ? lateCheckinConfig.getValue() : "30";
 
+        long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
         String message = String.format("""
             Xin chào <b>%s</b>,<br>
-            Cảm ơn bạn đã đặt xe tại <b>EV Rental</b>!<br><br>
+            Cảm ơn bạn đã đặt xe tại <b>EV Rental</b>!<br>
+            Quý khách vui lòng cung cấp mã đơn thuê cho nhân viên khi đến nhận xe<br><br>
             <b>Thông tin đặt xe:</b><br>
             • Mã đơn thuê: <b>#%d</b><br>
             • Xe: <b>%s</b><br>
             • Bắt đầu: <b>%s</b><br>
-            • Kết thúc: <b>%s</b><br>
+            • Số ngày thuê: <b>%d</b><br>
             • Tổng tiền đặt cọc đã thanh toán: <b>%s VND</b><br><br>
             <b>Chính sách:</b><br>
             - Bạn có thể hủy trước <b>%s phút</b> để được hoàn <b>%s%% tiền đặt cọc</b>.<br>
@@ -227,7 +230,7 @@ public class EmailUtils {
                 booking.getBookingId(),
                 booking.getVehicle().getModel().getName(),
                 booking.getStartTime().format(formatter),
-                booking.getEndTime().format(formatter),
+                amountOfDay,
                 booking.getTariff().getDepositAmount(),
                 cancelBefore,
                 refundRate,
@@ -265,7 +268,8 @@ public class EmailUtils {
         <b>Thông tin chuyến đi:</b><br>
         • Xe: <b>%s</b><br>
         • Bắt đầu: <b>%s</b><br>
-        • Kết thúc: <b>%s</b><br>
+        • Kết thúc dự kiến: <b>%s</b><br>
+        • Kết thúc thực tế: <b>%s</b><br>
         • Tổng chi phí: <b>%,.0f VND</b><br>
         • Số km sử dụng: <b>%s km</b><br>
         %s
@@ -277,6 +281,7 @@ public class EmailUtils {
                 booking.getUser().getFullName() != null ? booking.getUser().getFullName() : booking.getUser().getUsername(),
                 booking.getVehicle().getModel().getName(),
                 booking.getActualStartTime().format(formatter),
+                booking.getEndTime().format(formatter),
                 booking.getActualEndTime().isAfter(booking.getEndTime())?booking.getActualEndTime().format(formatter):booking.getEndTime().format(formatter),
                 booking.getTotalAmount(),
                 (booking.getStartOdo() != null && booking.getEndOdo() != null)
@@ -384,7 +389,7 @@ public class EmailUtils {
 
         SystemConfig refundRateConfig = systemConfigService.getSystemConfigByKey("REFUND");
         int refundRate = refundRateConfig != null ? Integer.parseInt(refundRateConfig.getValue()) : 0;
-
+        long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
         String bookingInfo = String.format("""
@@ -392,12 +397,12 @@ public class EmailUtils {
         • Mã đơn thuê: <b>#%d</b><br>
         • Xe: <b>%s</b><br>
         • Bắt đầu: <b>%s</b><br>
-        • Kết thúc: <b>%s</b><br><br>
+        • Số ngày thuê: <b>%d</b><br><br>
     """,
                 booking.getBookingId(),
                 booking.getVehicle().getModel().getName(),
                 booking.getStartTime().format(formatter),
-                booking.getEndTime().format(formatter)
+                amountOfDay
         );
 
         String refundInfo;
