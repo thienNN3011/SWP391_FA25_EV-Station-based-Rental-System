@@ -24,6 +24,16 @@ interface BookingDetailRowProps {
  */
 export function BookingDetailRow({ booking }: BookingDetailRowProps) {
   const variance = calculateVariance(booking)
+  function getPlannedEnd(startTime: string, endTime: string) {
+  const start = new Date(startTime)
+  const end = new Date(endTime)
+  const diffMs = end.getTime() - start.getTime()
+  const rentalDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)) // làm tròn lên
+  const plannedEnd = new Date(start)
+  plannedEnd.setDate(plannedEnd.getDate() + rentalDays)
+  return plannedEnd
+}
+
 
   return (
     <div className="p-4 bg-gray-50 border-t">
@@ -43,18 +53,30 @@ export function BookingDetailRow({ booking }: BookingDetailRowProps) {
                 {formatFullDateTime(booking.startTime)}
               </div>
             </div>
-            <div>
-              <span className="text-muted-foreground">Kết thúc:</span>
-              <div className="font-medium mt-1">
-                {formatFullDateTime(booking.endTime)}
-              </div>
-            </div>
+           <div>
+  <span className="text-muted-foreground">Kết thúc:</span>
+  <div className="font-medium mt-1">
+    {formatFullDateTime(getPlannedEnd(booking.startTime, booking.endTime).toISOString())}
+  </div>
+</div>
+
             <div className="pt-2 border-t">
-              <span className="text-muted-foreground">Thời gian thuê:</span>
-              <div className="font-medium mt-1">
-                {calculateDuration(booking.startTime, booking.endTime)}
-              </div>
-            </div>
+  <span className="text-muted-foreground">Thời gian thuê:</span>
+  <div className="font-medium mt-1">
+    {(() => {
+      if (!booking.startTime || !booking.endTime) return '-';
+      const start = new Date(booking.startTime);
+      const end = new Date(booking.endTime);
+
+      
+      const diffMs = end.getTime() - start.getTime();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      return `${diffDays} ngày`;
+    })()}
+  </div>
+</div>
+
           </CardContent>
         </Card>
 

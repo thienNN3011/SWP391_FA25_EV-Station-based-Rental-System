@@ -38,15 +38,20 @@ export default function BookingSummary() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-5xl shadow-2xl border border-gray-200 rounded-3xl">
         {/* Header */}
-         <CardHeader className="text-center bg-gradient-to-r from-sky-100 to-sky-200 rounded-t-3xl p-8">
-    <CardTitle className="text-4xl font-bold text-sky-600 flex items-center justify-center gap-3">
-      <CheckCircle className="h-8 w-8 text-green-500" />
-      Booking thành công!
-    </CardTitle>
-    <CardDescription className="text-gray-700 mt-3 text-lg">
-      Vui lòng kiểm tra thông tin và tiến hành thanh toán đặt cọc.
-    </CardDescription>
-  </CardHeader>
+        <CardHeader className="text-center bg-gradient-to-r from-sky-100 to-sky-200 rounded-t-3xl p-8">
+  <CardTitle className="text-4xl font-bold text-sky-600 flex items-center justify-center gap-3">
+    <CheckCircle className="h-8 w-8 text-green-500" />
+    Booking thành công!
+  </CardTitle>
+  <CardDescription className="text-gray-700 mt-3 text-lg space-y-2 flex flex-col items-center">
+    <span>Vui lòng kiểm tra thông tin và tiến hành thanh toán đặt cọc.</span>
+    <span>
+      Chúng tôi chỉ hoàn lại{' '}
+      <span className="font-bold text-red-500">70%</span> số tiền cọc khi bạn không còn nhu cầu thuê xe hoặc đặt sai thông tin.
+    </span>
+  </CardDescription>
+</CardHeader>
+
 
         {/* Content */}
         <CardContent className="space-y-6 p-6">

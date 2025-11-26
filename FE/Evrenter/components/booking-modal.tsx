@@ -106,13 +106,22 @@ export function BookingModal({ isOpen, onClose, vehicle }: BookingModalProps) {
           <BookingSummary />
         ) : (
           <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-secondary" />
-                Đặt xe của bạn
-                <p>Kiểm tra kĩ các thông tin trước khi xác nhận và đặt cọc</p>
-              </DialogTitle>
-            </DialogHeader>
+          <DialogHeader className="pb-2 border-b border-gray-200">
+  <div className="flex items-center gap-3">
+    <Zap className="h-6 w-6 text-sky-500" />
+    <div className="flex flex-col">
+      <h2 className="text-lg font-semibold text-gray-900">Đặt xe của bạn</h2>
+      <p className="text-sm text-gray-500 mt-1">
+        Kiểm tra kỹ các thông tin trước khi xác nhận và đặt cọc
+      </p>
+      <p className="text-sm text-gray-500 mt-2">
+        Chúng tôi chỉ hoàn lại 70% số tiền cọc khi bạn không còn nhu cầu thuê xe hoặc đặt sai thông tin
+      </p>
+    </div>
+  </div>
+</DialogHeader>
+
+
 
             <Card className="border-secondary/20 bg-secondary/5 mb-4">
               <CardHeader className="pb-2">

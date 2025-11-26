@@ -44,6 +44,21 @@ function calculateLateReturnPenalty(booking: any): number {
 
   return 0;
 }
+function getPlannedRentalDays(startTime: string, endTime: string) {
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+  const diffMs = end.getTime() - start.getTime();
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // làm tròn lên
+}
+function getExpectedReturnDate(startTime: string, endTime: string) {
+  const rentalDays = getPlannedRentalDays(startTime, endTime);
+  const start = new Date(startTime);
+  const t = new Date(start);
+  t.setDate(t.getDate() + rentalDays); // ngày trả = ngày nhận + số ngày thuê
+  return t;
+}
+
+
 
 function calculateRentalDays(booking: any): number {
   const actualStartTime = booking.actualStartTime
@@ -190,9 +205,12 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
                     <p className="font-medium">{formatDateTime(booking.startTime)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Dự kiến trả xe</p>
-                    <p className="font-medium">{formatDateTime(booking.endTime)}</p>
-                  </div>
+  <p className="text-sm text-muted-foreground">Dự kiến trả xe</p>
+  <p className="font-medium">
+    {formatDateTime(getExpectedReturnDate(booking.startTime, booking.endTime).toISOString())}
+  </p>
+</div>
+
                 </div>
                 
                 {booking.actualStartTime && (
