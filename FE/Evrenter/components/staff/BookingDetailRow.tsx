@@ -33,6 +33,46 @@ export function BookingDetailRow({ booking }: BookingDetailRowProps) {
   plannedEnd.setDate(plannedEnd.getDate() + rentalDays)
   return plannedEnd
 }
+function formatDateTimeWithHour(s: string) {
+  if (!s) return "-";
+
+  s = s.split(".")[0].replace("T", " ");
+  const [datePart, timePart = "00:00:00"] = s.split(" ");
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [hh, mm] = timePart.split(":").map(Number);
+
+  const date = new Date(y, m - 1, d, hh, mm);
+
+  return date.toLocaleString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function parseLocalDateTime(s: string) {
+  s = s.split(".")[0].replace("T", " ");
+  const [datePart, timePart = "00:00:00"] = s.split(" ");
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [hh, mm, ss] = timePart.split(":").map(Number);
+  return new Date(y, m - 1, d, hh, mm, ss || 0);
+}
+
+function getRentalDays(startTime: string, endTime: string) {
+  const start = parseLocalDateTime(startTime);
+  const end = parseLocalDateTime(endTime);
+
+  const diffMs = end.getTime() - start.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+
+  const baseDays = Math.floor(diffHours / 24);
+  const extraHours = diffHours % 24;
+
+  return extraHours > 6 ? baseDays + 1 : baseDays;
+}
+
 
 
   return (
@@ -47,32 +87,41 @@ export function BookingDetailRow({ booking }: BookingDetailRowProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div>
-              <span className="text-muted-foreground">Bắt đầu:</span>
-              <div className="font-medium mt-1">
-                {formatFullDateTime(booking.startTime)}
-              </div>
-            </div>
-           <div>
-  <span className="text-muted-foreground">Kết thúc:</span>
+        <div>
+  <span className="text-muted-foreground">Bắt đầu:</span>
   <div className="font-medium mt-1">
-    {formatFullDateTime(getPlannedEnd(booking.startTime, booking.endTime).toISOString())}
+    {formatDateTimeWithHour(booking.startTime)}
   </div>
 </div>
+
 
             <div className="pt-2 border-t">
   <span className="text-muted-foreground">Thời gian thuê:</span>
   <div className="font-medium mt-1">
     {(() => {
       if (!booking.startTime || !booking.endTime) return '-';
-      const start = new Date(booking.startTime);
-      const end = new Date(booking.endTime);
 
-      
+      // Parse local datetime để tránh lệch timezone
+      const parseLocalDateTime = (s: string) => {
+        s = s.split(".")[0].replace("T", " ");
+        const [datePart, timePart = "00:00:00"] = s.split(" ");
+        const [y, m, d] = datePart.split("-").map(Number);
+        const [hh, mm, ss] = timePart.split(":").map(Number);
+        return new Date(y, m - 1, d, hh, mm, ss || 0);
+      };
+
+      const start = parseLocalDateTime(booking.startTime);
+      const end = parseLocalDateTime(booking.endTime);
+
       const diffMs = end.getTime() - start.getTime();
-      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      const diffHours = diffMs / (1000 * 60 * 60);
 
-      return `${diffDays} ngày`;
+      const baseDays = Math.floor(diffHours / 24);
+      const extraHours = diffHours % 24;
+
+      const rentalDays = extraHours > 6 ? baseDays + 1 : baseDays;
+
+      return `${rentalDays} ngày`;
     })()}
   </div>
 </div>
