@@ -326,6 +326,8 @@ public class BookingServiceImpl implements  BookingService{
             amountOfDay= ChronoUnit.DAYS.between(booking.getActualStartTime(), booking.getEndTime());
             expectedToTalAmount=booking.getTariff().getPrice().multiply(BigDecimal.valueOf(amountOfDay));
         }
+        Payment refund=paymentRepository.findByBooking_BookingIdAndPaymentType(booking.getBookingId(), PaymentType.REFUND_DEPOSIT);
+        if (refund!=null) response.setRefundAmount(refund.getAmount()); else response.setRefundAmount(BigDecimal.ZERO);
         response.setExpectedTotalAmount(expectedToTalAmount);
         return response;
     }
