@@ -188,7 +188,7 @@ export function BookingStaff() {
                     <TableHead>Xe</TableHead>
                     <TableHead>Trạm</TableHead>
                     <TableHead>Thời gian</TableHead>
-                    <TableHead>Giá</TableHead>
+                   
                     <TableHead>Trạng thái</TableHead>
                     <TableHead className="text-right">Thao tác</TableHead>
                   </TableRow>
@@ -242,10 +242,7 @@ export function BookingStaff() {
                           <TimeDisplay booking={bk} />
                         </TableCell>
 
-                        <TableCell className="flex items-center gap-1">
-                          <DollarSign className="size-4 text-green-600" />
-                          {bk.price ? `${bk.price.toLocaleString()} VND` : "—"}
-                        </TableCell>
+                        
 
                         <TableCell>
                           <span
@@ -291,7 +288,7 @@ export function BookingStaff() {
                       {/* Expandable Detail Row */}
                       {expandedRows.has(bk.bookingId) && (
                         <TableRow key={`${bk.bookingId}-detail`}>
-                          <TableCell colSpan={10} className="p-0">
+                          <TableCell colSpan={9} className="p-0">
                             <BookingDetailRow booking={bk} />
                           </TableCell>
                         </TableRow>

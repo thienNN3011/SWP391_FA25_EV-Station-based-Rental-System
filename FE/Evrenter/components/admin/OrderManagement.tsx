@@ -174,7 +174,7 @@ export function OrderManagement() {
                     <TableHead>Xe</TableHead>
                     <TableHead>Trạm</TableHead>
                     <TableHead>Thời gian</TableHead>
-                    <TableHead>Giá</TableHead>
+              
                     <TableHead>Trạng thái</TableHead>
                     <TableHead className="text-center">Thao tác</TableHead>
                   </TableRow>
@@ -228,10 +228,7 @@ export function OrderManagement() {
                           <TimeDisplay booking={bk} />
                         </TableCell>
 
-                        <TableCell className="flex items-center gap-1">
-                          <DollarSign className="size-4 text-green-600" />
-                          {bk.price ? `${bk.price.toLocaleString()} VNĐ` : "—"}
-                        </TableCell>
+                     
 
                         <TableCell>
                           <span

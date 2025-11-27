@@ -269,7 +269,7 @@ const handleConfirmStopRenting = async () => {
                     <div>
                       <p className="text-xs text-muted-foreground">Thời gian thuê dự định</p>
                       <p className="font-medium">{booking.startTime}</p>
-                      <p className="text-black-500 text-primary font-semibold">
+                      <p className="font-bold text-green-600">
 Số ngày thuê: {calculateRentalDays(booking.startTimeRaw, booking.endTimeRaw)}
 </p>
                     </div>
@@ -359,7 +359,7 @@ Số ngày thuê: {calculateRentalDays(booking.startTimeRaw, booking.endTimeRaw)
                       {/* Dòng tổng */}
                       <div className="flex justify-between border-t pt-2 mt-2">
                         <span className="font-bold">Khách cần thanh toán</span>
-                        <span className="font-bold text-xl text-primary">{booking.stoppedData.totalAmount?.toLocaleString()} ₫</span>
+                        <span className="font-bold text-green-600">{booking.stoppedData.totalAmount?.toLocaleString()} ₫</span>
                       </div>
                       
                       {/* Công thức giải thích */}

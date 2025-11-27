@@ -204,10 +204,10 @@ const handleSelect = (modelId: number) => {
 
                     <div className="mt-3">
                       {firstVehicle.tariffs
-                        .filter(t => t.type.toUpperCase() === "DAILY")
-                        .map(t => (
+                        .filter((t: any) => t.type.toLowerCase() === "day" || t.type.toUpperCase() === "DAILY")
+                        .map((t: any) => (
                           <Badge
-                            key={t.tarriffId}
+                            key={t.tariffId}
                             className="text-xs bg-sky-500 text-white mr-2"
                           >
                             Theo ngày: {t.price.toLocaleString()} VND
