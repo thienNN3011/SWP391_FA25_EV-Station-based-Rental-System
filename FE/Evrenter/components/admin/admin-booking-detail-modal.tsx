@@ -224,7 +224,7 @@ function BookingInfoTab({ booking }: { booking: any }) {
             <div className="space-y-2 text-sm">
               <p className="font-medium text-muted-foreground">Dự kiến</p>
               <InfoRow label="Bắt đầu" value={formatDateTime(booking.startTime)} />
-              <InfoRow label="Kết thúc" value={formatDateTime(booking.endTime)} />
+              <InfoRow label="Số ngày thuê dự kiến" value={`${rentalDays} ngày`} />
             </div>
             {(booking.actualStartTime || booking.actualEndTime) && (
               <div className="space-y-2 text-sm">
