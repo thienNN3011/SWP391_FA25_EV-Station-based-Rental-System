@@ -467,30 +467,7 @@ public class BookingServiceImpl implements  BookingService{
 
         booking.setEndOdo(endOdo);
         booking.setAfterRentingStatus(vehicleStatus);
-
-        Long overtime = 0L;
-        if (booking.getActualEndTime().isAfter(booking.getEndTime())) {
-            overtime = TimeUtils.ceilTimeDiff(
-                    booking.getActualEndTime(),
-                    booking.getEndTime(),
-                    booking.getTariff().getType()
-            );
-        }
-
-        BigDecimal extraFee = BigDecimal.ZERO;
-        if (overtime > 0) {
-            int extraRateInt = Integer.parseInt(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue());
-            BigDecimal extraRate = BigDecimal.valueOf(extraRateInt).divide(BigDecimal.valueOf(100));
-
-            extraFee = BigDecimal.valueOf(overtime)
-                    .multiply(
-                            booking.getTariff().getPrice()
-                                    .add(booking.getTariff().getPrice().multiply(extraRate))
-                    );
-
-            booking.setTotalAmount(booking.getTotalAmount().add(extraFee));
-        }
-        booking.setTotalAmount(booking.getTotalAmount().subtract(booking.getTariff().getDepositAmount()));
+        
         String paymentUrl;
         try {
             paymentUrl = vnPayService.createPaymentUrl(
@@ -638,6 +615,8 @@ public class BookingServiceImpl implements  BookingService{
                 .extraFee(extraFee)
                 .totalAmount(booking.getTotalAmount().add(extraFee))
                 .build();
+        booking.setTotalAmount(response.getTotalAmount());
+        bookingRepository.save(booking);
         return response;
     }
 
