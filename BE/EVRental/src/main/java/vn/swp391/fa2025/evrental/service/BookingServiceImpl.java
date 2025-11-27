@@ -609,7 +609,13 @@ public class BookingServiceImpl implements  BookingService{
                                     .add(booking.getTariff().getPrice().multiply(extraRate))
                     );
         }
+        long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
+        BigDecimal expectedToTalAmount=booking.getTariff().getPrice().multiply(BigDecimal.valueOf(amountOfDay));
         StopRentingTimeResponse response= StopRentingTimeResponse.builder()
+                .days(amountOfDay)
+                .depositAmount(booking.getTariff().getDepositAmount())
+                .expectedTotalAmount(expectedToTalAmount)
+                .tariffPrice(booking.getTariff().getPrice())
                 .endTime(booking.getEndTime())
                 .actualEndTime(booking.getActualEndTime())
                 .extraFee(extraFee)
