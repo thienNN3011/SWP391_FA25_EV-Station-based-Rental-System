@@ -23,6 +23,9 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
     Payment findByMethodAndReferenceCode(PaymentMethod method, String referenceCode);
     List<Payment> findAllByBooking_BookingIdInOrderByTransactionDateDesc(Set<Long> bookingIds);
 
+    // Get payment history for a specific booking
+    List<Payment> findByBooking_BookingIdOrderByTransactionDateDesc(Long bookingId);
+
     @Query("SELECT p FROM Payment p " +
             "JOIN p.booking b " +
             "JOIN b.vehicle v " +

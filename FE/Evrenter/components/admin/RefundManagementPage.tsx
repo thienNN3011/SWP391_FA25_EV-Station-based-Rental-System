@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
-import { Search, RefreshCcw, Calendar, DollarSign } from "lucide-react"
+import { Search, RefreshCcw, Calendar, DollarSign, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import toast, { Toaster } from "react-hot-toast"
+import { AdminBookingDetailModal } from "@/components/admin/admin-booking-detail-modal"
 
 interface RefundBooking {
   bookingId: number
@@ -33,11 +34,14 @@ export default function RefundInlinePage() {
   const [error, setError] = useState("")
   const [search, setSearch] = useState("")
 
- 
+
   const [editingBookingId, setEditingBookingId] = useState<number | null>(null)
   const [referenceCode, setReferenceCode] = useState("")
   const [transactionDate, setTransactionDate] = useState("")
   const [submitting, setSubmitting] = useState(false)
+
+  // Booking detail modal
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null)
 
   useEffect(() => {
     fetchRefundList()
@@ -224,14 +228,25 @@ export default function RefundInlinePage() {
         </TableCell>
 
         <TableCell className="text-right">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => startEdit(b)}
-            disabled={editingBookingId === b.bookingId && submitting}
-          >
-            Hoàn tiền
-          </Button>
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSelectedBookingId(b.bookingId)}
+              className="flex items-center gap-1"
+            >
+              <Eye className="size-4" />
+              Chi tiết
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => startEdit(b)}
+              disabled={editingBookingId === b.bookingId && submitting}
+            >
+              Hoàn tiền
+            </Button>
+          </div>
         </TableCell>
       </TableRow>
 
@@ -293,6 +308,12 @@ export default function RefundInlinePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Admin Booking Detail Modal */}
+      <AdminBookingDetailModal
+        bookingId={selectedBookingId}
+        onClose={() => setSelectedBookingId(null)}
+      />
     </div>
   )
 }

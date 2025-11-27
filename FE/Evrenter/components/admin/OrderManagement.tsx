@@ -1,14 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, MoreHorizontal, Eye, Edit, Trash2, Filter, Calendar, DollarSign } from "lucide-react"
+import { Search, Filter, DollarSign, User, Car, Phone, ChevronDown, ChevronUp, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
 import { api } from "@/lib/api"
+import { BookingDetailRow } from "@/components/staff/BookingDetailRow"
+import { TimeDisplay } from "@/components/staff/TimeDisplay"
+import { AdminBookingDetailModal } from "@/components/admin/admin-booking-detail-modal"
 
 const STATUS_TABS = [
   { key: "ALL", label: "Tất cả" },
@@ -25,7 +26,21 @@ export function OrderManagement() {
   const [bookings, setBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [tab, setTab] = useState("ALL") 
+  const [tab, setTab] = useState("ALL")
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null)
+
+  const toggleRowExpansion = (bookingId: number) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(bookingId)) {
+        newSet.delete(bookingId)
+      } else {
+        newSet.add(bookingId)
+      }
+      return newSet
+    })
+  }
 
   const translateStatus = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -49,11 +64,16 @@ export function OrderManagement() {
       if (res.data?.data) {
         const mapped = res.data.data.map((b: any) => ({
           id: "BK" + b.bookingId,
-          customer: b.user?.fullName || "Ẩn danh",
-          vehicle: b.vehicle?.modelName || "Không rõ",
-          start: b.startTime?.split(" ")[0] || "",
-          end: b.endTime?.split(" ")[0] || "",
-          amount: b.tariff?.price ? b.tariff.price.toLocaleString() : "—",
+          bookingId: b.bookingId,
+          customerName: b.user?.fullName || "Ẩn danh",
+          customerPhone: b.user?.phone || "—",
+          modelName: b.vehicle?.modelName || "Không rõ",
+          stationName: b.station?.stationName || "—",
+          startTime: b.startTime,
+          endTime: b.endTime,
+          actualStartTime: b.actualStartTime,
+          actualEndTime: b.actualEndTime,
+          price: b.tariff?.price,
           statusRaw: b.status?.toUpperCase(),
           status: translateStatus(b.status),
         }))
@@ -73,19 +93,21 @@ export function OrderManagement() {
     fetchBookings()
   }, [])
 
- 
   const tabFiltered = bookings.filter((b) => {
     if (tab === "ALL") return true
     return b.statusRaw === tab
   })
 
- 
-  const finalFiltered = tabFiltered.filter(
-    (o) =>
-      o.id.toLowerCase().includes(search.toLowerCase()) ||
-      o.customer.toLowerCase().includes(search.toLowerCase()) ||
-      o.vehicle.toLowerCase().includes(search.toLowerCase())
-  )
+  const finalFiltered = tabFiltered.filter((o) => {
+    const text = search.toLowerCase()
+    return (
+      o.id.toLowerCase().includes(text) ||
+      o.customerName?.toLowerCase().includes(text) ||
+      o.modelName?.toLowerCase().includes(text) ||
+      o.customerPhone?.toLowerCase().includes(text) ||
+      o.stationName?.toLowerCase().includes(text)
+    )
+  })
 
   return (
     <div className="h-full w-full overflow-auto">
@@ -145,69 +167,117 @@ export function OrderManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12"></TableHead>
                     <TableHead>Mã</TableHead>
                     <TableHead>Khách hàng</TableHead>
-                    <TableHead>Phương tiện</TableHead>
+                    <TableHead>Số điện thoại</TableHead>
+                    <TableHead>Xe</TableHead>
+                    <TableHead>Trạm</TableHead>
                     <TableHead>Thời gian</TableHead>
-                    <TableHead>Thành tiền</TableHead>
+                    <TableHead>Giá</TableHead>
                     <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead className="text-center">Thao tác</TableHead>
                   </TableRow>
                 </TableHeader>
 
                 <TableBody>
-                  {finalFiltered.map((o) => (
-                    <TableRow key={o.id}>
-                      <TableCell className="font-medium">{o.id}</TableCell>
-                      <TableCell>{o.customer}</TableCell>
-                      <TableCell>{o.vehicle}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="size-4" /> {o.start} → {o.end}
-                        </div>
-                      </TableCell>
-                      <TableCell className="flex items-center gap-1">
-                        <DollarSign className="size-4 text-green-600" /> {o.amount} VNĐ
-                      </TableCell>
+                  {finalFiltered.map((bk) => (
+                    <>
+                      <TableRow key={bk.bookingId}>
+                        {/* Expand/Collapse Button */}
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleRowExpansion(bk.bookingId)}
+                          >
+                            {expandedRows.has(bk.bookingId) ? (
+                              <ChevronUp className="size-4" />
+                            ) : (
+                              <ChevronDown className="size-4" />
+                            )}
+                          </Button>
+                        </TableCell>
 
-                      <TableCell>
-                        <Badge
-  className={
-    o.status === "Đã hoàn tất cọc"
-      ? "bg-yellow-400 text-black"       
-      : o.status === "Hoàn thành"
-      ? "bg-green-600 text-white"
-      : o.status === "Đang thuê"
-      ? "bg-blue-500 text-white"
-      : "bg-red-500 text-white"
-  }
->
-  {o.status}
-</Badge>
+                        <TableCell className="font-medium">{bk.id}</TableCell>
 
-                      </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <User className="size-4 text-primary" />
+                            <div>{bk.customerName}</div>
+                          </div>
+                        </TableCell>
 
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="size-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="flex items-center gap-2">
-                              <Eye className="size-4" /> Xem
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="flex items-center gap-2">
-                              <Edit className="size-4" /> Sửa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="flex items-center gap-2 text-red-600">
-                              <Trash2 className="size-4" /> Xóa
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Phone className="size-4 text-primary" />
+                            <div>{bk.customerPhone}</div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Car className="size-4 text-blue-500" />
+                            <div>{bk.modelName}</div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell>{bk.stationName}</TableCell>
+
+                        <TableCell>
+                          <TimeDisplay booking={bk} />
+                        </TableCell>
+
+                        <TableCell className="flex items-center gap-1">
+                          <DollarSign className="size-4 text-green-600" />
+                          {bk.price ? `${bk.price.toLocaleString()} VNĐ` : "—"}
+                        </TableCell>
+
+                        <TableCell>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              bk.statusRaw === "BOOKING"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : bk.statusRaw === "RENTING"
+                                ? "bg-blue-100 text-blue-700"
+                                : bk.statusRaw === "CANCELLED"
+                                ? "bg-red-100 text-red-700"
+                                : bk.statusRaw === "COMPLETED"
+                                ? "bg-green-100 text-green-700"
+                                : bk.statusRaw === "NO_SHOW"
+                                ? "bg-orange-100 text-orange-700"
+                                : bk.statusRaw === "UNCONFIRMED"
+                                ? "bg-gray-200 text-gray-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {bk.status}
+                          </span>
+                        </TableCell>
+
+                        {/* Action Column */}
+                        <TableCell className="text-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedBookingId(bk.bookingId)}
+                            className="flex items-center gap-1"
+                          >
+                            <Eye className="size-4" />
+                            Chi tiết
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Expandable Detail Row */}
+                      {expandedRows.has(bk.bookingId) && (
+                        <TableRow key={`${bk.bookingId}-detail`}>
+                          <TableCell colSpan={10} className="p-0">
+                            <BookingDetailRow booking={bk} />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   ))}
                 </TableBody>
               </Table>
@@ -215,6 +285,12 @@ export function OrderManagement() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Admin Booking Detail Modal */}
+      <AdminBookingDetailModal
+        bookingId={selectedBookingId}
+        onClose={() => setSelectedBookingId(null)}
+      />
     </div>
   )
 }

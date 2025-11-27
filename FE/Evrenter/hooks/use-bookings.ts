@@ -108,28 +108,116 @@ export function useBookingDetail(bookingId: number | null) {
 // Cancel booking mutation
 export function useCancelBooking() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (data: CancelBookingRequest) => {
       const res = await api.post("/bookings/cancelbooking", data)
-      
+
       if (!res.data.success) {
         throw new Error(res.data.message || "Failed to cancel booking")
       }
-      
+
       return res.data
     },
     onSuccess: (data, variables) => {
       // Invalidate all booking queries to refetch
       queryClient.invalidateQueries({ queryKey: ["bookings"] })
       queryClient.invalidateQueries({ queryKey: ["booking", variables.bookingId] })
-      
+
       toast.success(data.message || "Hủy booking thành công!")
     },
     onError: (error) => {
       const message = getErrorMessage(error)
       toast.error(message)
     },
+  })
+}
+
+// ============ ADMIN BOOKING TYPES ============
+
+export interface AdminCustomerResponse {
+  userId: number
+  username: string
+  fullName: string
+  email: string
+  phone: string
+  idCard: string
+  driveLicense: string
+  idCardPhoto: string
+  driveLicensePhoto: string
+  status: string
+  createdDate: string
+}
+
+export interface PaymentHistoryItem {
+  paymentId: number
+  paymentType: string
+  amount: number
+  method: string | null
+  referenceCode: string
+  transactionDate: string
+}
+
+export interface AdminBookingDetailResponse {
+  bookingId: number
+  customer: AdminCustomerResponse
+  vehicle: {
+    vehicleId: number
+    modelId: number
+    modelName: string
+    brand: string
+    plateNumber: string
+    color: string
+    status: string
+  }
+  station: {
+    stationId: number
+    stationName: string
+    address: string
+    openingHours: string
+    status: string
+  }
+  tariff: {
+    tariffId: number
+    type: string
+    price: number
+    depositAmount: number
+  }
+  startTime: string
+  endTime: string
+  actualStartTime: string | null
+  actualEndTime: string | null
+  createdDate: string
+  beforeRentingStatus: string | null
+  afterRentingStatus: string | null
+  startOdo: number | null
+  endOdo: number | null
+  expectedTotalAmount: number
+  penaltyAmount: number
+  totalAmount: number
+  status: string
+  bankName: string | null
+  bankAccount: string | null
+  paymentHistory: PaymentHistoryItem[]
+}
+
+// Fetch admin booking detail (full customer info + payment history)
+export function useAdminBookingDetail(bookingId: number | null) {
+  return useQuery({
+    queryKey: ["admin-booking", bookingId],
+    queryFn: async () => {
+      if (!bookingId) return null
+
+      const res = await api.post("/bookings/admin/showdetailbooking", { bookingId })
+
+      if (!res.data.success) {
+        throw new Error(res.data.message || "Failed to fetch admin booking detail")
+      }
+
+      return res.data.data as AdminBookingDetailResponse
+    },
+    enabled: !!bookingId,
+    staleTime: 60000, // 1 minute
   })
 }
 

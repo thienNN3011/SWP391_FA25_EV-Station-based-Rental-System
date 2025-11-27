@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Search, Filter, ArrowUpRight, ArrowDownLeft, Download, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, Filter, ArrowUpRight, ArrowDownLeft, Download, ChevronLeft, ChevronRight, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,22 +9,26 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { getTransactions, getAllStations, TransactionResponse, StationResponse } from "@/lib/adminApi"
+import { AdminBookingDetailModal } from "@/components/admin/admin-booking-detail-modal"
 
 export function TransactionManagement() {
   const [transactions, setTransactions] = useState<TransactionResponse[]>([])
   const [stations, setStations] = useState<StationResponse[]>([])
   const [loading, setLoading] = useState(true)
-  
+
   // Filters
   const [startDate, setStartDate] = useState<string>("")
   const [endDate, setEndDate] = useState<string>("")
   const [stationId, setStationId] = useState<string>("all")
   const [paymentType, setPaymentType] = useState<string>("all")
-  
+
   // Pagination
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
+
+  // Booking detail modal
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null)
 
   useEffect(() => {
     loadStations()
@@ -170,16 +174,17 @@ export function TransactionManagement() {
                 <TableHead>Số tiền</TableHead>
                 <TableHead>Phương thức</TableHead>
                 <TableHead>Trạm</TableHead>
+                <TableHead className="text-center">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">Đang tải dữ liệu...</TableCell>
+                  <TableCell colSpan={8} className="text-center py-8">Đang tải dữ liệu...</TableCell>
                 </TableRow>
               ) : transactions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">Không tìm thấy giao dịch nào.</TableCell>
+                  <TableCell colSpan={8} className="text-center py-8">Không tìm thấy giao dịch nào.</TableCell>
                 </TableRow>
               ) : (
                 transactions.map((txn) => (
@@ -201,6 +206,17 @@ export function TransactionManagement() {
                     </TableCell>
                     <TableCell>{txn.method}</TableCell>
                     <TableCell>{txn.stationName}</TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedBookingId(txn.bookingId)}
+                        className="flex items-center gap-1"
+                      >
+                        <Eye className="size-4" />
+                        Chi tiết
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -236,6 +252,12 @@ export function TransactionManagement() {
           </div>
         </div>
       </Card>
+
+      {/* Admin Booking Detail Modal */}
+      <AdminBookingDetailModal
+        bookingId={selectedBookingId}
+        onClose={() => setSelectedBookingId(null)}
+      />
     </div>
   )
 }

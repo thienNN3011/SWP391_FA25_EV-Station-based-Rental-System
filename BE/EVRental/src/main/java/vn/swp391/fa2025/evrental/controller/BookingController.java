@@ -85,6 +85,17 @@ public class BookingController {
         return response;
     }
 
+    @Operation(summary = "Xem chi tiết booking cho Admin/Staff", description = "Lấy thông tin chi tiết booking với đầy đủ thông tin khách hàng và lịch sử thanh toán")
+    @PostMapping("/admin/showdetailbooking")
+    ApiResponse<AdminBookingDetailResponse> showAdminBookingDetail(@Valid @RequestBody vn.swp391.fa2025.evrental.dto.request.ShowBookingRequest request) {
+        ApiResponse<AdminBookingDetailResponse> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy thông tin chi tiết booking thành công");
+        response.setData(bookingService.getAdminBookingDetail(request.getBookingId()));
+        response.setCode(200);
+        return response;
+    }
+
     @Operation(summary = "Bắt đầu thuê xe", description = "Staff xác nhận bắt đầu cho thuê")
     @PostMapping("/startrental")
     ApiResponse<String> startRental(@Valid @RequestBody StartRentingRequest request) {

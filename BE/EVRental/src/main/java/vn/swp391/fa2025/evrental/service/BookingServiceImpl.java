@@ -851,4 +851,138 @@ public class BookingServiceImpl implements  BookingService{
         return expectedToTalAmount;
     }
 
+    @Override
+    public AdminBookingDetailResponse getAdminBookingDetail(Long bookingId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User currentUser = userRepository.findByUsername(username);
+
+        // Only admin and staff can access this endpoint
+        if (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.STAFF) {
+            throw new RuntimeException("Bạn không có quyền truy cập chức năng này");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
+
+        // Staff can only view bookings from their station
+        if (currentUser.getRole() == UserRole.STAFF &&
+            !currentUser.getStation().getStationId().equals(booking.getVehicle().getStation().getStationId())) {
+            throw new RuntimeException("Booking này không thuộc trạm của bạn");
+        }
+
+        User customer = booking.getUser();
+        Vehicle vehicle = booking.getVehicle();
+        Station station = vehicle.getStation();
+        Tariff tariff = booking.getTariff();
+
+        // Build customer response with full info
+        AdminBookingDetailResponse.AdminCustomerResponse customerResponse = AdminBookingDetailResponse.AdminCustomerResponse.builder()
+                .userId(customer.getUserId())
+                .username(customer.getUsername())
+                .fullName(customer.getFullName())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .idCard(customer.getIdCard())
+                .driveLicense(customer.getDriveLicense())
+                .idCardPhoto(customer.getIdCardPhoto())
+                .driveLicensePhoto(customer.getDriveLicensePhoto())
+                .status(customer.getStatus().toString())
+                .createdDate(customer.getCreatedDate())
+                .build();
+
+        // Build vehicle response
+        AdminBookingDetailResponse.AdminVehicleResponse vehicleResponse = AdminBookingDetailResponse.AdminVehicleResponse.builder()
+                .vehicleId(vehicle.getVehicleId())
+                .modelId(vehicle.getModel().getModelId())
+                .modelName(vehicle.getModel().getName())
+                .brand(vehicle.getModel().getBrand())
+                .plateNumber(vehicle.getPlateNumber())
+                .color(vehicle.getColor())
+                .status(vehicle.getStatus().toString())
+                .build();
+
+        // Build station response
+        AdminBookingDetailResponse.AdminStationResponse stationResponse = AdminBookingDetailResponse.AdminStationResponse.builder()
+                .stationId(station.getStationId())
+                .stationName(station.getStationName())
+                .address(station.getAddress())
+                .openingHours(station.getOpeningHours())
+                .status(station.getStatus().toString())
+                .build();
+
+        // Build tariff response
+        AdminBookingDetailResponse.AdminTariffResponse tariffResponse = AdminBookingDetailResponse.AdminTariffResponse.builder()
+                .tariffId(tariff.getTariffId())
+                .type(tariff.getType().toString())
+                .price(tariff.getPrice())
+                .depositAmount(tariff.getDepositAmount())
+                .build();
+
+        // Get payment history
+        List<Payment> payments = paymentRepository.findByBooking_BookingIdOrderByTransactionDateDesc(bookingId);
+        List<AdminBookingDetailResponse.PaymentHistoryItem> paymentHistory = payments.stream()
+                .map(p -> AdminBookingDetailResponse.PaymentHistoryItem.builder()
+                        .paymentId(p.getPaymentId())
+                        .paymentType(p.getPaymentType().toString())
+                        .amount(p.getAmount())
+                        .method(p.getMethod() != null ? p.getMethod().toString() : null)
+                        .referenceCode(p.getReferenceCode())
+                        .transactionDate(p.getTransactionDate())
+                        .build())
+                .collect(Collectors.toList());
+
+        // Calculate penalty amount (same logic as getBookingById)
+        Long overtime = 0L;
+        if (booking.getActualEndTime() != null && booking.getActualEndTime().isAfter(booking.getEndTime())) {
+            overtime = TimeUtils.ceilTimeDiff(
+                    booking.getActualEndTime(),
+                    booking.getEndTime(),
+                    booking.getTariff().getType()
+            );
+        }
+
+        BigDecimal penaltyAmount = BigDecimal.ZERO;
+        if (overtime > 0) {
+            int extraRateInt = Integer.parseInt(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue());
+            BigDecimal extraRate = BigDecimal.valueOf(extraRateInt).divide(BigDecimal.valueOf(100));
+            penaltyAmount = BigDecimal.valueOf(overtime)
+                    .multiply(tariff.getPrice().add(tariff.getPrice().multiply(extraRate)));
+        }
+
+        // Calculate expected total amount
+        BigDecimal expectedTotalAmount = BigDecimal.ZERO;
+        long amountOfDay = 0;
+        if (booking.getActualStartTime() == null) {
+            amountOfDay = ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
+        } else {
+            amountOfDay = ChronoUnit.DAYS.between(booking.getActualStartTime(), booking.getEndTime());
+        }
+        expectedTotalAmount = tariff.getPrice().multiply(BigDecimal.valueOf(amountOfDay));
+
+        return AdminBookingDetailResponse.builder()
+                .bookingId(booking.getBookingId())
+                .customer(customerResponse)
+                .vehicle(vehicleResponse)
+                .station(stationResponse)
+                .tariff(tariffResponse)
+                .startTime(booking.getStartTime())
+                .endTime(booking.getEndTime())
+                .actualStartTime(booking.getActualStartTime())
+                .actualEndTime(booking.getActualEndTime())
+                .createdDate(booking.getCreatedDate())
+                .beforeRentingStatus(booking.getBeforeRentingStatus())
+                .afterRentingStatus(booking.getAfterRentingStatus())
+                .startOdo(booking.getStartOdo())
+                .endOdo(booking.getEndOdo())
+                .expectedTotalAmount(expectedTotalAmount)
+                .penaltyAmount(penaltyAmount)
+                .totalAmount(booking.getTotalAmount())
+                .status(booking.getStatus().toString())
+                .bankName(booking.getBankName())
+                .bankAccount(booking.getBankAccount())
+                .paymentHistory(paymentHistory)
+                .build();
+    }
+
 }

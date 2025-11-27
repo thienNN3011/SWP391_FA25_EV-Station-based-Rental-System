@@ -40,4 +40,7 @@ public interface BookingService {
     List<StationCompletedBookingsResponse> getYearlyCompletedBookingsByStation(String stationName, int year);
 
     BigDecimal getExpectedAmount(Long bookingId);
+
+    // Admin booking detail with full customer info and payment history
+    AdminBookingDetailResponse getAdminBookingDetail(Long bookingId);
 }
