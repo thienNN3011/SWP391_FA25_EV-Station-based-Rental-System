@@ -626,6 +626,7 @@ public class BookingServiceImpl implements  BookingService{
                 .extraFee(extraFee)
                 .totalAmount(total)
                 .extraRate(Integer.parseInt(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue()))
+                .extraDay(overtime)
                 .build();
         if (!isChange) booking.setTotalAmount(response.getTotalAmount());
         if (!isChange) bookingRepository.save(booking);
