@@ -19,4 +19,8 @@ public class StopRentingTimeResponse {
     private LocalDateTime actualEndTime;
     private BigDecimal extraFee;
     private BigDecimal totalAmount;
+    private BigDecimal expectedTotalAmount;
+    private BigDecimal tariffPrice;
+    private BigDecimal depositAmount;
+    private Long days;
 }
