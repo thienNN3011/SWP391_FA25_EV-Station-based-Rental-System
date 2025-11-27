@@ -295,7 +295,39 @@ public class BookingServiceImpl implements  BookingService{
         } else if (user.getRole()== UserRole.RENTER && booking.getUser().getUserId()!=user.getUserId()){
             throw new RuntimeException("Bạn không có quyền xem booking này");
         }
-        return bookingMapper.toBookingResponse(booking);
+        BookingResponse response=bookingMapper.toBookingResponse(booking);
+        Long overtime = 0L;
+        if (booking.getActualEndTime().isAfter(booking.getEndTime())) {
+            overtime = TimeUtils.ceilTimeDiff(
+                    booking.getActualEndTime(),
+                    booking.getEndTime(),
+                    booking.getTariff().getType()
+            );
+        }
+
+        BigDecimal extraFee = BigDecimal.ZERO;
+        if (overtime > 0) {
+            int extraRateInt = Integer.parseInt(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue());
+            BigDecimal extraRate = BigDecimal.valueOf(extraRateInt).divide(BigDecimal.valueOf(100));
+
+            extraFee = BigDecimal.valueOf(overtime)
+                    .multiply(
+                            booking.getTariff().getPrice()
+                                    .add(booking.getTariff().getPrice().multiply(extraRate))
+                    );
+        }
+        response.setPenaltyAmount(extraFee);
+        BigDecimal expectedToTalAmount=BigDecimal.ZERO;
+        long amountOfDay=0;
+        if (booking.getActualStartTime()==null) {
+            amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
+            expectedToTalAmount=booking.getTariff().getPrice().multiply(BigDecimal.valueOf(amountOfDay));
+        } else {
+            amountOfDay= ChronoUnit.DAYS.between(booking.getActualStartTime(), booking.getEndTime());
+            expectedToTalAmount=booking.getTariff().getPrice().multiply(BigDecimal.valueOf(amountOfDay));
+        }
+        response.setExpectedTotalAmount(expectedToTalAmount);
+        return response;
     }
 
     @Override
