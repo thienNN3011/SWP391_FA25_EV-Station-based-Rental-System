@@ -630,7 +630,7 @@ public class BookingServiceImpl implements  BookingService{
                                     .add(booking.getTariff().getPrice().multiply(extraRate))
                     );
 
-            booking.setTotalAmount(booking.getTotalAmount().add(extraFee));
+            booking.setTotalAmount(booking.getTotalAmount().subtract(booking.getTariff().getDepositAmount()));
         }
         StopRentingTimeResponse response= StopRentingTimeResponse.builder()
                 .endTime(booking.getEndTime())
