@@ -378,7 +378,7 @@ public class BookingServiceImpl implements  BookingService{
                         booking.getTariff().getType()
                 )
         ).multiply(booking.getTariff().getPrice());
-        booking.setTotalAmount(totalAmount);
+        booking.setTotalAmount(totalAmount.subtract(booking.getTariff().getDepositAmount()));
         data.put("totalAmount", booking.getTotalAmount() + " VND");
         int pen= Integer.parseInt(systemConfigService.getSystemConfigByKey("OVERTIME_EXTRA_RATE").getValue());
         data.put("penalty", String.valueOf(pen));
@@ -467,7 +467,7 @@ public class BookingServiceImpl implements  BookingService{
 
         booking.setEndOdo(endOdo);
         booking.setAfterRentingStatus(vehicleStatus);
-        
+
         String paymentUrl;
         try {
             paymentUrl = vnPayService.createPaymentUrl(
@@ -606,8 +606,6 @@ public class BookingServiceImpl implements  BookingService{
                             booking.getTariff().getPrice()
                                     .add(booking.getTariff().getPrice().multiply(extraRate))
                     );
-
-            booking.setTotalAmount(booking.getTotalAmount().subtract(booking.getTariff().getDepositAmount()));
         }
         StopRentingTimeResponse response= StopRentingTimeResponse.builder()
                 .endTime(booking.getEndTime())
