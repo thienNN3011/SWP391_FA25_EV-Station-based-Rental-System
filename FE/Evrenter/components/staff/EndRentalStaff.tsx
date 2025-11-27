@@ -134,6 +134,8 @@ const handleConfirmStopRenting = async () => {
           depositAmount: stopData.depositAmount || prev.tariff?.depositAmount,
           extraFee: stopData.extraFee || 0,
           totalAmount: stopData.totalAmount,
+           extraDay: stopData.extraDay || 0,      
+          extraRate: stopData.extraRate || 0,
         },
       }
     : null
@@ -349,25 +351,27 @@ Số ngày thuê: {calculateRentalDays(booking.startTimeRaw, booking.endTimeRaw)
                       </div>
                       
                       {/* Dòng 3: Phí phụ thu (nếu có) */}
-                      {booking.stoppedData.extraFee > 0 && (
-                        <div className="flex justify-between text-red-500">
-                          <span>Phí phụ thu (trễ trả xe)</span>
-                          <span className="font-medium">+ {booking.stoppedData.extraFee?.toLocaleString()} ₫</span>
-                        </div>
-                      )}
+                    {booking.stoppedData.extraFee > 0 && (
+  <div className="space-y-1">
+    <div className="flex justify-between text-red-500">
+      <span>Phí phụ thu (trễ trả xe)</span>
+      <span className="font-medium">+ {booking.stoppedData.extraFee?.toLocaleString()} ₫</span>
+    </div>
+    <p className="text-[10px] text-muted-foreground pl-4">
+       {booking.stoppedData.extraDay} ngày × ({booking.stoppedData.extraRate}% + 100%) × {booking.stoppedData.tariffPrice?.toLocaleString()} ₫
+      
+      {" "}
+    </p>
+  </div>
+)}
                       
                       {/* Dòng tổng */}
-                      <div className="flex justify-between border-t pt-2 mt-2">
-                        <span className="font-bold">Khách cần thanh toán</span>
-                        <span className="font-bold text-green-600">{booking.stoppedData.totalAmount?.toLocaleString()} ₫</span>
-                      </div>
+                    <div className="flex justify-between border-t pt-2 mt-2">
+  <span className="font-bold">Khách cần thanh toán</span>
+  <span className="font-bold text-green-600">{booking.stoppedData.totalAmount?.toLocaleString()} ₫</span>
+</div>
                       
-                      {/* Công thức giải thích */}
-                      <p className="text-xs text-muted-foreground text-center pt-2 border-t">
-                        = {booking.stoppedData.expectedTotalAmount?.toLocaleString()} - {booking.stoppedData.depositAmount?.toLocaleString()}
-                        {booking.stoppedData.extraFee > 0 && ` + ${booking.stoppedData.extraFee?.toLocaleString()}`}
-                        {" "}= {booking.stoppedData.totalAmount?.toLocaleString()} ₫
-                      </p>
+           
                     </div>
                   </div>
                 )}

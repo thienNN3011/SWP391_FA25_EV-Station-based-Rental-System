@@ -97,7 +97,7 @@ export function CancelBookingDialog({ booking, onClose }: CancelBookingDialogPro
     // Confirm
     const confirmed = window.confirm(
       refundInfo?.canRefund
-        ? `Bạn sẽ nhận được ${refundInfo.refundAmount.toLocaleString()}₫ (70% tiền cọc). Xác nhận hủy?`
+        ? `Bạn sẽ nhận được 70% tiền cọc. Xác nhận hủy?`
         : "Bạn sẽ KHÔNG được hoàn tiền vì hủy sau thời gian quy định. Xác nhận hủy?"
     )
 
@@ -196,18 +196,23 @@ export function CancelBookingDialog({ booking, onClose }: CancelBookingDialogPro
           )}
 
           {/* Actions */}
-          <div className="flex gap-2 justify-end pt-2">
-            <Button variant="outline" onClick={onClose} disabled={cancelMutation.isPending}>
-              Quay lại
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleSubmit}
-              disabled={cancelMutation.isPending || (refundInfo.canRefund && (!bankAccount || !bankName))}
-            >
-              {cancelMutation.isPending ? "Đang xử lý..." : "Xác nhận hủy"}
-            </Button>
-          </div>
+        {/* Actions */}
+<div className="flex gap-2 justify-end pt-2">
+  <Button variant="outline" onClick={onClose} disabled={cancelMutation.isPending}>
+    Quay lại
+  </Button>
+  
+  {/* Chỉ hiện nút Xác nhận hủy khi CÓ ĐƯỢC hoàn tiền */}
+  {refundInfo.canRefund && (
+    <Button
+      variant="destructive"
+      onClick={handleSubmit}
+      disabled={cancelMutation.isPending || (!bankAccount || !bankName)}
+    >
+      {cancelMutation.isPending ? "Đang xử lý..." : "Xác nhận hủy"}
+    </Button>
+  )}
+</div>
         </div>
       </DialogContent>
     </Dialog>
