@@ -156,7 +156,7 @@ export default function StartRentalStaff() {
 </p>
 
            
-              <p><strong>Tổng tiền:</strong> {booking.totalAmount.toLocaleString()} VND</p>
+             
 
               <hr className="my-2" />
 

@@ -41,7 +41,7 @@ export default function BookingSummary() {
         <CardHeader className="text-center bg-gradient-to-r from-sky-100 to-sky-200 rounded-t-3xl p-8">
   <CardTitle className="text-4xl font-bold text-sky-600 flex items-center justify-center gap-3">
     <CheckCircle className="h-8 w-8 text-green-500" />
-    Booking thành công!
+    Đăng ký thuê xe!
   </CardTitle>
   <CardDescription className="text-gray-700 mt-3 text-lg space-y-2 flex flex-col items-center">
     <span>Vui lòng kiểm tra thông tin và tiến hành thanh toán đặt cọc.</span>
@@ -96,7 +96,17 @@ export default function BookingSummary() {
             <p><strong>Thời gian thuê:</strong></p>
             <ul className="ml-5 list-disc text-gray-700">
               <li><strong>Bắt đầu:</strong> {new Date(info.startTime).toLocaleString()}</li>
-              <li><strong>Kết thúc:</strong> {new Date(info.endTime).toLocaleString()}</li>
+              <li>
+  <strong>Số ngày thuê:</strong>{" "}
+  {(() => {
+    const start = new Date(info.startTime);
+    const end = new Date(info.endTime);
+    const diff = end.getTime() - start.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return `${days} ngày`;
+  })()}
+</li>
+
             </ul>
           </div>
 
