@@ -274,8 +274,8 @@ const handleConfirmStopRenting = async () => {
                     <div>
                       <p className="text-xs text-muted-foreground">Thời gian thuê dự định</p>
                       <p className="font-medium">{booking.startTime}</p>
-                      <p className="text-sm text-primary font-semibold">
-  ({calculateRentalDays(booking.startTimeRaw, booking.endTimeRaw)} ngày)
+                      <p className="text-black-500 text-primary font-semibold">
+Số ngày thuê: {calculateRentalDays(booking.startTimeRaw, booking.endTimeRaw)}
 </p>
                     </div>
                   </div>
