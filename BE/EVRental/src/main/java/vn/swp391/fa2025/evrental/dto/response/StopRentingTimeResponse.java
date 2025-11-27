@@ -23,4 +23,5 @@ public class StopRentingTimeResponse {
     private BigDecimal tariffPrice;
     private BigDecimal depositAmount;
     private Long days;
+    private Integer extraRate;
 }
