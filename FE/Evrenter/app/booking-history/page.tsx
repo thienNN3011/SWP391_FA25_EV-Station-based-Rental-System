@@ -218,7 +218,9 @@ export default function BookingHistoryPage() {
 
                     <div className="flex items-center gap-4 flex-shrink-0">
                       <div className="text-right space-y-2">
-                        <div className="font-semibold text-lg text-secondary">{b.totalAmount.toLocaleString()}₫</div>
+                        {b.status !== "CANCELLED" && (
+                          <div className="font-semibold text-lg text-secondary">{b.totalAmount.toLocaleString()}₫</div>
+                        )}
                         <Badge className={STATUS_COLORS[b.status] || "bg-gray-300"}>
                           {STATUS_TABS.find((t) => t.key === b.status)?.label ?? b.status}
                         </Badge>

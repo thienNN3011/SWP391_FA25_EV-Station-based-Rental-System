@@ -298,60 +298,76 @@ function getRentalDays(startTime: string, endTime: string) {
       <span className="text-muted-foreground">Đơn giá</span>
       <span className="font-medium">{booking.tariff.price.toLocaleString()}₫</span>
     </div>
+    
+    {/* Chỉ hiện số ngày thuê thực tế cho RENTING và COMPLETED */}
+    {(booking.status === "RENTING" || booking.status === "COMPLETED") && (
+      <div className="flex justify-between items-center">
+        <span className="text-muted-foreground">Số ngày bạn thuê xe thực tế</span>
+        <span className="font-medium">
+          {calculateRentalDays(booking)} ngày
+        </span>
+      </div>
+    )}
+    
     <div className="flex justify-between items-center">
-      <span className="text-muted-foreground">Số ngày bạn thuê xe thực tế</span>
+      <span className="text-muted-foreground">Tổng tiền thuê dự kiến</span>
       <span className="font-medium">
-        {calculateRentalDays(booking)} ngày
-      </span>
-    </div>
-    <div className="flex justify-between items-center">
-      <span className="text-muted-foreground">Tổng tiền thuê</span>
-      <span className="font-medium">
-        {/*
-          - RENTING/trước đó: totalAmount = tiền thuê gốc (chưa trừ deposit)
-          - COMPLETED: totalAmount = tiền thuê - deposit (BE đã trừ deposit trong endRental)
-        */}
-        {booking.status === "COMPLETED"
-          ? (booking.totalAmount + booking.tariff.depositAmount).toLocaleString()
-          : booking.totalAmount.toLocaleString()
-        }₫
+        {(booking.expectedTotalAmount || booking.totalAmount)?.toLocaleString()}₫
       </span>
     </div>
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground">Tiền cọc đã thanh toán</span>
       <span className="font-semibold text-green-600">
-        -{booking.tariff.depositAmount.toLocaleString()}₫
+        - {(booking.depositAmount || booking.tariff?.depositAmount)?.toLocaleString()}₫
       </span>
     </div>
-    {calculateLateReturnPenalty(booking) > 0 && (
-      <div className="flex justify-between items-center">
-        <span className="text-muted-foreground">Tiền phạt</span>
-        <span className="font-medium text-red-600">
-          {calculateLateReturnPenalty(booking).toLocaleString()}₫
-        </span>
-      </div>
-    )}
-    <Separator />
-    <div className="flex justify-between items-center text-lg">
-      <span className="font-semibold">Tổng thanh toán cuối cùng</span>
-      <span className="font-bold text-primary">
-        {/*
-          - RENTING/trước đó: finalPayment = totalAmount - deposit + penalty
-          - COMPLETED: finalPayment = totalAmount + penalty (BE đã trừ deposit)
-        */}
-        {booking.status === "COMPLETED"
-          ? (booking.totalAmount + calculateLateReturnPenalty(booking)).toLocaleString()
-          : (booking.totalAmount - booking.tariff.depositAmount + calculateLateReturnPenalty(booking)).toLocaleString()
-        }
-        ₫
+    <div className="flex justify-between items-center">
+      <span className="text-muted-foreground">Còn lại cần thanh toán</span>
+      <span className="font-medium">
+        {((booking.expectedTotalAmount || booking.totalAmount) - (booking.depositAmount || booking.tariff?.depositAmount))?.toLocaleString()}₫
       </span>
     </div>
+    
+    {/* Chỉ hiện tiền phạt và tổng thanh toán cho RENTING và COMPLETED */}
+    {(booking.status === "RENTING" || booking.status === "COMPLETED") && (
+      <>
+        {booking.penaltyAmount > 0 && (
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Tiền phạt</span>
+            <span className="font-medium text-red-600">
+             + {booking.penaltyAmount?.toLocaleString()}₫
+            </span>
+          </div>
+        )}
+        <Separator />
+        <div className="flex justify-between items-center text-lg">
+  <span className="font-semibold">Tổng thanh toán cuối cùng</span>
+  <span className="font-bold text-green-600">
+    {booking.totalAmount?.toLocaleString()}₫
+  </span>
+</div>
 
-{booking.status !== "COMPLETED" && (
-  <p className="text-sm text-muted-foreground mt-1">
-    Lưu ý: Chi phí trên đây chưa phải là chi phí cuối cùng.
-  </p>
-)}
+      </>
+    )}
+    
+    {/* Hiện số tiền hoàn cho đơn đã hủy */}
+    {booking.status === "CANCELLED" && booking.refundAmount !== undefined && (
+      <>
+        <Separator />
+        <div className="flex justify-between items-center text-lg">
+          <span className="font-semibold">Số tiền đã hoàn</span>
+          <span className="font-bold text-green-600">
+            {booking.refundAmount?.toLocaleString()}₫
+          </span>
+        </div>
+      </>
+    )}
+
+    {booking.status === "RENTING" && (
+      <p className="text-sm text-muted-foreground mt-1">
+        Lưu ý: Chi phí trên đây chưa phải là chi phí cuối cùng.
+      </p>
+    )}
 
   </CardContent>
 </Card>

@@ -13,6 +13,8 @@ export interface Booking {
   startTime: string
   endTime: string
   totalAmount: number
+  refundAmount?: number
+  depositAmount?: number
   status: string
 }
 
@@ -68,6 +70,8 @@ export function useBookings(filters: BookingFilters) {
         startTime: b.startTime,
         endTime: b.endTime,
         totalAmount: b.totalAmount,
+        refundAmount: b.refundAmount,
+        depositAmount: b.tariff?.depositAmount || b.depositAmount,
         status: b.status,
       }))
       
