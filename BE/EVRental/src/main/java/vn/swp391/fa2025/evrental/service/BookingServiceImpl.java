@@ -297,7 +297,7 @@ public class BookingServiceImpl implements  BookingService{
         }
         BookingResponse response=bookingMapper.toBookingResponse(booking);
         Long overtime = 0L;
-        if (booking.getActualEndTime().isAfter(booking.getEndTime())) {
+        if (booking.getActualEndTime()!=null && booking.getActualEndTime().isAfter(booking.getEndTime())) {
             overtime = TimeUtils.ceilTimeDiff(
                     booking.getActualEndTime(),
                     booking.getEndTime(),
