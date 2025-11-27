@@ -24,4 +24,5 @@ public class StopRentingTimeResponse {
     private BigDecimal depositAmount;
     private Long days;
     private Integer extraRate;
+    private Long extraDay;
 }
