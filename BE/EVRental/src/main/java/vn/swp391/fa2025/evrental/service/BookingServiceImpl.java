@@ -583,12 +583,11 @@ public class BookingServiceImpl implements  BookingService{
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
-        if (booking.getActualEndTime()!=null) throw new RuntimeException("Booking đã được dừng thời gian thuê trước đó");
         if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
         if (booking.getContract().getStaff().getUserId()!=staff.getUserId()) throw new RuntimeException("Bạn không phải nhân viên thụ lí booking này");
         if (!booking.getStatus().toString().equalsIgnoreCase("RENTING"))
             throw new RuntimeException("Booking không ở trạng thái RENTING");
-        booking.setActualEndTime(LocalDateTime.now());
+        if (booking.getActualEndTime()==null) booking.setActualEndTime(LocalDateTime.now());
         Long overtime = 0L;
         if (booking.getActualEndTime().isAfter(booking.getEndTime())) {
             overtime = TimeUtils.ceilTimeDiff(
@@ -611,6 +610,8 @@ public class BookingServiceImpl implements  BookingService{
         }
         long amountOfDay= ChronoUnit.DAYS.between(booking.getActualStartTime(), booking.getEndTime());
         BigDecimal expectedToTalAmount=booking.getTariff().getPrice().multiply(BigDecimal.valueOf(amountOfDay));
+        BigDecimal total=booking.getTotalAmount();
+        if (booking.getActualEndTime()==null) total=total.add(extraFee);
         StopRentingTimeResponse response= StopRentingTimeResponse.builder()
                 .days(amountOfDay)
                 .depositAmount(booking.getTariff().getDepositAmount())
@@ -619,10 +620,10 @@ public class BookingServiceImpl implements  BookingService{
                 .endTime(booking.getEndTime())
                 .actualEndTime(booking.getActualEndTime())
                 .extraFee(extraFee)
-                .totalAmount(booking.getTotalAmount().add(extraFee))
+                .totalAmount(total)
                 .build();
-        booking.setTotalAmount(response.getTotalAmount());
-        bookingRepository.save(booking);
+        if (booking.getActualEndTime()==null) booking.setTotalAmount(response.getTotalAmount());
+        if (booking.getActualEndTime()==null) bookingRepository.save(booking);
         return response;
     }
 
