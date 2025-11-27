@@ -587,7 +587,11 @@ public class BookingServiceImpl implements  BookingService{
         if (booking.getContract().getStaff().getUserId()!=staff.getUserId()) throw new RuntimeException("Bạn không phải nhân viên thụ lí booking này");
         if (!booking.getStatus().toString().equalsIgnoreCase("RENTING"))
             throw new RuntimeException("Booking không ở trạng thái RENTING");
-        if (booking.getActualEndTime()==null) booking.setActualEndTime(LocalDateTime.now());
+        boolean isChange=true;
+        if (booking.getActualEndTime()==null) {
+            booking.setActualEndTime(LocalDateTime.now());
+            isChange=false;
+        }
         Long overtime = 0L;
         if (booking.getActualEndTime().isAfter(booking.getEndTime())) {
             overtime = TimeUtils.ceilTimeDiff(
@@ -611,7 +615,7 @@ public class BookingServiceImpl implements  BookingService{
         long amountOfDay= ChronoUnit.DAYS.between(booking.getActualStartTime(), booking.getEndTime());
         BigDecimal expectedToTalAmount=booking.getTariff().getPrice().multiply(BigDecimal.valueOf(amountOfDay));
         BigDecimal total=booking.getTotalAmount();
-        if (booking.getActualEndTime()==null) total=total.add(extraFee);
+        if (!isChange) total=total.add(extraFee);
         StopRentingTimeResponse response= StopRentingTimeResponse.builder()
                 .days(amountOfDay)
                 .depositAmount(booking.getTariff().getDepositAmount())
@@ -622,8 +626,8 @@ public class BookingServiceImpl implements  BookingService{
                 .extraFee(extraFee)
                 .totalAmount(total)
                 .build();
-        if (booking.getActualEndTime()==null) booking.setTotalAmount(response.getTotalAmount());
-        if (booking.getActualEndTime()==null) bookingRepository.save(booking);
+        if (!isChange) booking.setTotalAmount(response.getTotalAmount());
+        if (!isChange) bookingRepository.save(booking);
         return response;
     }
 
