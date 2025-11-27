@@ -29,6 +29,7 @@ public class BookingResponse {
     private Long startOdo;
     private Long endOdo;
     private BigDecimal expectedTotalAmount;
+    private BigDecimal penaltyAmount;
     private BigDecimal totalAmount;
     private String status;
 }
