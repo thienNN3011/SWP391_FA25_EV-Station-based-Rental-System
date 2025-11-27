@@ -127,18 +127,11 @@ const handleConfirmStopRenting = async () => {
         stoppedData: {
           endTime: formatDate(stopData.endTime),
           actualEndTime: formatDate(stopData.actualEndTime),
-          extraFee: stopData.extraFee.toLocaleString(),
-          totalAmount: stopData.totalAmount.toLocaleString(),
           delayHours: calculateDelayHours(stopData.endTime, stopData.actualEndTime),
-          endTimeRaw: stopData.endTime,
-          actualEndTimeRaw: stopData.actualEndTime,
-          // ✅ dùng prev.tariff.price, không phải pricePerDay
-          expectedPayment: calculateExpectedPayment(
-  prev.tariff?.price,
-  prev.tariff?.depositAmount,
-  prev.startTimeRaw,
-  prev.endTimeRaw
-).toLocaleString(),
+          expectedTotalAmount: stopData.expectedTotalAmount?.toLocaleString() || (prev.tariff?.price * calculateRentalDays(prev.startTimeRaw, prev.endTimeRaw))?.toLocaleString(),
+          depositAmount: (stopData.depositAmount || prev.tariff?.depositAmount)?.toLocaleString(),
+          penaltyAmount: stopData.penaltyAmount || stopData.extraFee || 0,
+          totalAmount: stopData.totalAmount?.toLocaleString(),
         },
       }
     : null
@@ -314,8 +307,10 @@ Số ngày thuê: {calculateRentalDays(booking.startTimeRaw, booking.endTimeRaw)
 
                 {/* Thông tin dừng thuê */}
                 {booking.stoppedData && (
-                  <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 space-y-2">
+                  <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 space-y-3">
                     <p className="font-semibold text-amber-700 dark:text-amber-400 mb-2">📋 Thông tin kết thúc thuê</p>
+                    
+                    {/* Thời gian */}
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <p className="text-muted-foreground">Thời gian trả dự kiến</p>
@@ -325,28 +320,33 @@ Số ngày thuê: {calculateRentalDays(booking.startTimeRaw, booking.endTimeRaw)
                         <p className="text-muted-foreground">Thời gian trả thực tế</p>
                         <p className="font-medium">{booking.stoppedData.actualEndTime}</p>
                       </div>
-                      <div>
-  <p className="text-muted-foreground">Trễ trả xe</p>
-  <p className="font-semibold text-red-500">
-    {booking.stoppedData.delayHours} giờ
-  </p>
-</div>
-<div>
-  <p className="text-muted-foreground">Thanh toán dự kiến (Đã trừ tiền đặt cọc)</p>
-  <p className="font-semibold text-blue-500">
-    {booking.stoppedData.expectedPayment} VND
-  </p>
-</div>
+                      {booking.stoppedData.delayHours > 0 && (
+                        <div className="col-span-2">
+                          <p className="text-muted-foreground">Trễ trả xe</p>
+                          <p className="font-semibold text-red-500">{booking.stoppedData.delayHours} giờ</p>
+                        </div>
+                      )}
+                    </div>
 
-
-
-                      <div>
-                        <p className="text-muted-foreground">Phí phụ thu</p>
-                        <p className="font-semibold text-red-500">{booking.stoppedData.extraFee} VND</p>
+                    {/* Chi phí */}
+                    <div className="border-t pt-3 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Tổng tiền thuê dự kiến</span>
+                        <span className="font-medium">{booking.stoppedData.expectedTotalAmount} VND</span>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">Tổng thanh toán</p>
-                        <p className="font-bold text-lg text-green-600">{booking.stoppedData.totalAmount} VND</p>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Tiền cọc đã thanh toán</span>
+                        <span className="font-medium text-green-600">- {booking.stoppedData.depositAmount} VND</span>
+                      </div>
+                      {booking.stoppedData.penaltyAmount > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Tiền phạt trễ</span>
+                          <span className="font-semibold text-red-500">+ {booking.stoppedData.penaltyAmount} VND</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-semibold">Tổng thanh toán cuối cùng</span>
+                        <span className="font-bold text-lg text-green-600">{booking.stoppedData.totalAmount} VND</span>
                       </div>
                     </div>
                   </div>

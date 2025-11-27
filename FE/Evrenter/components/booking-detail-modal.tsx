@@ -322,7 +322,7 @@ function getRentalDays(startTime: string, endTime: string) {
       </span>
     </div>
     <div className="flex justify-between items-center">
-      <span className="text-muted-foreground">Còn lại cần thanh toán</span>
+      <span className="text-muted-foreground">Dự kiến cần thanh toán</span>
       <span className="font-medium">
         {((booking.expectedTotalAmount || booking.totalAmount) - (booking.depositAmount || booking.tariff?.depositAmount))?.toLocaleString()}₫
       </span>
