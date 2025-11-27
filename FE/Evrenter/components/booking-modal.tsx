@@ -148,12 +148,15 @@ export function BookingModal({ isOpen, onClose, vehicle }: BookingModalProps) {
                   value={duration}
                   onChange={(e) => setDuration(parseInt(e.target.value))}
                 >
-                  {[1, 3, 5, 7].map((d) => (
+                  {[1, 2, 3, 4, 5, 6, 7].map((d) => (
                     <option key={d} value={d}>
                       {d} ngày
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Nếu quý khách có nhu cầu thuê lớn hơn, xin liên hệ qua email: <a href="mailto:evrentalswp391fa2025@gmail.com" className="text-primary hover:underline">evrentalswp391fa2025@gmail.com</a>
+                </p>
               </div>
 
               {/* Chọn thời gian bắt đầu */}

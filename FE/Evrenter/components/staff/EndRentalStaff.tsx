@@ -128,10 +128,12 @@ const handleConfirmStopRenting = async () => {
           endTime: formatDate(stopData.endTime),
           actualEndTime: formatDate(stopData.actualEndTime),
           delayHours: calculateDelayHours(stopData.endTime, stopData.actualEndTime),
-          expectedTotalAmount: stopData.expectedTotalAmount?.toLocaleString() || (prev.tariff?.price * calculateRentalDays(prev.startTimeRaw, prev.endTimeRaw))?.toLocaleString(),
-          depositAmount: (stopData.depositAmount || prev.tariff?.depositAmount)?.toLocaleString(),
-          penaltyAmount: stopData.penaltyAmount || stopData.extraFee || 0,
-          totalAmount: stopData.totalAmount?.toLocaleString(),
+          tariffPrice: stopData.tariffPrice,
+          days: stopData.days,
+          expectedTotalAmount: stopData.expectedTotalAmount,
+          depositAmount: stopData.depositAmount || prev.tariff?.depositAmount,
+          extraFee: stopData.extraFee || 0,
+          totalAmount: stopData.totalAmount,
         },
       }
     : null
@@ -307,47 +309,65 @@ Số ngày thuê: {calculateRentalDays(booking.startTimeRaw, booking.endTimeRaw)
 
                 {/* Thông tin dừng thuê */}
                 {booking.stoppedData && (
-                  <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 space-y-3">
-                    <p className="font-semibold text-amber-700 dark:text-amber-400 mb-2">📋 Thông tin kết thúc thuê</p>
+                  <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 space-y-4">
+                    <p className="font-semibold text-amber-700 dark:text-amber-400">📋 Thông tin kết thúc thuê</p>
                     
                     {/* Thời gian */}
-                    <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="grid grid-cols-2 gap-3 text-sm p-3 bg-white dark:bg-slate-800 rounded-lg border">
                       <div>
-                        <p className="text-muted-foreground">Thời gian trả dự kiến</p>
+                        <p className="text-xs text-muted-foreground">Thời gian trả dự kiến</p>
                         <p className="font-medium">{booking.stoppedData.endTime}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Thời gian trả thực tế</p>
+                        <p className="text-xs text-muted-foreground">Thời gian trả thực tế</p>
                         <p className="font-medium">{booking.stoppedData.actualEndTime}</p>
                       </div>
                       {booking.stoppedData.delayHours > 0 && (
-                        <div className="col-span-2">
-                          <p className="text-muted-foreground">Trễ trả xe</p>
+                        <div className="col-span-2 pt-2 border-t">
+                          <p className="text-xs text-muted-foreground">Trễ trả xe</p>
                           <p className="font-semibold text-red-500">{booking.stoppedData.delayHours} giờ</p>
                         </div>
                       )}
                     </div>
 
-                    {/* Chi phí */}
-                    <div className="border-t pt-3 space-y-2 text-sm">
+                    {/* Chi phí - dạng hóa đơn */}
+                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border space-y-2 text-sm">
+                      <p className="font-semibold text-center border-b pb-2 mb-2">💰 Chi tiết thanh toán</p>
+                      
+                      {/* Dòng 1: Đơn giá x số ngày */}
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Tổng tiền thuê dự kiến</span>
-                        <span className="font-medium">{booking.stoppedData.expectedTotalAmount} VND</span>
+                        <span className="text-muted-foreground">
+                          Đơn giá × Số ngày ({booking.stoppedData.tariffPrice?.toLocaleString()} × {booking.stoppedData.days})
+                        </span>
+                        <span className="font-medium">{booking.stoppedData.expectedTotalAmount?.toLocaleString()} ₫</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Tiền cọc đã thanh toán</span>
-                        <span className="font-medium text-green-600">- {booking.stoppedData.depositAmount} VND</span>
+                      
+                      {/* Dòng 2: Trừ tiền cọc */}
+                      <div className="flex justify-between text-green-600">
+                        <span>Tiền cọc đã thanh toán</span>
+                        <span className="font-medium">- {booking.stoppedData.depositAmount?.toLocaleString()} ₫</span>
                       </div>
-                      {booking.stoppedData.penaltyAmount > 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Tiền phạt trễ</span>
-                          <span className="font-semibold text-red-500">+ {booking.stoppedData.penaltyAmount} VND</span>
+                      
+                      {/* Dòng 3: Phí phụ thu (nếu có) */}
+                      {booking.stoppedData.extraFee > 0 && (
+                        <div className="flex justify-between text-red-500">
+                          <span>Phí phụ thu (trễ trả xe)</span>
+                          <span className="font-medium">+ {booking.stoppedData.extraFee?.toLocaleString()} ₫</span>
                         </div>
                       )}
-                      <div className="flex justify-between border-t pt-2">
-                        <span className="font-semibold">Tổng thanh toán cuối cùng</span>
-                        <span className="font-bold text-lg text-green-600">{booking.stoppedData.totalAmount} VND</span>
+                      
+                      {/* Dòng tổng */}
+                      <div className="flex justify-between border-t pt-2 mt-2">
+                        <span className="font-bold">Khách cần thanh toán</span>
+                        <span className="font-bold text-xl text-primary">{booking.stoppedData.totalAmount?.toLocaleString()} ₫</span>
                       </div>
+                      
+                      {/* Công thức giải thích */}
+                      <p className="text-xs text-muted-foreground text-center pt-2 border-t">
+                        = {booking.stoppedData.expectedTotalAmount?.toLocaleString()} - {booking.stoppedData.depositAmount?.toLocaleString()}
+                        {booking.stoppedData.extraFee > 0 && ` + ${booking.stoppedData.extraFee?.toLocaleString()}`}
+                        {" "}= {booking.stoppedData.totalAmount?.toLocaleString()} ₫
+                      </p>
                     </div>
                   </div>
                 )}
