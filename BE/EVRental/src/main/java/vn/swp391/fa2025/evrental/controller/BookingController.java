@@ -247,4 +247,15 @@ public class BookingController {
         response.setMessage("Thống kê booking hoàn thành theo năm thành công");
         return response;
     }
+
+    @Operation(summary = "Lấy expected Total Amount", description = "Lấy expected Total Amount")
+    @GetMapping("/expectedtotal/{bookingId}")
+    public ApiResponse<BigDecimal> getExpectedTotalAmount(@PathVariable Long bookingId) {
+        ApiResponse<BigDecimal> response = new ApiResponse<>();
+        response.setSuccess(true);
+        response.setMessage("Lấy expected Total Amount thanh cong");
+        response.setData(bookingService.getExpectedAmount(bookingId));
+        response.setCode(200);
+        return response;
+    }
 }

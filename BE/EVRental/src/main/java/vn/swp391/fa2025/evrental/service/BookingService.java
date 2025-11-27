@@ -38,4 +38,6 @@ public interface BookingService {
 
     // New method for yearly completed bookings statistics by station
     List<StationCompletedBookingsResponse> getYearlyCompletedBookingsByStation(String stationName, int year);
+
+    BigDecimal getExpectedAmount(Long bookingId);
 }

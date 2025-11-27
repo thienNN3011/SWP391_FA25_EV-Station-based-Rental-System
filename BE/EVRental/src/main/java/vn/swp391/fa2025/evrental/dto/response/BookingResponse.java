@@ -28,6 +28,7 @@ public class BookingResponse {
     private String afterRentingStatus;
     private Long startOdo;
     private Long endOdo;
+    private BigDecimal expectedTotalAmount;
     private BigDecimal totalAmount;
     private String status;
 }
