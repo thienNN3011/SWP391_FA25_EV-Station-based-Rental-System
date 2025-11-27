@@ -110,19 +110,58 @@ function calculateEstimatedTotal(booking: any): number {
 export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalProps) {
   const { data: booking, isLoading } = useBookingDetail(bookingId)
 
-  const formatDateTime = (dateString: string) => {
-    if (!dateString) return "-"
-    const date = new Date(dateString)
-    return date.toLocaleString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+const formatDateTime = (s: string) => {
+  if (!s) return "-"
+
+  // bỏ phần mili giây dài phía sau
+  s = s.split(".")[0]
+
+  // thay T bằng khoảng trắng nếu có
+  s = s.replace("T", " ")
+
+  const parts = s.split(" ")
+  const datePart = parts[0]
+  const timePart = parts[1] || "00:00:00"
+
+  const [y, m, d] = datePart.split("-").map(Number)
+  const [hh, mm, ss] = timePart.split(":").map(Number)
+
+  const date = new Date(y, m - 1, d, hh, mm, ss || 0)
+
+  return date.toLocaleString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+function parseLocalDateTime(s: string) {
+  s = s.split(".")[0];
+  s = s.replace("T", " ");
+
+  const [datePart, timePart = "00:00:00"] = s.split(" ");
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [hh, mm, ss] = timePart.split(":").map(Number);
+
+  return new Date(y, m - 1, d, hh, mm, ss || 0);
+}
+
+function getRentalDays(startTime: string, endTime: string) {
+  const start = parseLocalDateTime(startTime);
+  const end = parseLocalDateTime(endTime);
+
+  const diffMs = end.getTime() - start.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+
+  const baseDays = Math.floor(diffHours / 24);
+  const extraHours = diffHours % 24;
+
+  return extraHours > 6 ? baseDays + 1 : baseDays;
+}
 
 
-  }
+
 
   return (
     <Dialog open={!!bookingId} onOpenChange={onClose}>
@@ -205,11 +244,12 @@ export function BookingDetailModal({ bookingId, onClose }: BookingDetailModalPro
                     <p className="font-medium">{formatDateTime(booking.startTime)}</p>
                   </div>
                   <div>
-  <p className="text-sm text-muted-foreground">Dự kiến trả xe</p>
+  <p className="text-sm text-muted-foreground">Số ngày thuê</p>
   <p className="font-medium">
-    {formatDateTime(getExpectedReturnDate(booking.startTime, booking.endTime).toISOString())}
+    {getRentalDays(booking.startTime, booking.endTime)} ngày
   </p>
 </div>
+
 
                 </div>
                 
