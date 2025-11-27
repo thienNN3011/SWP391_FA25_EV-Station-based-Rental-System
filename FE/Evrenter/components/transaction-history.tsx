@@ -7,18 +7,10 @@ import { Pagination } from "@/components/ui/pagination"
 import { api } from "@/lib/api"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { Search, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-interface Transaction {
-  paymentId: number
-  bookingId: number
-  paymentType: string
-  amount: number
-  referenceCode: string
-  transactionDate: string
-  method: string
-}
+import { TransactionDetailModal, Transaction } from "@/components/transaction-detail-modal"
+import { BookingDetailModal } from "@/components/booking-detail-modal"
 
 const TRANSACTION_TABS = [
   { key: "ALL", label: "Tất cả" },
@@ -49,6 +41,10 @@ export function TransactionHistoryPage() {
   const [activeTab, setActiveTab] = useState("ALL")
   const [startDate, setStartDate] = useState<string>("") // Ngày bắt đầu
   const [endDate, setEndDate] = useState<string>("") // Ngày kết thúc
+
+  // Modal states
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null)
 
   const formatDateForAPI = (date: string) => {
     const d = new Date(date)
@@ -184,11 +180,16 @@ export function TransactionHistoryPage() {
                   <TableHead>Số tiền</TableHead>
                   <TableHead>Loại giao dịch</TableHead>
                   <TableHead>Phương thức</TableHead>
+                  <TableHead className="text-center">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredTransactions.map((transaction) => (
-                  <TableRow key={transaction.paymentId}>
+                  <TableRow
+                    key={transaction.paymentId}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => setSelectedTransaction(transaction)}
+                  >
                     <TableCell>{transaction.paymentId}</TableCell>
                     <TableCell>{transaction.bookingId}</TableCell>
                     <TableCell>{formatDate(transaction.transactionDate)}</TableCell>
@@ -200,6 +201,20 @@ export function TransactionHistoryPage() {
                     </TableCell>
                     <TableCell>
                       {paymentMethodLabels[transaction.method] || transaction.method}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedTransaction(transaction)
+                        }}
+                        className="flex items-center gap-1"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Chi tiết
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -217,6 +232,23 @@ export function TransactionHistoryPage() {
           onPageChange={handlePageChange}
         />
       )}
+
+      {/* Transaction Detail Modal */}
+      <TransactionDetailModal
+        transaction={selectedTransaction}
+        allTransactions={transactions}
+        onClose={() => setSelectedTransaction(null)}
+        onViewBookingDetail={(bookingId) => {
+          setSelectedTransaction(null)
+          setSelectedBookingId(bookingId)
+        }}
+      />
+
+      {/* Booking Detail Modal (khi click "Xem chi tiết đơn thuê" từ TransactionDetailModal) */}
+      <BookingDetailModal
+        bookingId={selectedBookingId}
+        onClose={() => setSelectedBookingId(null)}
+      />
     </Card>
   )
 }

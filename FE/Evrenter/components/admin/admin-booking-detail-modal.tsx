@@ -279,12 +279,12 @@ function BookingInfoTab({ booking }: { booking: any }) {
           </div>
           <Separator />
           <div className="space-y-2">
-            <InfoRow label="Tạm tính" value={formatCurrency(booking.expectedTotalAmount)} />
+            <InfoRow label="Tạm tính(dự kiến)" value={formatCurrency(booking.expectedTotalAmount)} />
             {booking.penaltyAmount > 0 && (
               <InfoRow label="Phí phạt trả muộn" value={formatCurrency(booking.penaltyAmount)} className="text-red-600" />
             )}
             <InfoRow
-              label="Tổng cộng"
+              label="Tổng thanh toán cuối"
               value={formatCurrency(booking.totalAmount)}
               className="text-lg font-bold text-primary"
             />
