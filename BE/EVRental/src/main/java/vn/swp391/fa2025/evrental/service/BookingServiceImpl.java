@@ -297,7 +297,7 @@ public class BookingServiceImpl implements  BookingService{
         }
         BookingResponse response=bookingMapper.toBookingResponse(booking);
         Long overtime = 0L;
-        if (booking.getActualEndTime().isAfter(booking.getEndTime())) {
+        if (booking.getActualEndTime()!=null && booking.getActualEndTime().isAfter(booking.getEndTime())) {
             overtime = TimeUtils.ceilTimeDiff(
                     booking.getActualEndTime(),
                     booking.getEndTime(),
@@ -604,7 +604,7 @@ public class BookingServiceImpl implements  BookingService{
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
-
+        if (booking.getActualEndTime()!=null) throw new RuntimeException("Booking đã được dừng thời gian thuê trước đó");
         if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
         if (booking.getContract().getStaff().getUserId()!=staff.getUserId()) throw new RuntimeException("Bạn không phải nhân viên thụ lí booking này");
         if (!booking.getStatus().toString().equalsIgnoreCase("RENTING"))
