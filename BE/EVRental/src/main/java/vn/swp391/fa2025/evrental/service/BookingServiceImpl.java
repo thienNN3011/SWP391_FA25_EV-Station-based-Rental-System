@@ -604,7 +604,7 @@ public class BookingServiceImpl implements  BookingService{
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại"));
-
+        if (booking.getActualEndTime()!=null) throw new RuntimeException("Booking đã được dừng thời gian thuê trước đó");
         if (booking.getVehicle().getStation().getStationId()!=staff.getStation().getStationId()) throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
         if (booking.getContract().getStaff().getUserId()!=staff.getUserId()) throw new RuntimeException("Bạn không phải nhân viên thụ lí booking này");
         if (!booking.getStatus().toString().equalsIgnoreCase("RENTING"))
