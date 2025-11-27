@@ -330,7 +330,7 @@ public class BookingServiceImpl implements  BookingService{
         data.put("vehicleColor", vehicle.getColor());
         data.put("vehicleStatus", vehicleStatus);
         data.put("bookingId", String.valueOf(booking.getBookingId()));
-        data.put("startOdo", String.valueOf(booking.getStartOdo()));
+        data.put("startOdo", String.valueOf(startOdo));
         booking.setActualStartTime(LocalDateTime.now());
         long amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
         booking.setEndTime(booking.getActualStartTime().plusDays(amountOfDay));
