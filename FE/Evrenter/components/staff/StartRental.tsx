@@ -197,7 +197,7 @@ export default function StartRentalStaff() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Số ngày thuê</p>
-                    <p className="font-semibold text-primary">
+                    <p className="font-semibold text-black-600">
                       {calculateRentalDays(booking.startTime, booking.endTime)} ngày
                     </p>
                   </div>
