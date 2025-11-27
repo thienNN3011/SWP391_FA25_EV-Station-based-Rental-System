@@ -819,4 +819,27 @@ public class BookingServiceImpl implements  BookingService{
         return result;
     }
 
+    @Override
+    public BigDecimal getExpectedAmount(Long bookingId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username=authentication.getName();
+        User user = userRepository.findByUsername(username);
+        Booking booking= bookingRepository.findById(bookingId).orElseThrow(()-> new RuntimeException("Booking không tồn tại"));
+        if (user.getRole().toString().equalsIgnoreCase("STAFF") && !user.getStation().getStationId().equals(booking.getVehicle().getStation().getStationId())) {
+            throw new RuntimeException("Booking này không thuộc trạm của bạn!Booking thuộc trạm"+ booking.getVehicle().getStation().getStationName());
+        } else if (user.getRole()== UserRole.RENTER && booking.getUser().getUserId()!=user.getUserId()){
+            throw new RuntimeException("Bạn không có quyền xem booking này");
+        }
+        BigDecimal expectedToTalAmount=BigDecimal.ZERO;
+        long amountOfDay=0;
+        if (booking.getActualStartTime()==null) {
+            amountOfDay= ChronoUnit.DAYS.between(booking.getStartTime(), booking.getEndTime());
+            expectedToTalAmount=booking.getTariff().getPrice().multiply(BigDecimal.valueOf(amountOfDay));
+        } else {
+            amountOfDay= ChronoUnit.DAYS.between(booking.getActualStartTime(), booking.getEndTime());
+            expectedToTalAmount=booking.getTariff().getPrice().multiply(BigDecimal.valueOf(amountOfDay));
+        }
+        return expectedToTalAmount;
+    }
+
 }
